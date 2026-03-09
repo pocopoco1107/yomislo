@@ -4,6 +4,61 @@ ActiveAdmin.register Shop do
                 :business_hours, :holidays, :opened_on, :former_event_days, :notes,
                 slot_rates: []
 
+  action_item :import_csv, only: :index do
+    link_to "CSVインポート", action: :import_csv_form
+  end
+
+  collection_action :import_csv_form, method: :get do
+    render "admin/csv_import_form", locals: { resource_name: "店舗", path: import_csv_admin_shops_path }
+  end
+
+  collection_action :import_csv, method: :post do
+    file = params[:csv_file]
+    if file.nil?
+      redirect_to admin_shops_path, alert: "ファイルを選択してください"
+      return
+    end
+
+    require "csv"
+    imported = 0
+    errors = []
+
+    CSV.foreach(file.path, headers: true, encoding: "UTF-8") do |row|
+      prefecture = Prefecture.find_by(slug: row["prefecture_slug"]) || Prefecture.find_by(name: row["prefecture_name"])
+      unless prefecture
+        errors << "行#{$.}: 都道府県 '#{row['prefecture_slug'] || row['prefecture_name']}' が見つかりません"
+        next
+      end
+
+      slug = row["slug"] || row["name"].parameterize
+      shop = Shop.find_or_initialize_by(slug: slug)
+      shop.assign_attributes(
+        prefecture: prefecture,
+        name: row["name"],
+        address: row["address"],
+        slug: slug,
+        slot_rates: row["slot_rates"]&.split("|") || [],
+        exchange_rate: row["exchange_rate"] || "unknown_rate",
+        total_machines: row["total_machines"],
+        slot_machines: row["slot_machines"],
+        business_hours: row["business_hours"],
+        holidays: row["holidays"] || "年中無休",
+        former_event_days: row["former_event_days"],
+        notes: row["notes"]
+      )
+
+      if shop.save
+        imported += 1
+      else
+        errors << "行#{$.}: #{shop.name} - #{shop.errors.full_messages.join(', ')}"
+      end
+    end
+
+    message = "#{imported}件の店舗をインポートしました"
+    message += " (#{errors.size}件のエラー: #{errors.first(3).join('; ')})" if errors.any?
+    redirect_to admin_shops_path, notice: message
+  end
+
   index do
     selectable_column
     id_column

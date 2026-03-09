@@ -1,0 +1,2 @@
+name,prefecture_slug,address,slug,slot_rates,exchange_rate,total_machines,slot_machines,business_hours,holidays,former_event_days
+サンプル店舗,tokyo,東京都渋谷区1-1-1,sample-shop,20スロ|5スロ,equal_rate,500,200,10:00〜22:45,年中無休,毎月3日
