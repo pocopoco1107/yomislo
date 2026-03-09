@@ -1,0 +1,94 @@
+<% content_for(:title) { "スロリセnavi - パチスロリセット・設定判別の投票サイト" } %>
+
+<section class="mt-4">
+  <!-- Search -->
+  <div class="mb-6">
+    <%= form_tag root_path, method: :get, data: { turbo_frame: "search_results" }, class: "relative" do %>
+      <input type="text" name="q" value="<%= params[:q] %>"
+             placeholder="店舗名で検索..."
+             class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-light focus:border-transparent"
+             autocomplete="off">
+      <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 bg-primary text-white px-4 py-1.5 rounded-md text-sm hover:bg-primary-light">
+        検索
+      </button>
+    <% end %>
+  </div>
+
+  <!-- Search Results -->
+  <turbo-frame id="search_results">
+    <% if params[:q].present? && @search_results %>
+      <div class="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <h2 class="text-sm font-semibold text-gray-600 mb-3">「<%= params[:q] %>」の検索結果 (<%= @search_results.size %>件)</h2>
+        <% if @search_results.any? %>
+          <ul class="divide-y divide-gray-100">
+            <% @search_results.each do |shop| %>
+              <li class="py-2">
+                <%= link_to shop_path(shop.slug), class: "flex justify-between items-center hover:bg-gray-50 -mx-2 px-2 py-1 rounded" do %>
+                  <span class="font-medium text-sm"><%= shop.name %></span>
+                  <span class="text-xs text-gray-500"><%= shop.prefecture.name %></span>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="text-sm text-gray-500">該当する店舗が見つかりませんでした。</p>
+        <% end %>
+      </div>
+    <% end %>
+  </turbo-frame>
+
+  <!-- Prefecture Grid -->
+  <div class="mb-8">
+    <h2 class="text-lg font-bold text-gray-800 mb-4">都道府県から探す</h2>
+    <%
+      regions = {
+        "北海道・東北" => %w[北海道 青森県 岩手県 宮城県 秋田県 山形県 福島県],
+        "関東" => %w[茨城県 栃木県 群馬県 埼玉県 千葉県 東京都 神奈川県],
+        "中部" => %w[新潟県 富山県 石川県 福井県 山梨県 長野県 岐阜県 静岡県 愛知県],
+        "近畿" => %w[三重県 滋賀県 京都府 大阪府 兵庫県 奈良県 和歌山県],
+        "中国" => %w[鳥取県 島根県 岡山県 広島県 山口県],
+        "四国" => %w[徳島県 香川県 愛媛県 高知県],
+        "九州・沖縄" => %w[福岡県 佐賀県 長崎県 熊本県 大分県 宮崎県 鹿児島県 沖縄県]
+      }
+      prefectures_by_name = @prefectures.index_by(&:name)
+    %>
+
+    <% regions.each do |region_name, pref_names| %>
+      <div class="mb-4">
+        <h3 class="text-sm font-semibold text-gray-600 mb-2 border-l-4 border-primary pl-2"><%= region_name %></h3>
+        <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-1.5">
+          <% pref_names.each do |pref_name| %>
+            <% pref = prefectures_by_name[pref_name] %>
+            <% if pref %>
+              <%= link_to prefecture_path(pref.slug),
+                  class: "bg-white border border-gray-200 rounded-md px-2 py-1.5 text-xs text-center hover:bg-primary hover:text-white hover:border-primary transition-colors truncate" do %>
+                <%= pref_name %>
+              <% end %>
+            <% else %>
+              <span class="bg-gray-100 border border-gray-200 rounded-md px-2 py-1.5 text-xs text-center text-gray-400 truncate">
+                <%= pref_name %>
+              </span>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Recent Active Shops -->
+  <div>
+    <h2 class="text-lg font-bold text-gray-800 mb-4">最近の更新店舗</h2>
+    <% if @recent_shops.any? %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <% @recent_shops.each do |shop| %>
+          <%= link_to shop_path(shop.slug), class: "bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow block" do %>
+            <p class="font-medium text-sm"><%= shop.name %></p>
+            <p class="text-xs text-gray-500 mt-1"><%= shop.prefecture.name %> <%= shop.address %></p>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-sm text-gray-500">まだ店舗データがありません。</p>
+    <% end %>
+  </div>
+</section>

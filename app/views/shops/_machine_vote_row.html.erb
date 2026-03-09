@@ -1,0 +1,103 @@
+<%= turbo_frame_tag "machine_vote_#{machine_model.id}" do %>
+  <div class="bg-white border border-gray-200 rounded-lg p-3" data-controller="vote">
+    <!-- Machine Name -->
+    <div class="flex items-center justify-between mb-2">
+      <%= link_to machine_path(machine_model.slug), class: "font-medium text-sm text-primary hover:underline" do %>
+        <%= machine_model.name %>
+      <% end %>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <!-- Reset Vote -->
+      <div>
+        <p class="text-xs text-gray-500 mb-1.5">リセット判別</p>
+        <div class="flex items-center gap-2">
+          <div class="flex gap-1.5">
+            <%
+              has_reset_yes = user_vote&.reset_vote == 1
+              has_reset_no = user_vote&.reset_vote == 0
+            %>
+            <%= form_with url: votes_path, method: :post, data: { turbo: true, "vote-target": "form" } do |f| %>
+              <%= f.hidden_field :shop_id, value: shop.id %>
+              <%= f.hidden_field :machine_model_id, value: machine_model.id %>
+              <%= f.hidden_field :voted_on, value: date %>
+              <%= f.hidden_field :reset_vote, value: 1 %>
+              <button type="submit"
+                      class="<%= has_reset_yes ? 'bg-vote-yes text-white' : 'bg-white text-gray-600 border border-gray-300 hover:border-vote-yes hover:text-vote-yes' %> rounded-md px-3 py-1 text-sm font-medium transition-colors"
+                      data-action="click->vote#submit"
+                      data-vote-target="button">
+                Yes
+              </button>
+            <% end %>
+            <%= form_with url: votes_path, method: :post, data: { turbo: true, "vote-target": "form" } do |f| %>
+              <%= f.hidden_field :shop_id, value: shop.id %>
+              <%= f.hidden_field :machine_model_id, value: machine_model.id %>
+              <%= f.hidden_field :voted_on, value: date %>
+              <%= f.hidden_field :reset_vote, value: 0 %>
+              <button type="submit"
+                      class="<%= has_reset_no ? 'bg-vote-no text-white' : 'bg-white text-gray-600 border border-gray-300 hover:border-vote-no hover:text-vote-no' %> rounded-md px-3 py-1 text-sm font-medium transition-colors"
+                      data-action="click->vote#submit"
+                      data-vote-target="button">
+                No
+              </button>
+            <% end %>
+          </div>
+          <div class="text-xs text-gray-600 ml-1">
+            <% if vote_summary && (vote_summary.reset_yes_count + vote_summary.reset_no_count) >= 3 %>
+              <%
+                total_reset = vote_summary.reset_yes_count + vote_summary.reset_no_count
+                pct = (vote_summary.reset_yes_count.to_f / total_reset * 100).round
+              %>
+              <span class="font-semibold text-vote-yes"><%= pct %>% Yes</span>
+              <span class="text-gray-400">(<%= total_reset %>票)</span>
+            <% else %>
+              <span class="text-gray-400">データ不足</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Setting Vote -->
+      <div>
+        <p class="text-xs text-gray-500 mb-1.5">設定判別</p>
+        <div class="flex items-center gap-2">
+          <div class="flex gap-1">
+            <% (1..6).each do |setting| %>
+              <%
+                is_selected = user_vote&.setting_vote == setting
+                color_class = case setting
+                              when 1 then is_selected ? 'bg-setting-1 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:border-setting-1 hover:text-setting-1'
+                              when 2 then is_selected ? 'bg-setting-2 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:border-setting-2 hover:text-setting-2'
+                              when 3 then is_selected ? 'bg-setting-3 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:border-setting-3 hover:text-setting-3'
+                              when 4 then is_selected ? 'bg-setting-4 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:border-setting-4 hover:text-setting-4'
+                              when 5 then is_selected ? 'bg-setting-5 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:border-setting-5 hover:text-setting-5'
+                              when 6 then is_selected ? 'bg-setting-6 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:border-setting-6 hover:text-setting-6'
+                              end
+              %>
+              <%= form_with url: votes_path, method: :post, data: { turbo: true, "vote-target": "form" } do |f| %>
+                <%= f.hidden_field :shop_id, value: shop.id %>
+                <%= f.hidden_field :machine_model_id, value: machine_model.id %>
+                <%= f.hidden_field :voted_on, value: date %>
+                <%= f.hidden_field :setting_vote, value: setting %>
+                <button type="submit"
+                        class="<%= color_class %> rounded-md w-7 h-7 text-xs font-bold transition-colors"
+                        data-action="click->vote#submit"
+                        data-vote-target="button">
+                  <%= setting %>
+                </button>
+              <% end %>
+            <% end %>
+          </div>
+          <div class="text-xs text-gray-600 ml-1">
+            <% if vote_summary && vote_summary.setting_avg.present? && vote_summary.total_votes >= 3 %>
+              <span class="font-semibold">平均<%= vote_summary.setting_avg %></span>
+              <span class="text-gray-400">(<%= vote_summary.total_votes %>票)</span>
+            <% else %>
+              <span class="text-gray-400">データ不足</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

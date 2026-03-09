@@ -1,0 +1,66 @@
+<% content_for(:title) { "#{@shop.name} - スロリセnavi" } %>
+
+<section class="mt-4">
+  <div class="mb-3">
+    <%= link_to "← #{@shop.prefecture.name}に戻る", prefecture_path(@shop.prefecture.slug), class: "text-sm text-primary hover:underline" %>
+  </div>
+
+  <!-- Shop Info -->
+  <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+    <h1 class="text-xl font-bold text-gray-800"><%= @shop.name %></h1>
+    <p class="text-sm text-gray-500 mt-1">
+      <%= @shop.prefecture.name %>
+      <% if @shop.address.present? %>
+        / <%= @shop.address %>
+      <% end %>
+    </p>
+  </div>
+
+  <!-- Date Navigation -->
+  <div class="flex items-center justify-center gap-3 mb-4">
+    <%= link_to date_shop_path(@shop.slug, date: (@date - 1.day).strftime("%Y-%m-%d")),
+        class: "bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm hover:bg-gray-50" do %>
+      &#9664; 前日
+    <% end %>
+    <span class="font-bold text-sm">
+      <%= @date.strftime("%Y年%-m月%-d日") %>
+      <% if @date == Date.current %>
+        <span class="text-primary">(今日)</span>
+      <% end %>
+    </span>
+    <% if @date < Date.current %>
+      <%= link_to date_shop_path(@shop.slug, date: (@date + 1.day).strftime("%Y-%m-%d")),
+          class: "bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm hover:bg-gray-50" do %>
+        翌日 &#9654;
+      <% end %>
+    <% end %>
+    <% unless @date == Date.current %>
+      <%= link_to "今日", shop_path(@shop.slug),
+          class: "bg-primary text-white rounded-md px-3 py-1.5 text-sm hover:bg-primary-light" %>
+    <% end %>
+  </div>
+
+  <!-- Vote Errors -->
+  <div id="vote_errors"></div>
+
+  <!-- Machine List -->
+  <div class="space-y-2 mb-8">
+    <% if @machine_models.any? %>
+      <% @machine_models.each do |machine_model| %>
+        <%= render "shops/machine_vote_row",
+            machine_model: machine_model,
+            vote_summary: @vote_summaries[machine_model.id],
+            user_vote: @user_votes[machine_model.id],
+            shop: @shop,
+            date: @date %>
+      <% end %>
+    <% else %>
+      <div class="bg-white border border-gray-200 rounded-lg p-8 text-center">
+        <p class="text-gray-500">機種データがまだ登録されていません。</p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Comments -->
+  <%= render "shops/comments", shop: @shop, comments: @comments, date: @date %>
+</section>

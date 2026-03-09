@@ -1,0 +1,33 @@
+<% content_for(:title) { "#{@prefecture.name}の店舗一覧 - スロリセnavi" } %>
+
+<section class="mt-4">
+  <div class="mb-4">
+    <%= link_to "← トップに戻る", root_path, class: "text-sm text-primary hover:underline" %>
+  </div>
+
+  <h1 class="text-xl font-bold text-gray-800 mb-4"><%= @prefecture.name %>の店舗一覧</h1>
+
+  <% if @shops.any? %>
+    <div class="space-y-2">
+      <% @shops.each do |shop| %>
+        <%= link_to shop_path(shop.slug), class: "bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow block" do %>
+          <p class="font-medium"><%= shop.name %></p>
+          <% if shop.address.present? %>
+            <p class="text-sm text-gray-500 mt-1"><%= shop.address %></p>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="mt-6">
+      <%= paginate @shops, theme: 'tailwind' rescue nil %>
+      <nav class="flex justify-center">
+        <%= paginate @shops %>
+      </nav>
+    </div>
+  <% else %>
+    <div class="bg-white border border-gray-200 rounded-lg p-8 text-center">
+      <p class="text-gray-500">この都道府県にはまだ店舗が登録されていません。</p>
+    </div>
+  <% end %>
+</section>

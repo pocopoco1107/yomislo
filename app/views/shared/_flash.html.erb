@@ -1,0 +1,17 @@
+<% if notice %>
+  <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-4" data-controller="dismissable">
+    <div class="flex justify-between items-center">
+      <p class="text-sm"><%= notice %></p>
+      <button type="button" class="text-green-600 hover:text-green-800" data-action="click->dismissable#dismiss">&times;</button>
+    </div>
+  </div>
+<% end %>
+
+<% if alert %>
+  <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-4" data-controller="dismissable">
+    <div class="flex justify-between items-center">
+      <p class="text-sm"><%= alert %></p>
+      <button type="button" class="text-red-600 hover:text-red-800" data-action="click->dismissable#dismiss">&times;</button>
+    </div>
+  </div>
+<% end %>

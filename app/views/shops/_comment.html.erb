@@ -1,0 +1,15 @@
+<div class="bg-white border border-gray-200 rounded-lg p-3" id="<%= dom_id(comment) %>">
+  <div class="flex items-center justify-between mb-1">
+    <div class="flex items-center gap-2">
+      <span class="text-sm font-medium text-gray-700"><%= comment.display_name %></span>
+      <span class="text-xs text-gray-400"><%= comment.created_at.strftime("%-H:%M") %></span>
+    </div>
+    <div id="report_flash">
+      <%= button_to reports_path, params: { report: { reportable_type: "Comment", reportable_id: comment.id, reason: "inappropriate" } },
+          method: :post, class: "text-xs text-gray-400 hover:text-red-500", data: { turbo: true, confirm: "このコメントを通報しますか？" } do %>
+        通報
+      <% end %>
+    </div>
+  </div>
+  <p class="text-sm text-gray-700 whitespace-pre-wrap"><%= comment.body %></p>
+</div>

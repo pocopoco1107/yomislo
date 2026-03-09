@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Sitemap: https://slorise-navi.com/sitemap.xml.gz
+
+User-agent: *
+Disallow: /admin
+Disallow: /admin_auth

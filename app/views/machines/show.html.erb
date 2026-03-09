@@ -1,0 +1,75 @@
+<% content_for(:title) { "#{@machine_model.name} - スロリセnavi" } %>
+
+<section class="mt-4">
+  <div class="mb-3">
+    <%= link_to "← トップに戻る", root_path, class: "text-sm text-primary hover:underline" %>
+  </div>
+
+  <!-- Machine Info -->
+  <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+    <h1 class="text-xl font-bold text-gray-800"><%= @machine_model.name %></h1>
+    <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+      <% if @machine_model.maker.present? %>
+        <span>メーカー: <span class="font-medium"><%= @machine_model.maker %></span></span>
+      <% end %>
+      <% if @machine_model.machine_type.present? %>
+        <span>タイプ: <span class="font-medium"><%= @machine_model.machine_type %></span></span>
+      <% end %>
+      <% if @machine_model.spec_type.present? %>
+        <span>スペック: <span class="font-medium"><%= @machine_model.spec_type %></span></span>
+      <% end %>
+      <% if @machine_model.released_on.present? %>
+        <span>導入日: <span class="font-medium"><%= @machine_model.released_on.strftime("%Y年%-m月%-d日") %></span></span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Shops with this machine -->
+  <h2 class="text-lg font-bold text-gray-800 mb-3">本日の投票状況 (<%= Date.current.strftime("%-m/%-d") %>)</h2>
+
+  <% if @vote_summaries.any? %>
+    <div class="space-y-2">
+      <% @vote_summaries.each do |vs| %>
+        <div class="bg-white border border-gray-200 rounded-lg p-3">
+          <div class="flex items-center justify-between">
+            <%= link_to shop_path(vs.shop.slug), class: "font-medium text-sm text-primary hover:underline" do %>
+              <%= vs.shop.name %>
+            <% end %>
+            <span class="text-xs text-gray-400"><%= vs.total_votes %>票</span>
+          </div>
+          <div class="mt-2 flex flex-wrap gap-4 text-xs text-gray-600">
+            <div>
+              リセット:
+              <% total_reset = vs.reset_yes_count + vs.reset_no_count %>
+              <% if total_reset >= 3 %>
+                <span class="font-semibold text-vote-yes"><%= (vs.reset_yes_count.to_f / total_reset * 100).round %>% Yes</span>
+                (<%= total_reset %>票)
+              <% else %>
+                <span class="text-gray-400">データ不足</span>
+              <% end %>
+            </div>
+            <div>
+              設定:
+              <% if vs.setting_avg.present? && vs.total_votes >= 3 %>
+                <span class="font-semibold">平均<%= vs.setting_avg %></span>
+                (<%= vs.total_votes %>票)
+              <% else %>
+                <span class="text-gray-400">データ不足</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="mt-6">
+      <nav class="flex justify-center">
+        <%= paginate @vote_summaries %>
+      </nav>
+    </div>
+  <% else %>
+    <div class="bg-white border border-gray-200 rounded-lg p-8 text-center">
+      <p class="text-gray-500 text-sm">本日の投票データはまだありません。</p>
+    </div>
+  <% end %>
+</section>

@@ -1,0 +1,8 @@
+<%= turbo_stream.replace "machine_vote_#{@machine_model.id}" do %>
+  <%= render "shops/machine_vote_row",
+    machine_model: @machine_model,
+    vote_summary: @vote_summary,
+    user_vote: @vote,
+    shop: @shop,
+    date: @vote.voted_on %>
+<% end %>
