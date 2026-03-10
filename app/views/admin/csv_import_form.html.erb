@@ -20,7 +20,7 @@
         <li>prefecture_slug or prefecture_name (必須): 都道府県</li>
         <li>address: 住所</li>
         <li>slug: URL用スラッグ (空欄なら自動生成)</li>
-        <li>slot_rates: レート ("|"区切り。例: "20スロ|5スロ")</li>
+        <li>slot_rates: レート ("|"またはカンマ区切り。例: "20スロ,5スロ")</li>
         <li>exchange_rate: unknown_rate / equal_rate / rate_56 / rate_50 / non_equal</li>
         <li>total_machines / slot_machines: 台数 (数値)</li>
         <li>parking_spaces: 駐車場台数</li>
@@ -32,16 +32,21 @@
       </ul>
       <p style="margin-top: 8px; font-size: 12px; color: #888;">空欄のカラムはスキップされます（既存値を上書きしません）</p>
     <% else %>
-      <p>ヘッダー行必須。以下のカラムに対応:</p>
-      <code>name, maker, machine_type, spec_type, slug, released_on</code>
+      <p>ヘッダー行必須。以下のカラムに対応 (slug重複時は既存レコードを更新):</p>
+      <code>name, maker, generation, is_smart_slot, payout_rate_min, payout_rate_max, machine_type, spec_type, slug, released_on</code>
       <ul style="margin-top: 10px; font-size: 12px; color: #666;">
         <li>name (必須): 機種名</li>
         <li>maker: メーカー名</li>
-        <li>machine_type: slot / pachislot</li>
-        <li>spec_type: type_at / type_art / type_a_plus_at / type_a</li>
+        <li>generation: 号機区分 (6.5号機 / 6号機 / 5号機)</li>
+        <li>is_smart_slot: スマスロフラグ (true / false)</li>
+        <li>payout_rate_min: 機械割下限 (例: 97.9)</li>
+        <li>payout_rate_max: 機械割上限 (例: 114.9)</li>
+        <li>machine_type: slot / pachislot (デフォルト: slot)</li>
+        <li>spec_type: type_at / type_art / type_a_plus_at / type_a (デフォルト: type_at)</li>
         <li>slug: URL用スラッグ (空欄なら自動生成)</li>
         <li>released_on: 発売日 (YYYY-MM-DD)</li>
       </ul>
+      <p style="margin-top: 8px; font-size: 12px; color: #888;">空欄のカラムはスキップされます（既存値を上書きしません）</p>
     <% end %>
   </div>
 </div>

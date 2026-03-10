@@ -4,8 +4,8 @@
   "description": "パチスロの設定・リセット情報を集合知で蓄積するサイト",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f9fafb",
-  "theme_color": "#1e40af",
+  "background_color": "#0a0a0a",
+  "theme_color": "#10b981",
   "orientation": "portrait-primary",
   "icons": [
     {

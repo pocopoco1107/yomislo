@@ -51,7 +51,7 @@ ActiveAdmin.register Shop do
       }
       # Optional fields: only overwrite if CSV value is present
       attrs[:address] = row["address"] if row["address"].present?
-      attrs[:slot_rates] = row["slot_rates"].split("|") if row["slot_rates"].present?
+      attrs[:slot_rates] = row["slot_rates"].split(/[|,]/).map(&:strip).reject(&:blank?) if row["slot_rates"].present?
       attrs[:exchange_rate] = row["exchange_rate"] if row["exchange_rate"].present?
       attrs[:total_machines] = row["total_machines"] if row["total_machines"].present?
       attrs[:slot_machines] = row["slot_machines"] if row["slot_machines"].present?

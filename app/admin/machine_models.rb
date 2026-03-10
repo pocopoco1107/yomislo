@@ -17,29 +17,50 @@ ActiveAdmin.register MachineModel do
     end
 
     require "csv"
-    imported = 0
+    created = 0
+    updated = 0
     errors = []
+    line_num = 1
 
     CSV.foreach(file.path, headers: true, encoding: "UTF-8") do |row|
+      line_num += 1
+
+      unless row["name"].present?
+        errors << "行#{line_num}: 機種名が空です"
+        next
+      end
+
       slug = row["slug"] || row["name"].parameterize
       machine = MachineModel.find_or_initialize_by(slug: slug)
-      machine.assign_attributes(
+      is_new = machine.new_record?
+
+      attrs = {
         name: row["name"],
-        maker: row["maker"],
-        machine_type: row["machine_type"] || "slot",
-        spec_type: row["spec_type"] || "type_at",
-        slug: slug,
-        released_on: row["released_on"]
-      )
+        slug: slug
+      }
+      attrs[:maker] = row["maker"] if row["maker"].present?
+      attrs[:generation] = row["generation"] if row["generation"].present?
+      attrs[:is_smart_slot] = row["is_smart_slot"]&.downcase == "true" if row["is_smart_slot"].present?
+      attrs[:payout_rate_min] = row["payout_rate_min"].to_f if row["payout_rate_min"].present?
+      attrs[:payout_rate_max] = row["payout_rate_max"].to_f if row["payout_rate_max"].present?
+      attrs[:machine_type] = row["machine_type"] if row["machine_type"].present?
+      attrs[:spec_type] = row["spec_type"] if row["spec_type"].present?
+      attrs[:released_on] = row["released_on"] if row["released_on"].present?
+
+      # Defaults for new records
+      attrs[:machine_type] ||= "slot" if is_new
+      attrs[:spec_type] ||= "type_at" if is_new
+
+      machine.assign_attributes(attrs)
 
       if machine.save
-        imported += 1
+        is_new ? created += 1 : updated += 1
       else
-        errors << "行#{$.}: #{machine.name} - #{machine.errors.full_messages.join(', ')}"
+        errors << "行#{line_num}: #{row['name']} - #{machine.errors.full_messages.join(', ')}"
       end
     end
 
-    message = "#{imported}件の機種をインポートしました"
+    message = "新規#{created}件 / 更新#{updated}件"
     message += " (#{errors.size}件のエラー: #{errors.first(3).join('; ')})" if errors.any?
     redirect_to admin_machine_models_path, notice: message
   end
