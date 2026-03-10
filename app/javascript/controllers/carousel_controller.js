@@ -7,12 +7,18 @@ export default class extends Controller {
   connect() {
     this.track = this.trackTarget
     this.updateButtons()
-    this.track.addEventListener("scroll", this.onScroll.bind(this), { passive: true })
+
+    // Bind handlers once so they can be removed in disconnect
+    this._onScroll = this.onScroll.bind(this)
+    this._onTouchStart = this.onTouchStart.bind(this)
+    this._onTouchEnd = this.onTouchEnd.bind(this)
+
+    this.track.addEventListener("scroll", this._onScroll, { passive: true })
 
     // Touch swipe support (for non-snap browsers)
     this.startX = 0
-    this.track.addEventListener("touchstart", this.onTouchStart.bind(this), { passive: true })
-    this.track.addEventListener("touchend", this.onTouchEnd.bind(this), { passive: true })
+    this.track.addEventListener("touchstart", this._onTouchStart, { passive: true })
+    this.track.addEventListener("touchend", this._onTouchEnd, { passive: true })
 
     // Build dots
     this.buildDots()
@@ -23,6 +29,11 @@ export default class extends Controller {
   }
 
   disconnect() {
+    if (this.track) {
+      this.track.removeEventListener("scroll", this._onScroll)
+      this.track.removeEventListener("touchstart", this._onTouchStart)
+      this.track.removeEventListener("touchend", this._onTouchEnd)
+    }
     this.resizeObserver?.disconnect()
   }
 

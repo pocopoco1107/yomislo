@@ -7,7 +7,7 @@
     <div class="flex items-center gap-2">
       <span class="text-xs text-muted-foreground"><%= review.created_at.strftime("%Y/%-m/%-d") %></span>
       <%= button_to reports_path, params: { report: { reportable_type: "ShopReview", reportable_id: review.id, reason: "inappropriate" } },
-          method: :post, class: "text-xs text-muted-foreground hover:text-destructive transition-colors", data: { turbo: true, confirm: "このレビューを通報しますか？" } do %>
+          method: :post, class: "text-xs text-muted-foreground hover:text-destructive transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center", data: { turbo: true, confirm: "このレビューを通報しますか？" }, aria: { label: "このレビューを通報する" } do %>
         通報
       <% end %>
     </div>

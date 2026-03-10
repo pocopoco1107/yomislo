@@ -12,10 +12,17 @@ export default class extends Controller {
       if (e.key === "Escape" && this.isOpen) this.close()
     }
     document.addEventListener("keydown", this.handleKeydown)
+
+    // Turboキャッシュ前にドロワーを閉じる（バック時にスクロールロックが残るのを防止）
+    this.handleBeforeCache = () => {
+      if (this.isOpen) this.close()
+    }
+    document.addEventListener("turbo:before-cache", this.handleBeforeCache)
   }
 
   disconnect() {
     document.removeEventListener("keydown", this.handleKeydown)
+    document.removeEventListener("turbo:before-cache", this.handleBeforeCache)
     this.unlockScroll()
   }
 

@@ -6,7 +6,7 @@
     </div>
     <div id="report_flash">
       <%= button_to reports_path, params: { report: { reportable_type: "Comment", reportable_id: comment.id, reason: "inappropriate" } },
-          method: :post, class: "text-xs text-muted-foreground hover:text-destructive transition-colors", data: { turbo: true, confirm: "このコメントを通報しますか？" } do %>
+          method: :post, class: "text-xs text-muted-foreground hover:text-destructive transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center", data: { turbo: true, confirm: "このコメントを通報しますか？" }, aria: { label: "このコメントを通報する" } do %>
         通報
       <% end %>
     </div>

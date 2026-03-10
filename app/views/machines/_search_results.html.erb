@@ -9,18 +9,18 @@
           <%= f.hidden_field :reset_vote, value: nil %>
           <%= f.hidden_field :setting_vote, value: nil %>
           <span class="text-sm font-medium text-foreground"><%= machine.name %></span>
-          <div class="flex gap-1.5">
+          <div class="flex gap-1.5 flex-wrap">
             <button type="submit" name="vote[reset_vote]" value="1"
-                    class="bg-card text-muted-foreground border border-border hover:border-vote-yes hover:text-vote-yes rounded-md px-2 py-0.5 text-xs font-medium transition-colors">
+                    class="bg-card text-muted-foreground border border-border hover:border-vote-yes hover:text-vote-yes rounded-md px-3 py-1.5 text-xs font-medium transition-colors min-h-[36px]">
               リセYes
             </button>
             <button type="submit" name="vote[reset_vote]" value="0"
-                    class="bg-card text-muted-foreground border border-border hover:border-vote-no hover:text-vote-no rounded-md px-2 py-0.5 text-xs font-medium transition-colors">
+                    class="bg-card text-muted-foreground border border-border hover:border-vote-no hover:text-vote-no rounded-md px-3 py-1.5 text-xs font-medium transition-colors min-h-[36px]">
               リセNo
             </button>
             <% (1..6).each do |s| %>
               <button type="submit" name="vote[setting_vote]" value="<%= s %>"
-                      class="bg-card text-muted-foreground border border-border rounded-md w-6 h-6 text-xs font-bold transition-colors hover:bg-setting-<%= s %>/10 hover:text-setting-<%= s %> hover:border-setting-<%= s %>/50">
+                      class="bg-card text-muted-foreground border border-border rounded-md w-8 h-8 text-xs font-bold transition-colors hover:bg-setting-<%= s %>/10 hover:text-setting-<%= s %> hover:border-setting-<%= s %>/50">
                 <%= s %>
               </button>
             <% end %>

@@ -2,9 +2,15 @@ class HomeController < ApplicationController
   include TrendData
 
   def index
+    desc = "パチスロの設定・リセット情報をみんなの投票で集める。店舗×機種×日付で設定予想を共有するサイト。"
     set_meta_tags title: "パチスロ設定・リセット投票",
-                  description: "パチスロの設定・リセット情報をみんなの投票で集める。店舗×機種×日付で設定予想を共有するサイト。",
-                  keywords: "パチスロ, 設定, リセット, 投票, 設定判別, スロット"
+                  description: desc,
+                  keywords: "パチスロ, 設定, リセット, 投票, 設定判別, スロット",
+                  og: { title: "スロリセnavi - パチスロ設定・リセット投票",
+                        description: desc,
+                        type: "website",
+                        url: root_url },
+                  twitter: { card: "summary" }
 
     @prefectures = Prefecture.left_joins(:shops).group(:id).select("prefectures.*, COUNT(shops.id) as shops_count").order(:id)
 
@@ -69,8 +75,8 @@ class HomeController < ApplicationController
                             { rank: rank, label: "投票者##{token.last(4)}", count: count }
                           }
 
-    # 7-day nationwide trend
-    @trend_data = build_trend_data(VoteSummary.all)
+    # 7-day nationwide trend (scoped to last 7 days to avoid full table scan)
+    @trend_data = build_trend_data(VoteSummary.where(target_date: 6.days.ago.to_date..Date.current))
 
     # AI おすすめ店舗 (全国TOP5)
     @recommendations = RecommendationService.top_nationwide(limit: 5)

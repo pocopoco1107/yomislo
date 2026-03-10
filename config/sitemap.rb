@@ -14,8 +14,11 @@ SitemapGenerator::Sitemap.create do
     add shop_path(shop.slug), changefreq: "daily", priority: 0.9
   end
 
-  # Machines
-  MachineModel.find_each do |machine|
+  # Machines (active only — inactive machines have no useful content)
+  MachineModel.active.find_each do |machine|
     add machine_path(machine.slug), changefreq: "weekly", priority: 0.7
   end
+
+  # Search page
+  add "/search", changefreq: "weekly", priority: 0.6
 end

@@ -14,7 +14,13 @@ class CommentsController < ApplicationController
 
   private
 
+  ALLOWED_COMMENTABLE_TYPES = %w[Shop].freeze
+
   def comment_params
-    params.require(:comment).permit(:commentable_type, :commentable_id, :body, :target_date, :commenter_name)
+    permitted = params.require(:comment).permit(:commentable_type, :commentable_id, :body, :target_date, :commenter_name)
+    unless ALLOWED_COMMENTABLE_TYPES.include?(permitted[:commentable_type])
+      raise ActionController::BadRequest, "Invalid commentable_type"
+    end
+    permitted
   end
 end

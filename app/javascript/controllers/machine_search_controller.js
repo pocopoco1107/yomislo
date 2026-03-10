@@ -6,6 +6,18 @@ export default class extends Controller {
 
   connect() {
     this.timeout = null
+    this.abortController = null
+  }
+
+  disconnect() {
+    if (this.timeout) {
+      clearTimeout(this.timeout)
+      this.timeout = null
+    }
+    if (this.abortController) {
+      this.abortController.abort()
+      this.abortController = null
+    }
   }
 
   search() {
@@ -18,11 +30,24 @@ export default class extends Controller {
     }
 
     this.timeout = setTimeout(() => {
+      // Abort previous in-flight request
+      if (this.abortController) this.abortController.abort()
+      this.abortController = new AbortController()
+
       const url = `/machines/search?q=${encodeURIComponent(query)}&shop_id=${this.shopIdValue}&date=${this.dateValue}`
-      fetch(url, { headers: { "Accept": "text/html" } })
+      fetch(url, {
+        headers: { "Accept": "text/html" },
+        signal: this.abortController.signal
+      })
         .then(r => r.text())
-        .then(html => { this.resultsTarget.innerHTML = html })
-        .catch(() => {})
+        .then(html => {
+          if (this.element.isConnected) {
+            this.resultsTarget.innerHTML = html
+          }
+        })
+        .catch((e) => {
+          if (e.name !== "AbortError") console.error(e)
+        })
     }, 200)
   }
 

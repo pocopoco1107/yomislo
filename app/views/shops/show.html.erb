@@ -1,5 +1,32 @@
 <% content_for(:title) { "#{@shop.name} - スロリセnavi" } %>
 
+<%# JSON-LD structured data for LocalBusiness %>
+<% content_for(:head) do %>
+  <script type="application/ld+json">
+    <%= raw({
+      "@context": "https://schema.org",
+      "@type": "AmusementPark",
+      "name": @shop.name,
+      "description": "#{@shop.name}のパチスロ設定・リセット投票情報",
+      "address": @shop.address.present? ? {
+        "@type": "PostalAddress",
+        "addressRegion": @shop.prefecture.name,
+        "streetAddress": @shop.address
+      } : nil,
+      "telephone": @shop.phone_number.presence,
+      "openingHours": @shop.business_hours.presence,
+      "url": request.original_url.split("?").first,
+      "aggregateRating": @average_rating ? {
+        "@type": "AggregateRating",
+        "ratingValue": @average_rating,
+        "bestRating": 5,
+        "worstRating": 1,
+        "ratingCount": @reviews.size
+      } : nil
+    }.compact.to_json) %>
+  </script>
+<% end %>
+
 <section class="mt-4">
   <%# === Breadcrumb === %>
   <nav aria-label="breadcrumb" class="mb-4">
@@ -54,7 +81,7 @@
         </span>
       <% end %>
       <% if @shop.pworld_url.present? %>
-        <a href="<%= @shop.pworld_url %>" target="_blank" rel="noopener" class="text-primary hover:underline inline-flex items-center gap-1">
+        <a href="<%= @shop.pworld_url %>" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline inline-flex items-center gap-1" aria-label="P-WORLDで店舗情報を見る（外部サイト）">
           P-WORLD
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
         </a>
@@ -185,6 +212,7 @@
              data-machine-search-target="input"
              data-action="input->machine-search#search"
              placeholder="機種名を検索して投票..."
+             aria-label="機種名を検索して投票"
              class="w-full border border-input bg-background text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent shadow-xs placeholder:text-muted-foreground"
              autocomplete="off">
     </div>
@@ -198,6 +226,7 @@
       <input type="text" placeholder="機種名で絞り込み..."
              data-machine-filter-target="input"
              data-action="input->machine-filter#filter"
+             aria-label="機種名で絞り込み"
              class="flex-1 min-w-[160px] border border-input bg-background text-foreground rounded-md px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground">
     </div>
   </div>

@@ -14,7 +14,13 @@ class ReportsController < ApplicationController
 
   private
 
+  ALLOWED_REPORTABLE_TYPES = %w[Comment ShopReview].freeze
+
   def report_params
-    params.require(:report).permit(:reportable_type, :reportable_id, :reason)
+    permitted = params.require(:report).permit(:reportable_type, :reportable_id, :reason)
+    unless ALLOWED_REPORTABLE_TYPES.include?(permitted[:reportable_type])
+      raise ActionController::BadRequest, "Invalid reportable_type"
+    end
+    permitted
   end
 end

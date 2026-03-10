@@ -1,6 +1,6 @@
 class VoterController < ApplicationController
   def status
-    set_meta_tags title: "マイステータス"
+    set_meta_tags title: "マイステータス", noindex: true
 
     token = cookies[:voter_token]
 

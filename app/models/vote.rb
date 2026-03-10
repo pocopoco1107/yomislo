@@ -15,6 +15,8 @@ class Vote < ApplicationRecord
   validate :voted_on_not_too_old
   validate :confirmed_setting_tags_valid
 
+  attr_reader :cached_vote_summary
+
   after_save :update_vote_summary
   after_destroy :update_vote_summary
 
@@ -47,6 +49,6 @@ class Vote < ApplicationRecord
   end
 
   def update_vote_summary
-    VoteSummary.refresh_for(shop_id, machine_model_id, voted_on)
+    @cached_vote_summary = VoteSummary.refresh_for(shop_id, machine_model_id, voted_on)
   end
 end

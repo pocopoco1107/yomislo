@@ -38,6 +38,10 @@ export default class extends Controller {
   }
 
   setFavorites(favorites) {
-    localStorage.setItem("favorite_shops", JSON.stringify(favorites))
+    try {
+      localStorage.setItem("favorite_shops", JSON.stringify(favorites))
+    } catch {
+      // localStorage quota exceeded or access denied (e.g. private browsing)
+    }
   }
 }

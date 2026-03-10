@@ -36,7 +36,7 @@ class SearchController < ApplicationController
         if facility == "parking"
           scope = scope.where("parking_spaces IS NOT NULL AND parking_spaces > 0")
         else
-          scope = scope.where("notes LIKE ?", "%#{facility}%")
+          scope = scope.where("notes LIKE ?", "%#{Shop.sanitize_sql_like(facility)}%")
         end
       end
     end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_10_100004) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_10_100005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -38,6 +38,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_10_100004) do
     t.datetime "updated_at", null: false
     t.string "commenter_name", default: "名無し"
     t.string "voter_token"
+    t.index ["commentable_type", "commentable_id", "target_date"], name: "index_comments_on_commentable_and_target_date"
     t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable"
     t.index ["user_id"], name: "index_comments_on_user_id"
   end
@@ -157,6 +158,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_10_100004) do
     t.datetime "updated_at", null: false
     t.index ["category"], name: "index_shop_reviews_on_category"
     t.index ["shop_id", "created_at"], name: "index_shop_reviews_on_shop_id_and_created_at"
+    t.index ["shop_id", "rating"], name: "index_shop_reviews_on_shop_id_and_rating"
     t.index ["shop_id", "voter_token"], name: "index_shop_reviews_on_shop_id_and_voter_token", unique: true
     t.index ["shop_id"], name: "index_shop_reviews_on_shop_id"
     t.index ["voter_token"], name: "index_shop_reviews_on_voter_token"
@@ -186,6 +188,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_10_100004) do
     t.string "morning_entry"
     t.string "access_info"
     t.string "features"
+    t.index ["address"], name: "index_shops_on_address"
     t.index ["exchange_rate"], name: "index_shops_on_exchange_rate"
     t.index ["prefecture_id", "name"], name: "index_shops_on_prefecture_id_and_name"
     t.index ["prefecture_id"], name: "index_shops_on_prefecture_id"

@@ -31,7 +31,8 @@
       </svg>
       <input type="text" name="q" value="<%= params[:q] %>"
              placeholder="店舗名で検索..."
-             class="w-full h-10 rounded-md border border-input bg-transparent pl-9 pr-3 py-1 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none transition-[color,box-shadow]"
+             aria-label="店舗名で検索"
+             class="w-full min-h-[44px] rounded-md border border-input bg-transparent pl-9 pr-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none transition-[color,box-shadow]"
              autocomplete="off">
     </div>
 
@@ -132,13 +133,13 @@
       <%# 検索・クリアボタン %>
       <div class="mt-5 pt-4 border-t border-border flex items-center gap-3">
         <button type="submit"
-                class="inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground h-9 px-4 py-2 text-sm font-medium shadow-xs hover:bg-primary/90 transition-all">
+                class="inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground min-h-[44px] px-5 py-2 text-sm font-medium shadow-xs hover:bg-primary/90 transition-all">
           <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
           検索
         </button>
-        <%= link_to "条件をクリア", search_path, class: "text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2" %>
+        <%= link_to "条件をクリア", search_path, class: "text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2 inline-flex items-center min-h-[44px] px-2" %>
       </div>
     </div>
   <% end %>

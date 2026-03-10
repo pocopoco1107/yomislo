@@ -23,12 +23,20 @@ export default class extends Controller {
     const current = this.currentSetting
     // system → dark → light → system のサイクル
     const next = current === "system" ? "dark" : current === "dark" ? "light" : "system"
-    localStorage.setItem("theme", next)
+    try {
+      localStorage.setItem("theme", next)
+    } catch {
+      // localStorage access denied (e.g. private browsing)
+    }
     this.applyTheme()
   }
 
   get currentSetting() {
-    return localStorage.getItem("theme") || "dark"
+    try {
+      return localStorage.getItem("theme") || "dark"
+    } catch {
+      return "dark"
+    }
   }
 
   applyTheme() {

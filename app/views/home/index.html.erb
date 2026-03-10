@@ -1,5 +1,23 @@
 <% content_for(:title) { "スロリセnavi - パチスロリセット・設定判別の投票サイト" } %>
 
+<%# JSON-LD structured data for WebSite %>
+<% content_for(:head) do %>
+  <script type="application/ld+json">
+    <%= raw({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "スロリセnavi",
+      "url": root_url,
+      "description": "パチスロの設定・リセット情報をみんなの投票で集める集合知サイト",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "#{root_url}search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }.to_json) %>
+  </script>
+<% end %>
+
 <!-- ============================================
      Hero Section
      ============================================ -->
@@ -49,6 +67,7 @@
     <input type="search" name="q" value="<%= params[:q] %>"
            placeholder="店舗名・機種名で検索"
            autocomplete="off"
+           aria-label="店舗名・機種名で検索"
            class="h-12 w-full rounded-lg border border-border bg-card pl-12 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none md:h-14 md:text-lg transition-colors">
   <% end %>
 

@@ -9,9 +9,16 @@ class MachinesController < ApplicationController
     meta_desc_parts << "機械割#{@machine_model.payout_rate_display}" if @machine_model.payout_rate_display
     meta_desc_parts << @machine_model.type_detail if @machine_model.type_detail.present?
     meta_desc_parts << "設定傾向をチェック"
+    meta_desc = meta_desc_parts.join("。") + "。"
     set_meta_tags title: "#{@machine_model.name} - 全店舗の設定傾向",
-                  description: meta_desc_parts.join("。") + "。",
-                  keywords: "#{@machine_model.name}, パチスロ, 設定, リセット, #{@machine_model.maker}, #{@machine_model.generation_label}".squish
+                  description: meta_desc,
+                  keywords: "#{@machine_model.name}, パチスロ, 設定, リセット, #{@machine_model.maker}, #{@machine_model.generation_label}".squish,
+                  og: { title: "#{@machine_model.name} - 全店舗の設定傾向 | スロリセnavi",
+                        description: meta_desc,
+                        type: "website",
+                        url: request.original_url.split("?").first,
+                        image: @machine_model.image_url.presence },
+                  twitter: { card: "summary" }
     @vote_summaries = @machine_model.vote_summaries
                                      .where(target_date: Date.current)
                                      .includes(:shop)

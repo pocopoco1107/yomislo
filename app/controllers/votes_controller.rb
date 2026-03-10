@@ -25,7 +25,7 @@ class VotesController < ApplicationController
     if @vote.save
       @shop = @vote.shop
       @machine_model = @vote.machine_model
-      @vote_summary = VoteSummary.find_by(shop_id: @shop.id, machine_model_id: @machine_model.id, target_date: @vote.voted_on)
+      @vote_summary = @vote.cached_vote_summary
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to shop_path(@shop) }
@@ -33,7 +33,10 @@ class VotesController < ApplicationController
     else
       respond_to do |format|
         format.turbo_stream { render turbo_stream: turbo_stream.replace("vote_errors", partial: "votes/errors", locals: { vote: @vote }) }
-        format.html { redirect_to shop_path(Shop.find(vote_params[:shop_id])), alert: @vote.errors.full_messages.join(", ") }
+        format.html {
+          shop = Shop.find_by(id: vote_params[:shop_id])
+          redirect_to(shop ? shop_path(shop) : root_path, alert: @vote.errors.full_messages.join(", "))
+        }
       end
     end
   end
@@ -43,7 +46,7 @@ class VotesController < ApplicationController
     if @vote.update(vote_params)
       @shop = @vote.shop
       @machine_model = @vote.machine_model
-      @vote_summary = VoteSummary.find_by(shop_id: @shop.id, machine_model_id: @machine_model.id, target_date: @vote.voted_on)
+      @vote_summary = @vote.cached_vote_summary
       respond_to do |format|
         format.turbo_stream { render :create }
         format.html { redirect_to shop_path(@shop) }

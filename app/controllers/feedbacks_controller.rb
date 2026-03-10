@@ -1,5 +1,6 @@
 class FeedbacksController < ApplicationController
   def new
+    set_meta_tags noindex: true
     @feedback = Feedback.new
   end
 
