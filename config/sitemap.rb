@@ -1,4 +1,4 @@
-SitemapGenerator::Sitemap.default_host = "https://slorise-navi.com"
+SitemapGenerator::Sitemap.default_host = "https://yomislo.com"
 
 SitemapGenerator::Sitemap.create do
   # Static pages

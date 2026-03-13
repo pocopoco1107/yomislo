@@ -23,10 +23,12 @@ gem "tailwindcss-rails"
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
-gem "solid_cache"
-gem "solid_queue"
-gem "solid_cable"
+# Database-backed adapters — not used on Render Starter plan (512MB).
+# Using :memory_store for cache and :async for jobs instead.
+# Uncomment when scaling to a larger plan with dedicated Redis/DB.
+# gem "solid_cache"
+# gem "solid_queue"
+# gem "solid_cable"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
@@ -52,6 +54,9 @@ gem "sitemap_generator"
 
 # Pagination
 gem "kaminari"
+
+# Japanese holidays
+gem "holiday_jp"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

@@ -6,4 +6,4 @@ Disallow: /voter/
 Disallow: /feedbacks/
 Disallow: /shop_requests/
 
-Sitemap: https://slorise-navi.com/sitemap.xml.gz
+Sitemap: https://yomislo.com/sitemap.xml.gz

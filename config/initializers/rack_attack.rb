@@ -27,6 +27,18 @@ class Rack::Attack
     end
   end
 
+  throttle("shop_events/ip", limit: 5, period: 1.hour) do |req|
+    if req.path.match?(%r{/shops/.+/events}) && req.post?
+      req.ip
+    end
+  end
+
+  throttle("play_records/ip", limit: 20, period: 1.hour) do |req|
+    if req.path.start_with?("/play_records") && %w[POST PATCH PUT DELETE].include?(req.request_method)
+      req.ip
+    end
+  end
+
   self.throttled_responder = lambda do |req|
     match_data = req.env["rack.attack.match_data"]
     now = Time.now.utc

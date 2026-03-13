@@ -31,11 +31,9 @@ threads threads_count, threads_count
 port ENV.fetch("PORT", 3000)
 
 # Specifies the number of `workers` to boot in clustered mode.
-# Workers are forked web server processes. If using threads and workers together
-# the concurrency of the application would be max `threads` * `workers`.
-# Workers do not work on JRuby or Windows (both of which do not support
-# processes).
-workers ENV.fetch("WEB_CONCURRENCY") { 2 }
+# Render Starter plan has 512MB RAM — default to 0 (single mode, threads only)
+# to avoid OOM. Set WEB_CONCURRENCY=2 if upgrading to a larger plan.
+workers ENV.fetch("WEB_CONCURRENCY", 0)
 
 # Use the `preload_app!` method when specifying a `workers` number.
 # This directive tells Puma to first boot the application and load code

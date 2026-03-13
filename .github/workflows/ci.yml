@@ -72,7 +72,7 @@ jobs:
 
     env:
       RAILS_ENV: test
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/slositte_test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/yomislo_test
 
     steps:
       - name: Checkout code

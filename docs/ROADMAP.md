@@ -1,17 +1,17 @@
-# スロリセnavi ロードマップ
+# ヨミスロ ロードマップ
 
 ## 完了済み (Phase 1 MVP + Phase 2 一部)
 
 ### 基盤
 - [x] Rails 8 + Ruby 4.0.0 + PostgreSQL 17 セットアップ
-- [x] 匿名Cookie投票 (Turbo Frame即時反映)
+- [x] 匿名Cookie記録 (Turbo Frame即時反映)
 - [x] コメント・通報機能
 - [x] ActiveAdmin管理画面
 - [x] Rack::Attack レート制限
 - [x] SEO (meta-tags, sitemap, robots.txt, canonical)
 - [x] セキュリティ (CSP, security headers, error pages)
 - [x] 日本語ロケール (ja.yml)
-- [x] RSpec テスト (63 examples, 0 failures, 67% coverage)
+- [x] RSpec テスト (490 examples, 0 failures, 75% coverage)
 - [x] CI (GitHub Actions)
 - [x] Render.com デプロイ設定 (render.yaml)
 - [x] モバイルファースト対応 (Tailwind CSS v4)
@@ -27,11 +27,11 @@
 - [x] 全角/半角重複機種の統合 (488件マージ)
 - [x] スクレイパーにレート・設備パース追加
 
-### 投票UI
-- [x] 設定投票を「推測」と「確定」に分離
+### 記録UI
+- [x] 設定記録を「推測」と「確定」に分離
 - [x] ヒートマップ配色 (1=青→6=赤) + プログレスバー
 - [x] 設定分布の棒グラフ表示
-- [x] 投票後のフィードバックアニメーション (Stimulus pulse)
+- [x] 記録後のフィードバックアニメーション (Stimulus pulse)
 - [x] 店舗ページの機種フィルター機能
 
 ### UI/UX
@@ -54,14 +54,35 @@
 
 ---
 
-## Phase 2: 残タスク ★今ここ
+### ゲーミフィケーション (G1-G6)
+- [x] VoterProfile（称号・ストリーク・的中率）
+  - 称号6段階: 見習い→記録者→常連→目利き師→設定看破マスター→伝説の記録者
+  - 連続記録ストリーク（ドットカレンダー表示）
+  - 多数派一致率・高設定率
+- [x] VoterRanking（週間/月間/累計 × 全国/県別）
+  - 記録数ベース、最小閾値付き（週5件/月10件）
+  - `/rankings` ページ（Stimulus `ranking-tab` でタブ切替）
+- [x] PlayRecord（収支カレンダー）
+  - `/play_records` ページ（収支入力・カレンダー表示・タグ付け）
+  - 1人1日1店舗1機種1件（voter_token + shop_id + machine_model_id + played_on ユニーク制約）
+  - タグ: ロングフリーズ, 有利区間リセ, 天井, 朝一, 設定変更, 据え置き, 高設定確定, 万枚
+  - 新Stimulusコントローラ: `calendar`, `play-record-form`, `tag-select`, `result-input`
+- [x] PlayRecordSummary（収支集計キャッシュ）
+  - 機種別/店舗別/県別 × 月次/累計の集計
+  - 曜日別統計 (weekday_stats jsonb)
+- [x] voter_token復元 (`POST /voter/restore`)
+- [x] UX改善: ヒーロー文言変更、3ステップオンボーディング、検索バーのヒーロー統合、セクション順序最適化
+
+---
+
+## Phase 2: 残タスク
 
 ### 2-1. データ完成
 - [x] **全国機種リンク完了** (331,659リンク)
 - [x] **P-WORLD定期更新バッチ** (週次: 設置機種リスト、月次: 新台情報)
 - [ ] AdminからのCSVインポート機能 (手動補完用)
 
-### 2-2. 投票UI改善 ★実装済み
+### 2-2. 記録UI改善 ★実装済み
 - [x] **機種行のコンパクト化**
   - 2行レイアウト: Row1=機種名+台数+リセットY/N、Row2=設定1-6+結果
   - 確定系タグは折りたたみ式（デフォルト非表示）
@@ -75,7 +96,7 @@
 - [ ] **機種画像の表示** (検討中)
   - 代替案: タイプ別バッジで視覚的に区別 ← 実装済み
 
-### 2-2b. 投票UI改善 (残り)
+### 2-2b. 記録UI改善 (残り)
 - [ ] **設置台数のスクレイピング取得** — P-WORLD店舗ページから台数パース
 - [ ] **機種画像** — 著作権問題あり、要調査
 
@@ -130,22 +151,29 @@
 - [ ] スマホ操作の微調整 (タップ領域拡大、スクロール最適化)
 
 ### 2-5. テスト強化
-- [ ] System Spec (Capybara + Playwright) で投票フロー E2Eテスト
-- [ ] VoteSummary集計の境界値テスト
-- [ ] Rack::Attackの統合テスト
+- [x] System Spec (Capybara + Playwright) で記録フロー E2Eテスト
+- [x] VoteSummary 集計の境界値テスト (22 examples)
+- [x] Rack::Attackの統合テスト (7 examples)
+- [x] Comments/Reports/Votes拡張テスト (24 examples)
+- テスト合計: 490 examples, 0 failures, 75% coverage
 
-### 2-6. パフォーマンス
-- [ ] VoteSummary のキャッシュ戦略見直し
-- [ ] ページネーション最適化 (5,761店舗対応)
+### 2-6. パフォーマンス ★完了
+- [x] VoteSummary: denormalized cache + advisory lock で十分（フラグメントキャッシュはPV増加後に検討）
+- [x] ページネーション: search(30件/頁), machines(20件/頁, shops 30件/頁) 実装済み
+- [x] N+1防止: includes/preload使用、bullet gem導入済み
+- [x] 全テーブルの外部キー・複合インデックス完備
 
 ---
 
 ## Phase 3: デプロイ & 運用開始
 
 ### 3-1. デプロイ
+- [x] Production設定最適化 (memory_store, async adapter, single worker)
+- [x] Render.com Blueprint設定 (render.yaml, build script, env vars)
+- [x] Seed安全化 (production: 県+Admin のみ、デモデータ除外)
 - [ ] Render.comアカウント作成 & Blueprint デプロイ
 - [ ] 独自ドメイン取得 & SSL設定
-- [ ] RAILS_MASTER_KEY 環境変数設定
+- [ ] RAILS_MASTER_KEY / ADMIN_EMAIL / ADMIN_PASSWORD 環境変数設定
 
 ### 3-2. 運用ツール
 - [ ] GA4導入 (Google Analytics)
@@ -175,7 +203,7 @@
 
 ### 4-4. ユーザー参加型
 - [x] ユーザーによる店舗登録申請 (管理者承認制)
-- [x] 投票者ランキング・実績バッジ
+- [x] ユーザーランキング・実績バッジ（Phase 2 ゲーミフィケーションで実装済み）
 - [x] 店舗レビュー機能
 - [ ] ユーザーごとのお気に入り店舗登録 (ログイン連携)
 
@@ -229,11 +257,11 @@
 ---
 
 ## 優先順位ガイド
-1. ★ Phase 2-2d (フィルタリング検索) — ユーザー価値最大。1セッション1機能で
-2. Phase 3 (デプロイ) — 公開してフィードバック収集
-3. Phase 2-5 (テスト強化) — デプロイ前に品質担保
-4. Phase 3-3 (プロモ記事) — 公開直後に初期流入を作る
-5. Phase 4-1 (攻略リンク) — コスパ良く情報量を増やす
+1. ★ Phase 3 (デプロイ) — 公開してフィードバック収集が最優先
+2. Phase 3-3 (プロモ記事) — 公開直後に初期流入を作る
+3. Phase 4-1 (攻略リンク) — コスパ良く情報量を増やす
+4. Phase 2-3 (SNS拡充) — AI連携でデータ量を増やす
+5. Phase 2-4 (UI/UX改善) — ユーザー定着のための細かな改善
 
 ## セッション分離ガイド
 - **1セッション = 1機能**が原則。コンテキスト肥大によるミスを防ぐ
