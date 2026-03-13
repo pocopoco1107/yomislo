@@ -63,6 +63,12 @@ end
 puts "  Prefectures: #{Prefecture.count}"
 
 # -----------------------------------------------
+# 2-7: Demo data (development/test only)
+# In production, shops/machines are imported via rake tasks
+# -----------------------------------------------
+unless Rails.env.production?
+
+# -----------------------------------------------
 # 2. Shops (~15)
 # -----------------------------------------------
 tokyo     = Prefecture.find_by!(slug: "tokyo")
@@ -110,66 +116,53 @@ puts "  Shops: #{Shop.count}"
 # -----------------------------------------------
 MACHINES = [
   # スマスロ (AT機)
-  { name: "スマスロ北斗の拳",               maker: "サミー",         machine_type: :slot, spec_type: :type_at,       slug: "smart-hokuto",            released_on: "2023-04-03" },
-  { name: "バジリスク絆2 天膳BLACK EDITION", maker: "ミズホ",         machine_type: :slot, spec_type: :type_at,       slug: "basilisk-kizuna2-tenzen", released_on: "2024-04-08" },
-  { name: "押忍!番長ZERO",                  maker: "大都技研",       machine_type: :slot, spec_type: :type_at,       slug: "banchou-zero",            released_on: "2022-07-04" },
-  { name: "甲鉄城のカバネリ",               maker: "サミー",         machine_type: :slot, spec_type: :type_at,       slug: "kabaneri",                released_on: "2022-12-05" },
-  { name: "Lバキ 強くなりたくば喰らえ!!!",   maker: "フィールズ",     machine_type: :slot, spec_type: :type_at,       slug: "baki",                    released_on: "2024-01-09" },
-  { name: "沖ドキ!GOLD",                    maker: "ユニバーサル",   machine_type: :slot, spec_type: :type_at,       slug: "okidoki-gold",            released_on: "2024-07-01" },
-  { name: "モンキーターンV",                 maker: "山佐",           machine_type: :slot, spec_type: :type_at,       slug: "monkey-turn-v",           released_on: "2024-02-05" },
-  { name: "ヴァルヴレイヴ",                  maker: "三共",           machine_type: :slot, spec_type: :type_at,       slug: "valvrave",                released_on: "2023-10-02" },
-  { name: "リゼロ鬼がかりver.",              maker: "大都技研",       machine_type: :slot, spec_type: :type_at,       slug: "rezero-onigakari",        released_on: "2024-06-03" },
-  { name: "からくりサーカス",                maker: "サミー",         machine_type: :slot, spec_type: :type_at,       slug: "karakuri-circus",         released_on: "2023-07-03" },
-  { name: "炎炎ノ消防隊",                   maker: "サンスリー",     machine_type: :slot, spec_type: :type_at,       slug: "enen-shouboutai",         released_on: "2024-03-04" },
-  { name: "マクロスフロンティア4",            maker: "三共",           machine_type: :slot, spec_type: :type_at,       slug: "macross-frontier-4",      released_on: "2024-05-07" },
-  { name: "交響詩篇エウレカセブン",           maker: "サミー",         machine_type: :slot, spec_type: :type_at,       slug: "eureka-seven",            released_on: "2024-08-05" },
-  { name: "ガンダムユニコーン",              maker: "サンキョー",     machine_type: :slot, spec_type: :type_at,       slug: "gundam-unicorn",          released_on: "2023-12-04" },
-  { name: "とある魔術の禁書目録",            maker: "サミー",         machine_type: :slot, spec_type: :type_at,       slug: "toaru-index",             released_on: "2024-09-02" },
-  { name: "コードギアス 反逆のルルーシュ3",   maker: "サミー",         machine_type: :slot, spec_type: :type_at,       slug: "code-geass-3",            released_on: "2023-11-06" },
-  { name: "転生したらスライムだった件",       maker: "サミー",         machine_type: :slot, spec_type: :type_at,       slug: "tensura",                 released_on: "2024-10-07" },
-  { name: "ソードアート・オンライン",         maker: "サミー",         machine_type: :slot, spec_type: :type_at,       slug: "sao",                     released_on: "2024-04-01" },
+  { name: "スマスロ北斗の拳",               maker: "サミー",         slug: "smart-hokuto",            introduced_on: "2023-04-03" },
+  { name: "バジリスク絆2 天膳BLACK EDITION", maker: "ミズホ",         slug: "basilisk-kizuna2-tenzen", introduced_on: "2024-04-08" },
+  { name: "押忍!番長ZERO",                  maker: "大都技研",       slug: "banchou-zero",            introduced_on: "2022-07-04" },
+  { name: "甲鉄城のカバネリ",               maker: "サミー",         slug: "kabaneri",                introduced_on: "2022-12-05" },
+  { name: "Lバキ 強くなりたくば喰らえ!!!",   maker: "フィールズ",     slug: "baki",                    introduced_on: "2024-01-09" },
+  { name: "沖ドキ!GOLD",                    maker: "ユニバーサル",   slug: "okidoki-gold",            introduced_on: "2024-07-01" },
+  { name: "モンキーターンV",                 maker: "山佐",           slug: "monkey-turn-v",           introduced_on: "2024-02-05" },
+  { name: "ヴァルヴレイヴ",                  maker: "三共",           slug: "valvrave",                introduced_on: "2023-10-02" },
+  { name: "リゼロ鬼がかりver.",              maker: "大都技研",       slug: "rezero-onigakari",        introduced_on: "2024-06-03" },
+  { name: "からくりサーカス",                maker: "サミー",         slug: "karakuri-circus",         introduced_on: "2023-07-03" },
+  { name: "炎炎ノ消防隊",                   maker: "サンスリー",     slug: "enen-shouboutai",         introduced_on: "2024-03-04" },
+  { name: "マクロスフロンティア4",            maker: "三共",           slug: "macross-frontier-4",      introduced_on: "2024-05-07" },
+  { name: "交響詩篇エウレカセブン",           maker: "サミー",         slug: "eureka-seven",            introduced_on: "2024-08-05" },
+  { name: "ガンダムユニコーン",              maker: "サンキョー",     slug: "gundam-unicorn",          introduced_on: "2023-12-04" },
+  { name: "とある魔術の禁書目録",            maker: "サミー",         slug: "toaru-index",             introduced_on: "2024-09-02" },
+  { name: "コードギアス 反逆のルルーシュ3",   maker: "サミー",         slug: "code-geass-3",            introduced_on: "2023-11-06" },
+  { name: "転生したらスライムだった件",       maker: "サミー",         slug: "tensura",                 introduced_on: "2024-10-07" },
+  { name: "ソードアート・オンライン",         maker: "サミー",         slug: "sao",                     introduced_on: "2024-04-01" },
   # ART機
-  { name: "押忍!サラリーマン番長2",          maker: "大都技研",       machine_type: :slot, spec_type: :type_art,      slug: "salaryman-banchou-2",     released_on: "2023-08-07" },
-  { name: "アナターのオット!?はーです",       maker: "ミズホ",         machine_type: :slot, spec_type: :type_art,      slug: "anata-otto-hearts",       released_on: "2024-11-04" },
+  { name: "押忍!サラリーマン番長2",          maker: "大都技研",       slug: "salaryman-banchou-2",     introduced_on: "2023-08-07" },
+  { name: "アナターのオット!?はーです",       maker: "ミズホ",         slug: "anata-otto-hearts",       introduced_on: "2024-11-04" },
   # A+AT機
-  { name: "ハナハナホウオウ -天翔-",          maker: "パイオニア",     machine_type: :slot, spec_type: :type_a_plus_at, slug: "hanahana-houou-tenshou",  released_on: "2023-06-05" },
-  { name: "クランキークレスト",              maker: "ユニバーサル",   machine_type: :slot, spec_type: :type_a_plus_at, slug: "cranky-crest",            released_on: "2024-12-02" },
+  { name: "ハナハナホウオウ -天翔-",          maker: "パイオニア",     slug: "hanahana-houou-tenshou",  introduced_on: "2023-06-05" },
+  { name: "クランキークレスト",              maker: "ユニバーサル",   slug: "cranky-crest",            introduced_on: "2024-12-02" },
   # A タイプ (ノーマル)
-  { name: "マイジャグラーV",                 maker: "北電子",         machine_type: :slot, spec_type: :type_a,        slug: "my-juggler-v",            released_on: "2022-12-05" },
-  { name: "アイムジャグラーEX-TP",           maker: "北電子",         machine_type: :slot, spec_type: :type_a,        slug: "aim-juggler-ex-tp",       released_on: "2023-09-04" },
-  { name: "ファンキージャグラー2",            maker: "北電子",         machine_type: :slot, spec_type: :type_a,        slug: "funky-juggler-2",         released_on: "2023-03-06" },
-  { name: "ゴーゴージャグラー3",              maker: "北電子",         machine_type: :slot, spec_type: :type_a,        slug: "gogo-juggler-3",          released_on: "2024-02-05" },
-  { name: "ハッピージャグラーVIII",           maker: "北電子",         machine_type: :slot, spec_type: :type_a,        slug: "happy-juggler-viii",      released_on: "2024-08-05" },
+  { name: "マイジャグラーV",                 maker: "北電子",         slug: "my-juggler-v",            introduced_on: "2022-12-05" },
+  { name: "アイムジャグラーEX-TP",           maker: "北電子",         slug: "aim-juggler-ex-tp",       introduced_on: "2023-09-04" },
+  { name: "ファンキージャグラー2",            maker: "北電子",         slug: "funky-juggler-2",         introduced_on: "2023-03-06" },
+  { name: "ゴーゴージャグラー3",              maker: "北電子",         slug: "gogo-juggler-3",          introduced_on: "2024-02-05" },
+  { name: "ハッピージャグラーVIII",           maker: "北電子",         slug: "happy-juggler-viii",      introduced_on: "2024-08-05" },
   # パチスロ
-  { name: "P牙狼 GOLD IMPACT",              maker: "サンセイR&D",    machine_type: :pachislot, spec_type: :type_at,  slug: "garo-gold-impact",        released_on: "2023-05-08" },
-  { name: "Pフィーバー機動戦士ガンダムSEED", maker: "サンキョー",     machine_type: :pachislot, spec_type: :type_at,  slug: "gundam-seed",             released_on: "2024-01-09" },
-  { name: "P大工の源さん超韋駄天2",          maker: "三洋",           machine_type: :pachislot, spec_type: :type_at,  slug: "daiku-gensun-idaten2",    released_on: "2024-06-03" },
+  { name: "P牙狼 GOLD IMPACT",              maker: "サンセイR&D",    slug: "garo-gold-impact",        introduced_on: "2023-05-08" },
+  { name: "Pフィーバー機動戦士ガンダムSEED", maker: "サンキョー",     slug: "gundam-seed",             introduced_on: "2024-01-09" },
+  { name: "P大工の源さん超韋駄天2",          maker: "三洋",           slug: "daiku-gensun-idaten2",    introduced_on: "2024-06-03" },
 ].freeze
 
 MACHINES.each do |m|
   MachineModel.find_or_create_by!(slug: m[:slug]) do |mm|
-    mm.name         = m[:name]
-    mm.maker        = m[:maker]
-    mm.machine_type = m[:machine_type]
-    mm.spec_type    = m[:spec_type]
-    mm.released_on  = m[:released_on]
+    mm.name          = m[:name]
+    mm.maker         = m[:maker]
+    mm.introduced_on = m[:introduced_on]
   end
 end
 puts "  MachineModels: #{MachineModel.count}"
 
 # -----------------------------------------------
-# 4. Admin User
-# -----------------------------------------------
-User.find_or_create_by!(email: "admin@example.com") do |u|
-  u.password     = "password"
-  u.nickname     = "admin"
-  u.role         = :admin
-  u.trust_score  = 1.0
-end
-puts "  Admin user created (admin@example.com / password)"
-
-# -----------------------------------------------
-# 5. Shop Details
+# 4. Shop Details
 # -----------------------------------------------
 puts "Updating shop details..."
 
@@ -180,7 +173,6 @@ SHOP_DETAILS = {
     total_machines: 800,
     slot_machines: 350,
     business_hours: "10:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2014-11-28",
     former_event_days: "毎月7日, 17日, 27日"
   },
@@ -190,7 +182,6 @@ SHOP_DETAILS = {
     total_machines: 620,
     slot_machines: 280,
     business_hours: "10:00〜22:50",
-    holidays: "年中無休",
     opened_on: "2018-07-07",
     former_event_days: "毎月3日, 13日, 23日"
   },
@@ -200,7 +191,6 @@ SHOP_DETAILS = {
     total_machines: 540,
     slot_machines: 240,
     business_hours: "10:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2005-03-15",
     former_event_days: "毎月5日, 15日, 25日"
   },
@@ -210,7 +200,6 @@ SHOP_DETAILS = {
     total_machines: 450,
     slot_machines: 200,
     business_hours: "10:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2010-06-01",
     former_event_days: "毎月1日, 11日, 21日"
   },
@@ -220,7 +209,6 @@ SHOP_DETAILS = {
     total_machines: 700,
     slot_machines: 320,
     business_hours: "10:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2012-04-20",
     former_event_days: "毎月8日, 18日, 28日"
   },
@@ -230,7 +218,6 @@ SHOP_DETAILS = {
     total_machines: 580,
     slot_machines: 260,
     business_hours: "10:00〜22:50",
-    holidays: "年中無休",
     opened_on: "2009-11-11",
     former_event_days: "毎月6日, 16日, 26日"
   },
@@ -240,7 +227,6 @@ SHOP_DETAILS = {
     total_machines: 1200,
     slot_machines: 520,
     business_hours: "10:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2008-12-01",
     former_event_days: "毎月7日, 17日, 27日"
   },
@@ -250,7 +236,6 @@ SHOP_DETAILS = {
     total_machines: 480,
     slot_machines: 210,
     business_hours: "10:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2016-09-10",
     former_event_days: "毎月2日, 12日, 22日"
   },
@@ -260,7 +245,6 @@ SHOP_DETAILS = {
     total_machines: 650,
     slot_machines: 300,
     business_hours: "09:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2011-03-03",
     former_event_days: "毎月9日, 19日, 29日"
   },
@@ -270,7 +254,6 @@ SHOP_DETAILS = {
     total_machines: 550,
     slot_machines: 250,
     business_hours: "10:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2013-07-07",
     former_event_days: "毎月7日, 17日, 27日"
   },
@@ -280,7 +263,6 @@ SHOP_DETAILS = {
     total_machines: 500,
     slot_machines: 220,
     business_hours: "10:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2015-05-15",
     former_event_days: "毎月7日, 17日, 27日"
   },
@@ -290,7 +272,6 @@ SHOP_DETAILS = {
     total_machines: 420,
     slot_machines: 190,
     business_hours: "10:00〜22:50",
-    holidays: "年中無休",
     opened_on: "2007-08-08",
     former_event_days: "毎月4日, 14日, 24日"
   },
@@ -300,7 +281,6 @@ SHOP_DETAILS = {
     total_machines: 460,
     slot_machines: 200,
     business_hours: "10:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2017-02-22",
     former_event_days: "毎月7日, 17日, 27日"
   },
@@ -310,7 +290,6 @@ SHOP_DETAILS = {
     total_machines: 530,
     slot_machines: 240,
     business_hours: "10:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2019-04-01",
     former_event_days: "毎月2日, 12日, 22日"
   },
@@ -320,7 +299,6 @@ SHOP_DETAILS = {
     total_machines: 490,
     slot_machines: 210,
     business_hours: "10:00〜22:45",
-    holidays: "年中無休",
     opened_on: "2013-11-11",
     former_event_days: "毎月7日, 17日, 27日"
   }
@@ -342,15 +320,13 @@ puts "  Shop details updated"
 puts "Linking machines to shops..."
 
 active_machines = MachineModel.where(active: true)
-# Only slot machines for slot shops
-slot_machines = active_machines.where(machine_type: :slot)
 
 SHOPS.each do |shop_data|
   shop = Shop.find_by(slug: shop_data[:slug])
   next unless shop
 
-  # Each seed shop gets all active slot machines
-  slot_machines.each do |machine|
+  # Each seed shop gets all active machines
+  active_machines.each do |machine|
     ShopMachineModel.find_or_create_by!(shop: shop, machine_model: machine)
   end
 end
@@ -358,49 +334,19 @@ puts "  ShopMachineModels: #{ShopMachineModel.count}"
 
 # -----------------------------------------------
 # 7. Trophy Rules (確定演出→設定マスタ)
+end # unless Rails.env.production?
+
 # -----------------------------------------------
-puts "Setting trophy rules..."
-
-TROPHY_RULES = {
-  "basilisk-kizuna2-tenzen" => {
-    "銅トロフィー" => "2以上",
-    "銀トロフィー" => "3以上",
-    "金トロフィー" => "4以上",
-    "キリン柄トロフィー" => "5以上",
-    "虹トロフィー" => "6確"
-  },
-  "smart-hokuto" => {
-    "銅トロフィー" => "2以上",
-    "銀トロフィー" => "3以上",
-    "金トロフィー" => "4以上",
-    "虹トロフィー" => "6確",
-    "エンディング" => "6確"
-  },
-  "kabaneri" => {
-    "銅エピソードバナー" => "2以上",
-    "銀エピソードバナー" => "3以上",
-    "金エピソードバナー" => "4以上",
-    "虹エピソードバナー" => "6確"
-  },
-  "banchou-zero" => {
-    "青ランプ" => "偶数確",
-    "黄ランプ" => "奇数確",
-    "緑ランプ" => "4以上",
-    "赤ランプ" => "6確"
-  },
-  "okidoki-gold" => {
-    "32G以内点灯" => "高設定示唆",
-    "ドキドキランプ" => "設定差大",
-    "レインボー" => "6確"
-  }
-}
-
-TROPHY_RULES.each do |slug, rules|
-  machine = MachineModel.find_by(slug: slug)
-  if machine
-    machine.update!(trophy_rules: rules)
-  end
+# Admin User (all environments)
+# -----------------------------------------------
+admin_email = ENV.fetch("ADMIN_EMAIL", "admin@example.com")
+admin_password = ENV.fetch("ADMIN_PASSWORD", "password")
+User.find_or_create_by!(email: admin_email) do |u|
+  u.password     = admin_password
+  u.nickname     = "admin"
+  u.role         = :admin
+  u.trust_score  = 1.0
 end
-puts "  Trophy rules set for #{TROPHY_RULES.size} machines"
+puts "  Admin user created (#{admin_email})"
 
 puts "=== Seeding complete ==="

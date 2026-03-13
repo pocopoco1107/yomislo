@@ -120,13 +120,13 @@ RSpec.describe "Machines", type: :request do
 
       get machine_path(machine.slug)
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("過去7日間の全国投票トレンド")
+      expect(response.body).to include("過去7日間の全国記録トレンド")
     end
 
     it "does not show trend chart when no votes exist" do
       get machine_path(machine.slug)
       expect(response).to have_http_status(:ok)
-      expect(response.body).not_to include("過去7日間の全国投票トレンド")
+      expect(response.body).not_to include("過去7日間の全国記録トレンド")
     end
 
     it "shows generation badge when present" do
@@ -150,14 +150,6 @@ RSpec.describe "Machines", type: :request do
       get machine_path(machine.slug)
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("AT、天井、純増約5.0枚/G")
-    end
-
-    it "shows certification number in collapsible section" do
-      machine.update!(certification_number: "7S00001")
-      get machine_path(machine.slug)
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to include("検定番号を表示")
-      expect(response.body).to include("7S00001")
     end
 
     it "shows image when image_url is present" do

@@ -23,8 +23,13 @@ RSpec.describe SnsReport, type: :model do
   end
 
   it "validates source inclusion" do
-    report = SnsReport.new(machine_model: machine, source: "twitter", raw_text: "text")
+    report = SnsReport.new(machine_model: machine, source: "unknown_source", raw_text: "text")
     expect(report).not_to be_valid
+  end
+
+  it "accepts twitter as source" do
+    report = SnsReport.new(machine_model: machine, source: "twitter", raw_text: "text")
+    expect(report).to be_valid
   end
 
   it "accepts google_cse as source" do

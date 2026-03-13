@@ -1,15 +1,34 @@
 class MachineModel < ApplicationRecord
-  enum :machine_type, { slot: 0, pachislot: 1 }
-  enum :spec_type, { type_at: 0, type_art: 1, type_a_plus_at: 2, type_a: 3 }
-
   has_many :shop_machine_models, dependent: :destroy
   has_many :shops, through: :shop_machine_models
   has_many :votes, dependent: :destroy
   has_many :vote_summaries, dependent: :destroy
   has_many :sns_reports, dependent: :destroy
   has_many :machine_guide_links, dependent: :destroy
+  has_many :play_records, dependent: :destroy
 
   scope :active, -> { where(active: true) }
+
+  # Virtual attributes for ActiveAdmin JSON editing
+  def ceiling_info_json
+    ceiling_info.present? ? JSON.pretty_generate(ceiling_info) : "{}"
+  end
+
+  def ceiling_info_json=(json_string)
+    self.ceiling_info = json_string.present? ? JSON.parse(json_string) : {}
+  rescue JSON::ParserError
+    errors.add(:ceiling_info, "のJSON形式が不正です")
+  end
+
+  def reset_info_json
+    reset_info.present? ? JSON.pretty_generate(reset_info) : "{}"
+  end
+
+  def reset_info_json=(json_string)
+    self.reset_info = json_string.present? ? JSON.parse(json_string) : {}
+  rescue JSON::ParserError
+    errors.add(:reset_info, "のJSON形式が不正です")
+  end
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
@@ -84,9 +103,9 @@ class MachineModel < ApplicationRecord
     end
   end
 
-  # 導入日 (released_onより優先、なければreleased_on)
+  # 導入日
   def effective_introduced_on
-    introduced_on || released_on
+    introduced_on
   end
 
   # スマスロかどうか
@@ -108,13 +127,15 @@ class MachineModel < ApplicationRecord
 
   def detect_display_type
     n = name
+    td = type_detail&.downcase || ""
     if is_smart_slot? || generation&.include?("6.5号機") ||
-       n.match?(/スマスロ/) || n.match?(/\AＬ/) || n.match?(/\AL[^a-z]/)
+       n.match?(/スマスロ/) || n.match?(/\AＬ/) || n.match?(/\AL[^a-z]/) ||
+       td.include?("スマスロ")
       :smart_slot
-    elsif A_TYPE_PATTERNS.any? { |pat| n.match?(pat) } || spec_type == "type_a"
+    elsif A_TYPE_PATTERNS.any? { |pat| n.match?(pat) } || td.match?(/aタイプ|ノーマル/i)
       :a_type
-    elsif generation&.include?("6号機") || spec_type == "type_at" || spec_type == "type_art" ||
-          spec_type == "type_a_plus_at" || n.match?(/\AＳ/) || n.match?(/\AS[^a-z]/)
+    elsif generation&.include?("6号機") || td.match?(/at|art/i) ||
+          n.match?(/\AＳ/) || n.match?(/\AS[^a-z]/)
       :medal_at
     else
       :other

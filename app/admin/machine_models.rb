@@ -1,5 +1,7 @@
 ActiveAdmin.register MachineModel do
-  permit_params :name, :maker, :machine_type, :spec_type, :slug, :released_on
+  permit_params :name, :maker, :slug, :introduced_on,
+                :generation, :is_smart_slot, :payout_rate_min, :payout_rate_max,
+                :ceiling_info_json, :reset_info_json
 
   action_item :import_csv, only: :index do
     link_to "CSVインポート", action: :import_csv_form
@@ -43,13 +45,7 @@ ActiveAdmin.register MachineModel do
       attrs[:is_smart_slot] = row["is_smart_slot"]&.downcase == "true" if row["is_smart_slot"].present?
       attrs[:payout_rate_min] = row["payout_rate_min"].to_f if row["payout_rate_min"].present?
       attrs[:payout_rate_max] = row["payout_rate_max"].to_f if row["payout_rate_max"].present?
-      attrs[:machine_type] = row["machine_type"] if row["machine_type"].present?
-      attrs[:spec_type] = row["spec_type"] if row["spec_type"].present?
-      attrs[:released_on] = row["released_on"] if row["released_on"].present?
-
-      # Defaults for new records
-      attrs[:machine_type] ||= "slot" if is_new
-      attrs[:spec_type] ||= "type_at" if is_new
+      attrs[:introduced_on] = row["introduced_on"] if row["introduced_on"].present?
 
       machine.assign_attributes(attrs)
 
@@ -70,25 +66,54 @@ ActiveAdmin.register MachineModel do
     id_column
     column :name
     column :maker
-    column :machine_type
-    column :spec_type
+    column :generation
+    column(:ceiling_info) { |m| m.ceiling_info.present? && m.ceiling_info.any? ? "あり" : "-" }
+    column(:reset_info) { |m| m.reset_info.present? && m.reset_info.any? ? "あり" : "-" }
     column :slug
     actions
   end
 
   filter :name
   filter :maker
-  filter :machine_type, as: :select, collection: MachineModel.machine_types
-  filter :spec_type, as: :select, collection: MachineModel.spec_types
+  filter :generation
+
+  show do
+    attributes_table do
+      row :name
+      row :slug
+      row :maker
+      row :generation
+      row :is_smart_slot
+      row :payout_rate_min
+      row :payout_rate_max
+      row :introduced_on
+      row(:ceiling_info) { |m| pre JSON.pretty_generate(m.ceiling_info) if m.ceiling_info.present? }
+      row(:reset_info) { |m| pre JSON.pretty_generate(m.reset_info) if m.reset_info.present? }
+    end
+  end
 
   form do |f|
-    f.inputs do
+    f.inputs "基本情報" do
       f.input :name
       f.input :maker
-      f.input :machine_type, as: :select, collection: MachineModel.machine_types.keys
-      f.input :spec_type, as: :select, collection: MachineModel.spec_types.keys
+      f.input :generation
+      f.input :is_smart_slot
+      f.input :payout_rate_min
+      f.input :payout_rate_max
       f.input :slug
-      f.input :released_on, as: :datepicker
+      f.input :introduced_on, as: :datepicker
+    end
+    f.inputs "天井・期待値情報 (JSON)" do
+      f.input :ceiling_info_json, as: :text,
+              label: "天井情報 (JSON)",
+              hint: '例: {"天井ゲーム数": "800G+α", "恩恵": "AT確定", "期待値目安": "300Gから期待値プラス"}',
+              input_html: { rows: 5, value: f.object.ceiling_info.present? ? JSON.pretty_generate(f.object.ceiling_info) : "{}" }
+    end
+    f.inputs "リセット・据え置き情報 (JSON)" do
+      f.input :reset_info_json, as: :text,
+              label: "リセット情報 (JSON)",
+              hint: '例: {"リセット恩恵": "天井短縮(200G)", "据え置き挙動": "ステージで判別可"}',
+              input_html: { rows: 5, value: f.object.reset_info.present? ? JSON.pretty_generate(f.object.reset_info) : "{}" }
     end
     f.actions
   end

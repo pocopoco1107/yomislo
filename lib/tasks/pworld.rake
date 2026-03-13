@@ -13,7 +13,7 @@ require "uri"
 
 module PworldScraper
   BASE_URL = "https://www.p-world.co.jp"
-  USER_AGENT = "Mozilla/5.0 (compatible; SloSitteBot/1.0; +https://slositte.example.com)"
+  USER_AGENT = "Mozilla/5.0 (compatible; YomiSloBot/1.0; +https://yomislo.example.com)"
   REQUEST_INTERVAL = 2.5 # seconds between requests
   MAX_RETRIES = 3
 
@@ -72,7 +72,19 @@ module PworldScraper
   # Slot type keys used in P-WORLD machine search
   SLOT_TYPE_KEYS = %w[AT NORMAL RT aRT over_6.5number].freeze
 
+  # Module-level cache for digit image map (same images across all shops)
+  @digit_image_cache = {}
+
   class << self
+    # Normalize a machine name into a URL-safe slug.
+    def normalize_slug(name)
+      name
+        .gsub(/\s+/, "-")
+        .gsub(/[^\p{L}\p{N}\-]/, "")
+        .downcase
+        .truncate(100, omission: "")
+    end
+
     # Fetch a URL with retry logic and rate limiting.
     # Returns Nokogiri::HTML document or nil on failure.
     def fetch_page(url, encoding: nil)
@@ -381,30 +393,15 @@ module PworldScraper
               maker_name = maker_td&.text&.strip
 
               # Generate slug from machine name
-              slug = machine_name
-                .gsub(/\s+/, "-")
-                .gsub(/[^\p{L}\p{N}\-]/, "")
-                .downcase
-                .truncate(100, omission: "")
+              slug = normalize_slug(machine_name)
 
               # Avoid empty slugs
               next if slug.blank?
-
-              # Map P-WORLD type to our spec_type
-              spec_type = case type_text
-                          when "NORMAL" then :type_a
-                          when "AT" then :type_at
-                          when "ART", "aRT" then :type_art
-                          when "RT" then :type_a_plus_at
-                          else :type_at
-                          end
 
               model = MachineModel.find_or_initialize_by(slug: slug)
               if model.new_record?
                 model.name = machine_name
                 model.maker = maker_name
-                model.machine_type = :slot
-                model.spec_type = spec_type
                 model.save!
                 total_imported += 1
               elsif maker_name.present? && model.maker.blank?
@@ -472,7 +469,7 @@ module PworldScraper
 
       # Build a slug lookup for matching
       pworld_smart_slugs = pworld_smart_names.map do |name|
-        name.gsub(/\s+/, "-").gsub(/[^\p{L}\p{N}\-]/, "").downcase.truncate(100, omission: "")
+        normalize_slug(name)
       end.to_set
 
       # Flag by P-WORLD slug match
@@ -502,119 +499,46 @@ module PworldScraper
 
     # Refresh installed machines for a shop (sync: add new, remove stale).
     # Returns { added: N, removed: N }
-    def refresh_machines_for_shop(shop)
-      pref_slug = shop.prefecture.slug
-      shop_slug = shop.slug
-      url = "#{BASE_URL}/#{pref_slug}/#{shop_slug}.htm"
-
-      doc = fetch_page(url, encoding: "EUC-JP")
-      return { added: 0, removed: 0 } unless doc
-
-      current_slugs = Set.new
-      added = 0
-
-      doc.css("a[href*='/machine/database/']").each do |link|
-        machine_name = link.text.strip
-        next if machine_name.blank?
-        next if MachineModel.pachinko_name?(machine_name)
-
-        slug = machine_name
-          .gsub(/\s+/, "-")
-          .gsub(/[^\p{L}\p{N}\-]/, "")
-          .downcase
-          .truncate(100, omission: "")
-        next if slug.blank?
-
-        current_slugs << slug
-
-        machine = MachineModel.find_or_initialize_by(slug: slug)
-        if machine.new_record?
-          machine.name = machine_name
-          machine.machine_type = :slot
-          machine.spec_type = :type_at
-          machine.active = true
-          machine.save!
-        elsif !machine.active?
-          machine.update!(active: true)
-        end
-
-        smm = ShopMachineModel.find_or_initialize_by(shop: shop, machine_model: machine)
-        if smm.new_record?
-          smm.save!
-          added += 1
-        end
-      rescue ActiveRecord::RecordInvalid
-        # Skip duplicates
+    # Extract slot machine links from a P-WORLD shop page.
+    # Uses data-machine-type="S" sections to reliably distinguish
+    # slot machines from pachinko (instead of regex-based filtering).
+    def extract_slot_links(doc)
+      slot_tables = []
+      doc.css("input[data-machine-type='S']").each do |input|
+        table = input.ancestors("table").first
+        slot_tables << table if table
       end
 
-      # Remove stale links (machines no longer on the P-WORLD page)
-      existing_links = shop.shop_machine_models.includes(:machine_model)
-      removed = 0
-      existing_links.each do |smm|
-        unless current_slugs.include?(smm.machine_model.slug)
-          smm.destroy!
-          removed += 1
+      if slot_tables.any?
+        slot_tables.flat_map { |t| t.css("a[href*='/machine/database/']") }.uniq
+      else
+        # Fallback: older pages without data-machine-type — use regex filter
+        doc.css("a[href*='/machine/database/']").reject do |link|
+          MachineModel.pachinko_name?(link.text.strip)
         end
       end
-
-      { added: added, removed: removed }
     end
 
-    # Import installed machines for a single shop.
-    # Scrapes the shop's P-WORLD page to find currently installed slot machines.
-    # Returns count of newly linked machines.
+    # Legacy wrappers — delegate to sync_shop_from_pworld
+    def refresh_machines_for_shop(shop, cleanup_stale: true)
+      r = sync_shop_from_pworld(shop, cleanup_stale: cleanup_stale, update_details: false)
+      return { added: 0, removed: 0 } unless r
+      { added: r[:machines_added], removed: r[:machines_removed] }
+    end
+
     def import_machines_for_shop(shop)
-      # P-WORLD shop page URL pattern: /{prefecture_slug}/{shop_slug}.htm
-      pref_slug = shop.prefecture.slug
-      shop_slug = shop.slug
-      url = "#{BASE_URL}/#{pref_slug}/#{shop_slug}.htm"
+      r = sync_shop_from_pworld(shop, cleanup_stale: false, update_details: false)
+      r ? r[:machines_added] : 0
+    end
 
-      doc = fetch_page(url, encoding: "EUC-JP")
-      return 0 unless doc
+    def scrape_unit_counts_for_shop(shop)
+      r = sync_shop_from_pworld(shop, cleanup_stale: false, update_details: false)
+      return nil unless r
+      { updated: r[:units_updated], skipped: 0, machines: {} }
+    end
 
-      linked_count = 0
-
-      # P-WORLD shop pages have machine lists in tables/divs
-      # Look for slot machine section links, skip pachinko
-      doc.css("a[href*='/machine/database/']").each do |link|
-        machine_name = link.text.strip
-        next if machine_name.blank?
-
-        # Use the model-level pachinko filter (includes PF/CR patterns)
-        next if MachineModel.pachinko_name?(machine_name)
-
-        # Generate slug matching our import format
-        slug = machine_name
-          .gsub(/\s+/, "-")
-          .gsub(/[^\p{L}\p{N}\-]/, "")
-          .downcase
-          .truncate(100, omission: "")
-
-        next if slug.blank?
-
-        # Find or create the machine (mark as active since it's currently installed)
-        machine = MachineModel.find_or_initialize_by(slug: slug)
-        if machine.new_record?
-          machine.name = machine_name
-          machine.machine_type = :slot
-          machine.spec_type = :type_at
-          machine.active = true
-          machine.save!
-        elsif !machine.active?
-          machine.update!(active: true)
-        end
-
-        # Create the shop-machine association
-        smm = ShopMachineModel.find_or_initialize_by(shop: shop, machine_model: machine)
-        if smm.new_record?
-          smm.save!
-          linked_count += 1
-        end
-      rescue ActiveRecord::RecordInvalid => e
-        # Skip duplicates silently
-      end
-
-      linked_count
+    def scrape_shop_details(shop)
+      sync_shop_from_pworld(shop, cleanup_stale: false, update_details: true)
     end
 
     # MD5 hash => digit mapping for P-WORLD number images.
@@ -658,9 +582,9 @@ module PworldScraper
 
     # Decode digit images from a shop page into a hash { image_src => digit_string }.
     # Downloads each unique number image and maps it via MD5 hash.
-    # Returns nil if decoding fails.
+    # Caches results across shops since P-WORLD uses the same images everywhere.
+    # Returns nil if no number images found.
     def build_digit_map(doc)
-      # Collect all unique number image URLs (excluding the known 台 suffix)
       img_srcs = Set.new
       doc.css('li[data-machine-type="S"] span img[src*="/number/"]').each do |img|
         img_srcs << img["src"]
@@ -670,31 +594,44 @@ module PworldScraper
 
       digit_map = {}
       img_srcs.each do |src|
+        # Use module-level cache to avoid re-downloading the same images
+        if PworldScraper.instance_variable_get(:@digit_image_cache).key?(src)
+          digit_map[src] = PworldScraper.instance_variable_get(:@digit_image_cache)[src]
+          next
+        end
+
         image_url = "#{BASE_URL}#{src}"
         image_data = fetch_image(image_url)
         next unless image_data
 
         md5 = Digest::MD5.hexdigest(image_data)
 
-        if md5 == UNIT_SUFFIX_HASH
-          digit_map[src] = :suffix # "台" character
-        elsif DIGIT_IMAGE_HASHES.key?(md5)
-          digit_map[src] = DIGIT_IMAGE_HASHES[md5]
-        else
-          # Unknown image - log but don't fail
-          puts "    WARNING: Unknown number image hash #{md5} for #{src}"
-          digit_map[src] = nil
-        end
+        value = if md5 == UNIT_SUFFIX_HASH
+                  :suffix
+                elsif DIGIT_IMAGE_HASHES.key?(md5)
+                  DIGIT_IMAGE_HASHES[md5]
+                else
+                  puts "    WARNING: Unknown number image hash #{md5} for #{src}"
+                  nil
+                end
+
+        digit_map[src] = value
+        PworldScraper.instance_variable_get(:@digit_image_cache)[src] = value
       end
 
       digit_map
     end
 
-    # Scrape unit counts for all slot machines at a shop.
-    # Downloads the shop page, builds a digit map from number images,
-    # then decodes each machine's unit count.
-    # Returns { updated: N, skipped: N, machines: { slug => count } }
-    def scrape_unit_counts_for_shop(shop)
+    # ── 統合同期メソッド ─────────────────────────────────
+    # 1回のHTTPリクエストで店舗ページから全データを取得:
+    #   - 設置機種リスト (add/remove)
+    #   - 機種別設置台数 (数字画像デコード)
+    #   - 店舗詳細 (営業時間/電話/駐車場/レート/設備等)
+    #
+    # options:
+    #   cleanup_stale: true  — 古い機種リンクを削除 (日次更新用)
+    #   update_details: true — 店舗詳細を更新 (月次用、日次はfalse)
+    def sync_shop_from_pworld(shop, cleanup_stale: true, update_details: false)
       pref_slug = shop.prefecture.slug
       shop_slug = shop.slug
       url = "#{BASE_URL}/#{pref_slug}/#{shop_slug}.htm"
@@ -702,255 +639,223 @@ module PworldScraper
       doc = fetch_page(url, encoding: "EUC-JP")
       return nil unless doc
 
-      slot_items = doc.css('li[data-machine-type="S"]')
-      return { updated: 0, skipped: 0, machines: {} } if slot_items.empty?
+      result = { machines_added: 0, machines_removed: 0, units_updated: 0, details_updated: false }
 
-      # Build digit map by downloading the number images for this page
-      digit_map = build_digit_map(doc)
-      return nil unless digit_map
-
-      updated = 0
-      skipped = 0
-      machines = {}
-
-      slot_items.each do |li|
-        name_el = li.at_css("._pw-machine-item-machineName a")
-        next unless name_el
-
-        machine_name = name_el.text.strip
+      # ── 1. 設置機種リストの同期 ──
+      # Collect slugs from page first, then batch-load from DB
+      page_machines = []
+      extract_slot_links(doc).each do |link|
+        machine_name = link.text.strip
         next if machine_name.blank?
-        next if MachineModel.pachinko_name?(machine_name)
-
-        # Decode unit count from digit images
-        imgs = li.css('span img[src*="/number/"]')
-        digits = []
-        imgs.each do |img|
-          src = img["src"]
-          mapped = digit_map[src]
-          next if mapped == :suffix # Skip "台"
-          next if mapped.nil?       # Skip unknown
-          digits << mapped
-        end
-
-        next if digits.empty?
-
-        unit_count = digits.join.to_i
-        next if unit_count == 0
-
-        # Find the matching machine slug
-        slug = machine_name
-          .gsub(/\s+/, "-")
-          .gsub(/[^\p{L}\p{N}\-]/, "")
-          .downcase
-          .truncate(100, omission: "")
+        slug = normalize_slug(machine_name)
         next if slug.blank?
+        page_machines << { name: machine_name, slug: slug }
+      end
 
-        machines[slug] = unit_count
+      current_slugs = page_machines.map { |m| m[:slug] }.to_set
 
-        # Update the ShopMachineModel record
-        machine = MachineModel.find_by(slug: slug)
-        next unless machine
+      # Batch-load existing machines and associations (avoid N+1)
+      existing_machines = MachineModel.where(slug: current_slugs.to_a).index_by(&:slug)
+      existing_smms = shop.shop_machine_models.includes(:machine_model).index_by { |smm| smm.machine_model.slug }
 
-        smm = ShopMachineModel.find_by(shop: shop, machine_model: machine)
-        if smm
-          smm.update!(unit_count: unit_count)
-          updated += 1
-        else
-          skipped += 1
+      page_machines.each do |pm|
+        slug = pm[:slug]
+        machine = existing_machines[slug]
+
+        if machine.nil?
+          machine = MachineModel.create!(
+            slug: slug, name: pm[:name], active: true
+          )
+          existing_machines[slug] = machine
+        elsif !machine.active?
+          machine.update!(active: true)
+        end
+
+        unless existing_smms.key?(slug)
+          ShopMachineModel.create!(shop: shop, machine_model: machine)
+          result[:machines_added] += 1
+        end
+      rescue ActiveRecord::RecordInvalid
+        # Skip duplicates
+      end
+
+      if cleanup_stale
+        stale_ids = existing_smms.reject { |slug, _| current_slugs.include?(slug) }.values.map(&:id)
+        if stale_ids.any?
+          result[:machines_removed] = stale_ids.size
+          ShopMachineModel.where(id: stale_ids).delete_all
         end
       end
 
-      { updated: updated, skipped: skipped, machines: machines }
-    end
+      # ── 2. 設置台数の更新 ──
+      slot_items = doc.css('li[data-machine-type="S"]')
+      if slot_items.any?
+        digit_map = build_digit_map(doc)
+        if digit_map
+          unit_updates = {}
 
-    # Scrape shop detail page for all available info.
-    # Extracts: machine counts, business hours, slot rates, exchange rate,
-    #           facilities, pworld_url.
-    # Returns a hash of the parsed data, or nil if the page couldn't be fetched.
-    def scrape_shop_details(shop)
-      pref_slug = shop.prefecture.slug
-      shop_slug = shop.slug
-      url = "#{BASE_URL}/#{pref_slug}/#{shop_slug}.htm"
+          slot_items.each do |li|
+            name_el = li.at_css("._pw-machine-item-machineName a")
+            next unless name_el
 
-      doc = fetch_page(url, encoding: "EUC-JP")
-      return nil unless doc
+            machine_name = name_el.text.strip
+            next if machine_name.blank?
+            next if MachineModel.pachinko_name?(machine_name)
 
-      data = { pworld_url: url }
-      page_text = doc.text
-
-      # Parse the basic info section
-      # Labels are in bold or colored cells, followed by value text
-      # We scan the full page text for known patterns
-
-      # 台数: "パチンコ 439台 / スロット 439台"
-      if page_text =~ /パチンコ[　\s]*(\d+)台/
-        pachinko_count = $1.to_i
-      end
-      if page_text =~ /スロット[　\s]*(\d+)台/
-        data[:slot_machines] = $1.to_i
-      end
-      if pachinko_count && data[:slot_machines]
-        data[:total_machines] = pachinko_count + data[:slot_machines]
-      elsif data[:slot_machines]
-        data[:total_machines] = data[:slot_machines]
-      end
-
-      # 遊技料金: "パチスロ：[1000円/46枚]" or "[1000円/47枚] [1000円/200枚]"
-      slot_rate_matches = page_text.scan(/\[(\d+)円\/(\d+)枚\]/)
-      if slot_rate_matches.any?
-        rates = []
-        exchange = nil
-        slot_rate_matches.each do |yen_s, coins_s|
-          yen = yen_s.to_i
-          coins = coins_s.to_i
-          rate_per_coin = yen.to_f / coins
-
-          case coins
-          when 46..50
-            rates << "20スロ"
-            exchange ||= :equal_rate
-          when 89..96
-            rates << "10スロ"
-          when 170..185
-            rates << "5スロ"
-            exchange ||= :rate_56
-          when 196..210
-            rates << "5スロ"
-            exchange ||= :rate_50
-          when 150..169
-            rates << "5スロ"
-            exchange ||= :non_equal
-          when 370..420
-            rates << "2スロ"
-          when 900..1100
-            rates << "1スロ"
-          else
-            if rate_per_coin >= 18
-              rates << "20スロ"
-            elsif rate_per_coin >= 8
-              rates << "10スロ"
-            elsif rate_per_coin >= 4
-              rates << "5スロ"
-            elsif rate_per_coin >= 1.5
-              rates << "2スロ"
-            else
-              rates << "1スロ"
+            imgs = li.css('span img[src*="/number/"]')
+            digits = []
+            imgs.each do |img|
+              src = img["src"]
+              mapped = digit_map[src]
+              next if mapped == :suffix || mapped.nil?
+              digits << mapped
             end
-            exchange ||= :non_equal
-          end
-        end
-        data[:slot_rates] = rates.uniq if rates.any?
-        data[:exchange_rate] = exchange if exchange
-      end
+            next if digits.empty?
 
-      # テーブルから各種情報を取得
-      doc.css('td[bgcolor="#6699FF"]').each do |label_td|
-        label = label_td.text.gsub(/[\s　]+/, "").strip
-        value_td = label_td.next_element
-        next unless value_td
-        value = value_td.text.gsub(/[　\s]+/, " ").strip
+            unit_count = digits.join.to_i
+            next if unit_count == 0
 
-        case label
-        when "営業時間"
-          data[:business_hours] = value if value.present?
-        when "電話"
-          data[:phone_number] = value if value.present?
-        when "駐車場"
-          if (m = value.match(/(\d[\d,]+)\s*台/))
-            data[:parking_spaces] = m[1].delete(",").to_i
+            slug = normalize_slug(machine_name)
+            next if slug.blank?
+
+            # Reuse batch-loaded data from section 1
+            smm = existing_smms[slug]
+            if smm
+              unit_updates[smm.id] = unit_count
+            end
           end
-        when "朝の入場"
-          data[:morning_entry] = value if value.present?
-        when "交通"
-          # 「【店舗地図】」だけの場合は無視
-          data[:access_info] = value if value.present? && value != "【店舗地図】"
-        when "特徴"
-          data[:features] = value if value.present?
+
+          # Batch update unit counts
+          unit_updates.each do |smm_id, count|
+            ShopMachineModel.where(id: smm_id).update_all(unit_count: count)
+          end
+          result[:units_updated] = unit_updates.size
         end
       end
 
-      # 店内環境・喫煙環境から設備情報を取得
-      facilities = []
-      if page_text.include?("Wi-Fi")
-        facilities << "Wi-Fi"
-      end
-      if page_text.include?("充電器") || page_text.include?("携帯充電")
-        facilities << "充電器"
-      end
-      if page_text.include?("屋内喫煙室")
-        facilities << "屋内喫煙室"
-      end
-      # 「加熱式たばこプレイエリア」= 遊技中に加熱式たばこOK
-      # 「加熱式たばこ」のみ = 喫煙室で加熱式たばこ可（プレイ中は不可）
-      if page_text.include?("加熱式たばこプレイエリア")
-        facilities << "加熱式たばこ遊技OK"
-      elsif page_text.include?("加熱式たばこ")
-        facilities << "加熱式たばこ喫煙室"
-      end
-      if page_text.include?("出玉公開") || page_text.include?("出玉情報")
-        facilities << "出玉公開"
-      end
-      data[:facilities] = facilities if facilities.any?
+      # ── 3. 店舗詳細の更新 (月次のみ) ──
+      if update_details
+        page_text = doc.text
+        updated = false
 
-      # Update the shop record with found data
-      updated = false
+        # 台数
+        if page_text =~ /パチンコ[　\s]*(\d+)台/
+          pachinko_count = $1.to_i
+        end
+        if page_text =~ /スロット[　\s]*(\d+)台/
+          slot_machines = $1.to_i
+          if shop.slot_machines != slot_machines
+            shop.slot_machines = slot_machines
+            updated = true
+          end
+          total = (pachinko_count || 0) + slot_machines
+          if shop.total_machines != total
+            shop.total_machines = total
+            updated = true
+          end
+        end
 
-      if data[:slot_machines] && shop.slot_machines != data[:slot_machines]
-        shop.slot_machines = data[:slot_machines]
-        updated = true
-      end
-      if data[:total_machines] && shop.total_machines != data[:total_machines]
-        shop.total_machines = data[:total_machines]
-        updated = true
-      end
-      if data[:business_hours] && shop.business_hours != data[:business_hours]
-        shop.business_hours = data[:business_hours]
-        updated = true
-      end
-      # レート・換金率は既存データがない場合のみ上書き
-      if data[:slot_rates] && (shop.slot_rates.blank? || shop.slot_rates.empty?)
-        shop.slot_rates = data[:slot_rates]
-        updated = true
-      end
-      if data[:exchange_rate] && shop.exchange_rate == "unknown_rate"
-        shop.exchange_rate = data[:exchange_rate]
-        updated = true
-      end
-      # 設備情報は詳細ページの方が正確なので常に上書き
-      if data[:facilities]&.any?
-        shop.notes = data[:facilities].join("、")
-        updated = true
-      end
-      if data[:pworld_url] && shop.pworld_url != data[:pworld_url]
-        shop.pworld_url = data[:pworld_url]
-        updated = true
-      end
-      if data[:phone_number] && shop.phone_number != data[:phone_number]
-        shop.phone_number = data[:phone_number]
-        updated = true
-      end
-      if data[:parking_spaces] && shop.parking_spaces != data[:parking_spaces]
-        shop.parking_spaces = data[:parking_spaces]
-        updated = true
-      end
-      if data[:morning_entry] && shop.morning_entry != data[:morning_entry]
-        shop.morning_entry = data[:morning_entry]
-        updated = true
-      end
-      if data[:access_info] && shop.access_info != data[:access_info]
-        shop.access_info = data[:access_info]
-        updated = true
-      end
-      if data[:features] && shop.features != data[:features]
-        shop.features = data[:features]
-        updated = true
+        # レート
+        slot_rate_matches = page_text.scan(/\[(\d+)円\/(\d+)枚\]/)
+        if slot_rate_matches.any?
+          rates = []
+          exchange = nil
+          slot_rate_matches.each do |yen_s, coins_s|
+            coins = coins_s.to_i
+            rate_per_coin = yen_s.to_i.to_f / coins
+            case coins
+            when 46..50  then rates << "20スロ"; exchange ||= :equal_rate
+            when 89..96  then rates << "10スロ"
+            when 170..185 then rates << "5スロ"; exchange ||= :rate_56
+            when 196..210 then rates << "5スロ"; exchange ||= :rate_50
+            when 150..169 then rates << "5スロ"; exchange ||= :non_equal
+            when 370..420 then rates << "2スロ"
+            when 900..1100 then rates << "1スロ"
+            else
+              if rate_per_coin >= 18 then rates << "20スロ"
+              elsif rate_per_coin >= 8 then rates << "10スロ"
+              elsif rate_per_coin >= 4 then rates << "5スロ"
+              elsif rate_per_coin >= 1.5 then rates << "2スロ"
+              else rates << "1スロ"
+              end
+              exchange ||= :non_equal
+            end
+          end
+          if rates.any? && (shop.slot_rates.blank? || shop.slot_rates.empty?)
+            shop.slot_rates = rates.uniq
+            updated = true
+          end
+          if exchange && shop.exchange_rate == "unknown_rate"
+            shop.exchange_rate = exchange
+            updated = true
+          end
+        end
+
+        # テーブル情報
+        doc.css('td[bgcolor="#6699FF"]').each do |label_td|
+          label = label_td.text.gsub(/[\s　]+/, "").strip
+          value_td = label_td.next_element
+          next unless value_td
+          value = value_td.text.gsub(/[　\s]+/, " ").strip
+
+          case label
+          when "営業時間"
+            if value.present? && shop.business_hours != value
+              shop.business_hours = value; updated = true
+            end
+          when "電話"
+            if value.present? && shop.phone_number != value
+              shop.phone_number = value; updated = true
+            end
+          when "駐車場"
+            if (m = value.match(/(\d[\d,]+)\s*台/))
+              spaces = m[1].delete(",").to_i
+              if shop.parking_spaces != spaces
+                shop.parking_spaces = spaces; updated = true
+              end
+            end
+          when "朝の入場"
+            if value.present? && shop.morning_entry != value
+              shop.morning_entry = value; updated = true
+            end
+          when "交通"
+            if value.present? && value != "【店舗地図】" && shop.access_info != value
+              shop.access_info = value; updated = true
+            end
+          when "特徴"
+            if value.present? && shop.features != value
+              shop.features = value; updated = true
+            end
+          end
+        end
+
+        # 設備
+        facilities = []
+        facilities << "Wi-Fi" if page_text.include?("Wi-Fi")
+        facilities << "充電器" if page_text.include?("充電器") || page_text.include?("携帯充電")
+        facilities << "屋内喫煙室" if page_text.include?("屋内喫煙室")
+        if page_text.include?("加熱式たばこプレイエリア")
+          facilities << "加熱式たばこ遊技OK"
+        elsif page_text.include?("加熱式たばこ")
+          facilities << "加熱式たばこ喫煙室"
+        end
+        facilities << "出玉公開" if page_text.include?("出玉公開") || page_text.include?("出玉情報")
+        if facilities.any?
+          notes = facilities.join("、")
+          if shop.notes != notes
+            shop.notes = notes; updated = true
+          end
+        end
+
+        shop.pworld_url = url if shop.pworld_url != url
+
+        shop.save! if updated
+        result[:details_updated] = updated
       end
 
-      shop.save! if updated
-
-      data
+      result
     rescue ActiveRecord::RecordInvalid => e
-      puts "  WARNING: Could not update shop '#{shop.name}': #{e.message}"
+      puts "  WARNING: sync_shop_from_pworld failed for '#{shop.name}': #{e.message}"
       nil
     end
 
@@ -991,27 +896,14 @@ module PworldScraper
           memo_text = memo_el&.text&.strip || ""
 
           # Generate slug
-          slug = machine_name
-            .gsub(/\s+/, "-")
-            .gsub(/[^\p{L}\p{N}\-]/, "")
-            .downcase
-            .truncate(100, omission: "")
+          slug = normalize_slug(machine_name)
 
           next if slug.blank?
-
-          # Determine machine_type
-          machine_type = if type_text.include?("パチスロ") || type_text.include?("スロット")
-                           :slot
-                         else
-                           :pachislot
-                         end
 
           model = MachineModel.find_or_initialize_by(slug: slug)
           if model.new_record?
             model.name = machine_name
             model.maker = maker_name
-            model.machine_type = machine_type
-            model.spec_type = :type_at # Default; schedule page doesn't always specify
             model.save!
             total_imported += 1
           end
@@ -1026,152 +918,8 @@ module PworldScraper
       total_imported
     end
 
-    # Fetch pworld_machine_id from the type listing pages.
-    # Matches machine names from the list to existing DB records by slug.
-    # Returns the number of machines updated.
-    def fetch_machine_ids
-      puts "Fetching pworld_machine_id from P-WORLD type listings..."
-
-      total_updated = 0
-      seen_ids = Set.new
-
-      SLOT_TYPE_KEYS.each do |type_key|
-        puts "  Type: #{type_key}..."
-        offset = 0
-
-        loop do
-          url = "#{BASE_URL}/_machine/t_machine.cgi?mode=slot_type&key=#{URI.encode_www_form_component(type_key)}&start=#{offset}"
-          doc = fetch_page(url, encoding: "EUC-JP")
-
-          unless doc
-            puts "    Failed to fetch page at offset #{offset}, stopping."
-            break
-          end
-
-          titles = doc.css("td.title")
-          break if titles.empty?
-
-          titles.each do |title_td|
-            name_link = title_td.at_css("a")
-            next unless name_link
-
-            href = name_link["href"].to_s
-            next unless href =~ /\/machine\/database\/(\d+)/
-
-            pworld_id = $1.to_i
-            next if seen_ids.include?(pworld_id)
-            seen_ids << pworld_id
-
-            machine_name = name_link.text.strip
-            next if machine_name.blank?
-
-            slug = machine_name
-              .gsub(/\s+/, "-")
-              .gsub(/[^\p{L}\p{N}\-]/, "")
-              .downcase
-              .truncate(100, omission: "")
-            next if slug.blank?
-
-            machine = MachineModel.find_by(slug: slug)
-            if machine && machine.pworld_machine_id.nil?
-              machine.update_column(:pworld_machine_id, pworld_id)
-              total_updated += 1
-            end
-          rescue StandardError => e
-            puts "    WARNING: #{e.message}"
-          end
-
-          offset += titles.size
-          break if titles.size < 20
-
-          sleep(REQUEST_INTERVAL)
-        end
-
-        sleep(REQUEST_INTERVAL)
-      end
-
-      puts "  Done: #{total_updated} machines got pworld_machine_id"
-      puts "  Total with ID: #{MachineModel.where.not(pworld_machine_id: nil).count}"
-      total_updated
-    end
-
-    # Scrape machine detail page from P-WORLD.
-    # Extracts: generation, payout rates, introduced_on, image_url, type_detail, certification_number.
-    # Returns a hash of parsed data, or nil on failure.
-    def scrape_machine_detail(machine)
-      return nil unless machine.pworld_machine_id
-
-      url = "#{BASE_URL}/machine/database/#{machine.pworld_machine_id}"
-      doc = fetch_page(url)
-      return nil unless doc
-
-      data = {}
-
-      # Parse kisyuInfo grid rows
-      info = doc.at_css("div.kisyuInfo")
-      if info
-        info.css("table.kisyuInfo-grid > tr").each do |tr|
-          text = tr.text.gsub(/[\s　]+/, " ").strip
-
-          case text
-          when /タイプ[　\s]*[：:]\s*(.+)/
-            type_text = $1.strip
-            data[:type_detail] = type_text unless data[:type_detail]
-
-            # Extract generation from type text
-            if type_text =~ /([\d.]+号機)/
-              data[:generation] = $1
-            end
-          when /機械割[　\s]*[：:]\s*([\d.]+)[%％]\s*[～〜~]\s*([\d.]+)/
-            data[:payout_rate_min] = $1.to_f
-            data[:payout_rate_max] = $2.to_f
-          when /検定番号[　\s]*[：:]\s*(\S+)/
-            cert = $1.strip
-            data[:certification_number] = cert if cert.present? && cert.length > 1
-          when /導入開始[　\s]*[：:].*?(\d{4})年(\d{2})月(\d{2})日/
-            begin
-              data[:introduced_on] = Date.new($1.to_i, $2.to_i, $3.to_i)
-            rescue ArgumentError
-              # invalid date, skip
-            end
-          end
-        end
-      end
-
-      # Extract smart slot tag
-      tags = doc.css("span.kisyuTag-slotType").map { |t| t.text.strip }
-      data[:is_smart_slot] = tags.include?("スマスロ")
-
-      # Extract image URL
-      img = doc.at_css("img[src*='machines']")
-      if img && img["src"].present?
-        src = img["src"]
-        src = "https://idn.p-world.co.jp#{src}" if src.start_with?("/")
-        data[:image_url] = src
-      end
-
-      # Update machine record
-      updated = false
-      %i[generation payout_rate_min payout_rate_max introduced_on image_url type_detail certification_number].each do |field|
-        if data[field].present? && machine.send(field).blank?
-          machine.send("#{field}=", data[field])
-          updated = true
-        end
-      end
-
-      # Update is_smart_slot if we got a positive signal and it is not already set
-      if data[:is_smart_slot] && !machine.is_smart_slot?
-        machine.is_smart_slot = true
-        updated = true
-      end
-
-      machine.save! if updated
-
-      data
-    rescue ActiveRecord::RecordInvalid => e
-      puts "  WARNING: Could not update machine '#{machine.name}': #{e.message}"
-      nil
-    end
+    # NOTE: pworld_machine_id / fetch_machine_ids / scrape_machine_detail removed.
+    # Machine detail data (type_detail, generation, ceiling/reset) is now sourced from DMMぱちタウン (ptown.rake).
   end
 end
 
@@ -1652,89 +1400,8 @@ namespace :pworld do
     puts "=" * 60
   end
 
-  desc "Fetch pworld_machine_id for all machines from P-WORLD type listings"
-  task fetch_machine_ids: :environment do
-    $stdout.sync = true
-    puts "=" * 60
-    puts "P-WORLD Machine ID Fetch"
-    puts "=" * 60
-
-    start_time = Time.current
-    before_count = MachineModel.where.not(pworld_machine_id: nil).count
-
-    PworldScraper.fetch_machine_ids
-
-    after_count = MachineModel.where.not(pworld_machine_id: nil).count
-    elapsed = (Time.current - start_time).round(1)
-
-    puts ""
-    puts "=" * 60
-    puts "Machine ID fetch complete in #{elapsed}s"
-    puts "  Before: #{before_count}, After: #{after_count} (+#{after_count - before_count})"
-    puts "  Total machines: #{MachineModel.count}"
-    puts "=" * 60
-  end
-
-  desc "Scrape machine details from P-WORLD (generation, payout, image, etc). Optional: rake pworld:scrape_machine_details[100]"
-  task :scrape_machine_details, [:limit] => :environment do |_t, args|
-    $stdout.sync = true
-    limit = args[:limit]&.to_i
-
-    machines = MachineModel.where.not(pworld_machine_id: nil)
-    machines = machines.where(generation: nil).or(machines.where(type_detail: nil))
-    machines = machines.order(:id)
-    machines = machines.limit(limit) if limit
-
-    total = machines.count
-    puts "=" * 60
-    puts "P-WORLD Machine Details Scrape#{limit ? " (limit: #{limit})" : ""}"
-    puts "  Target: #{total} machines"
-    puts "=" * 60
-
-    start_time = Time.current
-    updated = 0
-    skipped = 0
-    errors = []
-
-    machines.find_each.with_index do |machine, index|
-      begin
-        data = PworldScraper.scrape_machine_detail(machine)
-        if data && data.any? { |k, v| k != :is_smart_slot && v.present? }
-          updated += 1
-          parts = []
-          parts << data[:generation] if data[:generation]
-          parts << "#{data[:payout_rate_min]}~#{data[:payout_rate_max]}%" if data[:payout_rate_min]
-          parts << data[:introduced_on].to_s if data[:introduced_on]
-          puts "  [#{index + 1}/#{total}] #{machine.name}: #{parts.join(' | ')}"
-        else
-          skipped += 1
-          puts "  [#{index + 1}/#{total}] #{machine.name}: (no data)" if (index + 1) <= 20 || (index + 1) % 100 == 0
-        end
-        sleep(PworldScraper::REQUEST_INTERVAL)
-      rescue StandardError => e
-        errors << { machine: machine.name, error: e.message }
-        puts "  ERROR for #{machine.name}: #{e.message}"
-      end
-    end
-
-    elapsed = (Time.current - start_time).round(1)
-    puts ""
-    puts "=" * 60
-    puts "Machine details scrape complete in #{elapsed}s"
-    puts "  Updated: #{updated}, Skipped: #{skipped}, Errors: #{errors.size}"
-    puts "  With generation: #{MachineModel.where.not(generation: nil).count}"
-    puts "  With payout: #{MachineModel.where.not(payout_rate_min: nil).count}"
-    puts "  With image: #{MachineModel.where.not(image_url: [nil, '']).count}"
-    puts "  With introduced_on: #{MachineModel.where.not(introduced_on: nil).count}"
-    puts "  With certification: #{MachineModel.where.not(certification_number: [nil, '']).count}"
-
-    if errors.any?
-      puts "  Errors (#{errors.size}):"
-      errors.first(10).each { |e| puts "    - #{e[:machine]}: #{e[:error]}" }
-    end
-
-    puts "=" * 60
-  end
+  # NOTE: fetch_machine_ids / scrape_machine_details tasks removed.
+  # Machine detail data is now sourced from DMMぱちタウン (ptown:import_details).
 
   # ── 定期更新バッチ ─────────────────────────────────────
   desc "Weekly update: refresh machine links for all shops (run every Sunday)"

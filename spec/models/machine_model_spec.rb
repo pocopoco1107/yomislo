@@ -96,8 +96,8 @@ RSpec.describe MachineModel, type: :model do
       expect(machine.display_type).to eq(:medal_at)
     end
 
-    it "classifies spec_type type_at as medal_at" do
-      machine = build(:machine_model, name: "からくりサーカス", spec_type: :type_at)
+    it "classifies type_detail AT as medal_at" do
+      machine = build(:machine_model, name: "からくりサーカス", type_detail: "AT機")
       expect(machine.display_type).to eq(:medal_at)
     end
   end
@@ -127,13 +127,13 @@ RSpec.describe MachineModel, type: :model do
       expect(machine.display_type).to eq(:a_type)
     end
 
-    it "classifies spec_type type_a as a_type regardless of name" do
-      machine = build(:machine_model, name: "不明な機種", spec_type: :type_a)
+    it "classifies type_detail Aタイプ as a_type regardless of name" do
+      machine = build(:machine_model, name: "不明な機種", type_detail: "Aタイプ")
       expect(machine.display_type).to eq(:a_type)
     end
 
-    it "classifies unknown name with no spec match as other" do
-      machine = build(:machine_model, name: "完全オリジナル機種", spec_type: nil)
+    it "classifies unknown name with no type_detail as other" do
+      machine = build(:machine_model, name: "完全オリジナル機種", type_detail: nil)
       expect(machine.display_type).to eq(:other)
     end
 
@@ -142,8 +142,8 @@ RSpec.describe MachineModel, type: :model do
       expect(machine.display_type).to eq(:smart_slot)
     end
 
-    it "classifies non-flagged machine without smart name patterns as medal_at" do
-      machine = build(:machine_model, name: "モンキーターンV", spec_type: :type_at, is_smart_slot: false)
+    it "classifies non-flagged machine with AT type_detail as medal_at" do
+      machine = build(:machine_model, name: "モンキーターンV", type_detail: "AT機", is_smart_slot: false)
       expect(machine.display_type).to eq(:medal_at)
     end
 
@@ -282,18 +282,13 @@ RSpec.describe MachineModel, type: :model do
   end
 
   describe "#effective_introduced_on" do
-    it "prefers introduced_on over released_on" do
-      machine = build(:machine_model, introduced_on: Date.new(2025, 6, 1), released_on: Date.new(2025, 1, 1))
+    it "returns introduced_on when present" do
+      machine = build(:machine_model, introduced_on: Date.new(2025, 6, 1))
       expect(machine.effective_introduced_on).to eq(Date.new(2025, 6, 1))
     end
 
-    it "falls back to released_on" do
-      machine = build(:machine_model, introduced_on: nil, released_on: Date.new(2025, 1, 1))
-      expect(machine.effective_introduced_on).to eq(Date.new(2025, 1, 1))
-    end
-
-    it "returns nil when both are blank" do
-      machine = build(:machine_model, introduced_on: nil, released_on: nil)
+    it "returns nil when introduced_on is blank" do
+      machine = build(:machine_model, introduced_on: nil)
       expect(machine.effective_introduced_on).to be_nil
     end
   end

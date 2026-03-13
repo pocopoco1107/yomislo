@@ -1,4 +1,4 @@
-<% content_for(:title) { "#{@machine_model.name} - スロリセnavi" } %>
+<% content_for(:title) { "#{@machine_model.name} - ヨミスロ" } %>
 
 <%# JSON-LD structured data %>
 <% content_for(:head) do %>
@@ -73,45 +73,45 @@
             </span>
           <% end %>
         </div>
-
-        <%# スペック情報 %>
-        <div class="mt-2.5 space-y-1">
-          <% if @machine_model.payout_rate_display %>
-            <div class="flex items-center gap-1.5 text-sm">
-              <span class="text-muted-foreground">機械割:</span>
-              <span class="text-2xl font-bold text-foreground tabular-nums"><%= @machine_model.payout_rate_display %></span>
-            </div>
-          <% end %>
-          <% if @machine_model.type_detail.present? %>
-            <div class="flex items-start gap-1.5 text-sm">
-              <span class="text-muted-foreground shrink-0">タイプ:</span>
-              <span class="font-medium text-foreground"><%= @machine_model.type_detail %></span>
-            </div>
-          <% end %>
-        </div>
-
-        <%# メタ情報行 %>
-        <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          <% if @machine_model.maker.present? %>
-            <span>メーカー: <span class="font-medium text-foreground"><%= @machine_model.maker %></span></span>
-          <% end %>
-          <% if @machine_model.effective_introduced_on.present? %>
-            <span>導入日: <span class="font-medium text-foreground"><%= @machine_model.effective_introduced_on.strftime("%Y年%-m月%-d日") %></span></span>
-          <% end %>
-          <span>設置店舗: <span class="font-medium text-foreground"><%= @installed_shop_count %>店</span></span>
-        </div>
       </div>
     </div>
 
-    <%# 検定番号 (折りたたみ) %>
-    <% if @machine_model.certification_number.present? %>
-      <details class="mt-3 border-t border-border pt-2">
-        <summary class="text-[11px] text-muted-foreground cursor-pointer hover:text-foreground select-none">
-          検定番号を表示
-        </summary>
-        <p class="text-xs text-muted-foreground mt-1 font-mono"><%= @machine_model.certification_number %></p>
-      </details>
-    <% end %>
+    <%# 基本スペックグリッド %>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+      <% if @machine_model.payout_rate_display %>
+        <div class="bg-secondary rounded-lg p-3 text-center">
+          <p class="text-[10px] text-muted-foreground mb-0.5">機械割</p>
+          <p class="text-lg font-bold text-foreground tabular-nums"><%= @machine_model.payout_rate_display %></p>
+        </div>
+      <% end %>
+      <% if @machine_model.type_detail.present? %>
+        <div class="bg-secondary rounded-lg p-3 text-center">
+          <p class="text-[10px] text-muted-foreground mb-0.5">タイプ</p>
+          <p class="text-sm font-bold text-foreground"><%= @machine_model.type_detail %></p>
+        </div>
+      <% end %>
+      <% if @machine_model.generation_label %>
+        <div class="bg-secondary rounded-lg p-3 text-center">
+          <p class="text-[10px] text-muted-foreground mb-0.5">号機</p>
+          <p class="text-sm font-bold text-foreground"><%= @machine_model.generation_label %></p>
+        </div>
+      <% end %>
+      <% if @machine_model.maker.present? %>
+        <div class="bg-secondary rounded-lg p-3 text-center">
+          <p class="text-[10px] text-muted-foreground mb-0.5">メーカー</p>
+          <p class="text-sm font-bold text-foreground truncate"><%= @machine_model.maker %></p>
+        </div>
+      <% end %>
+    </div>
+
+    <%# メタ情報行 %>
+    <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+      <% if @machine_model.effective_introduced_on.present? %>
+        <span>導入日: <span class="font-medium text-foreground"><%= @machine_model.effective_introduced_on.strftime("%Y年%-m月%-d日") %></span></span>
+      <% end %>
+      <span>設置店舗: <span class="font-medium text-foreground"><%= @installed_shop_count %>店</span></span>
+    </div>
+
   </div>
 
   <%# === All-time Stats === %>
@@ -124,11 +124,11 @@
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="bg-secondary rounded-lg p-3 text-center">
           <p class="text-xl font-bold text-foreground tabular-nums"><%= @all_time_votes %></p>
-          <p class="text-[10px] text-muted-foreground">総投票数</p>
+          <p class="text-[10px] text-muted-foreground">総記録数</p>
         </div>
         <div class="bg-secondary rounded-lg p-3 text-center">
           <p class="text-xl font-bold text-foreground tabular-nums"><%= @total_vote_days %></p>
-          <p class="text-[10px] text-muted-foreground">投票日数</p>
+          <p class="text-[10px] text-muted-foreground">記録日数</p>
         </div>
         <% if @all_time_reset_rate %>
           <div class="bg-secondary rounded-lg p-3 text-center">
@@ -153,91 +153,214 @@
     </div>
   <% end %>
 
+  <%# === Play Record Stats === %>
+  <% machine_summary = PlayRecordSummary.find_by(scope_type: "machine_model", scope_id: @machine_model.id, period_type: :all_time, period_key: "all") %>
+  <% if machine_summary && machine_summary.total_records >= 5 %>
+    <div class="bg-card border border-border rounded-lg p-4 mb-6">
+      <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+        <span class="w-1 h-4 bg-slot-yellow rounded-full"></span>
+        全国収支統計
+      </h2>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="text-center">
+          <p class="text-lg font-bold tabular-nums <%= machine_summary.avg_result >= 0 ? 'text-primary' : 'text-destructive' %>">
+            <%= machine_summary.avg_result >= 0 ? '+' : '' %><%= number_with_delimiter(machine_summary.avg_result) %>円
+          </p>
+          <p class="text-xs text-muted-foreground">平均収支</p>
+        </div>
+        <div class="text-center">
+          <p class="text-lg font-bold tabular-nums text-foreground"><%= machine_summary.win_rate %>%</p>
+          <p class="text-xs text-muted-foreground">勝率</p>
+        </div>
+        <div class="text-center">
+          <p class="text-lg font-bold tabular-nums text-foreground"><%= machine_summary.total_records %></p>
+          <p class="text-xs text-muted-foreground">記録数</p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
   <%# === Trend Chart === %>
   <% if @trend_data&.any? { |d| d[:votes] > 0 } %>
     <%= render "shared/trend_chart",
-        title: "過去7日間の全国投票トレンド",
+        title: "過去7日間の全国記録トレンド",
         days_data: @trend_data %>
   <% end %>
 
-  <%# === Trophy Rules === %>
-  <% if @machine_model.trophy_rules.present? %>
-    <div class="bg-card border border-border rounded-lg p-4 mb-6">
-      <h2 class="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-        <span class="w-1 h-4 bg-confirmed rounded-full"></span>
-        確定演出・設定示唆
+  <%# === Ceiling Info (天井・期待値) === %>
+  <details class="bg-card border border-border rounded-lg mb-6 group">
+    <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 rounded-lg transition-colors">
+      <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+        <span class="w-1 h-4 bg-chart-5 rounded-full"></span>
+        天井・期待値
       </h2>
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        <% @machine_model.trophy_rules.each do |演出, 設定| %>
-          <div class="bg-confirmed/10 border border-confirmed/20 rounded-lg px-3 py-2 text-center">
-            <p class="text-xs text-muted-foreground"><%= 演出 %></p>
-            <p class="text-sm font-bold text-confirmed"><%= 設定 %></p>
-          </div>
-        <% end %>
-      </div>
+      <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </summary>
+    <div class="px-4 pb-4">
+      <% if @machine_model.ceiling_info.present? && @machine_model.ceiling_info.any? %>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <tbody class="divide-y divide-border">
+              <% @machine_model.ceiling_info.each do |key, value| %>
+                <tr>
+                  <th class="text-left text-xs text-muted-foreground font-medium py-2 pr-4 whitespace-nowrap align-top w-1/3"><%= key %></th>
+                  <td class="text-foreground font-medium py-2"><%= value %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="bg-secondary rounded-lg p-4 text-center">
+          <p class="text-sm text-muted-foreground mb-2">天井・期待値の情報はまだ登録されていません。</p>
+          <% ceiling_links = @guide_links.select { |gl| gl.ceiling? } %>
+          <% if ceiling_links.any? %>
+            <p class="text-xs text-muted-foreground mb-2">攻略サイトで確認:</p>
+            <div class="flex flex-wrap justify-center gap-2">
+              <% ceiling_links.each do |link| %>
+                <a href="<%= link.url %>" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                  <%= link.title || link.source %>
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                </a>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-xs text-muted-foreground">攻略サイトで天井情報をご確認ください。</p>
+          <% end %>
+        </div>
+      <% end %>
     </div>
-  <% end %>
+  </details>
+
+  <%# === Reset Info (リセット・据え置き) === %>
+  <details class="bg-card border border-border rounded-lg mb-6 group">
+    <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 rounded-lg transition-colors">
+      <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+        <span class="w-1 h-4 bg-vote-yes rounded-full"></span>
+        リセット・据え置き情報
+        <% if @all_time_reset_rate %>
+          <span class="text-[10px] font-normal text-muted-foreground">(<%= @all_time_reset_rate %>%)</span>
+        <% end %>
+      </h2>
+      <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </summary>
+    <div class="px-4 pb-4">
+      <% if @machine_model.reset_info.present? && @machine_model.reset_info.any? %>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <tbody class="divide-y divide-border">
+              <% @machine_model.reset_info.each do |key, value| %>
+                <tr>
+                  <th class="text-left text-xs text-muted-foreground font-medium py-2 pr-4 whitespace-nowrap align-top w-1/3"><%= key %></th>
+                  <td class="text-foreground font-medium py-2"><%= value %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="bg-secondary rounded-lg p-4 text-center">
+          <p class="text-sm text-muted-foreground">リセット・据え置きの詳細情報はまだ登録されていません。</p>
+        </div>
+      <% end %>
+
+      <%# 記録データからのリセット率統計 %>
+      <% if @all_time_reset_rate %>
+        <div class="mt-3 border-t border-border pt-3">
+          <p class="text-xs text-muted-foreground mb-2">記録データによるリセット率 (全期間)</p>
+          <div class="flex items-center gap-3">
+            <div class="flex-1 bg-secondary rounded-full h-3 overflow-hidden">
+              <div class="h-full bg-vote-yes rounded-full transition-all" style="width: <%= @all_time_reset_rate %>%"></div>
+            </div>
+            <span class="text-sm font-bold tabular-nums <%= @all_time_reset_rate >= 50 ? 'text-vote-yes' : 'text-vote-no' %>"><%= @all_time_reset_rate %>%</span>
+          </div>
+          <p class="text-[10px] text-muted-foreground mt-1">※ ユーザー記録に基づく統計です。<%= @all_time_votes %>件の記録データから算出。</p>
+        </div>
+      <% end %>
+    </div>
+  </details>
 
   <%# === SNS Reports === %>
   <% if @sns_reports.any? %>
-    <div class="bg-card border border-border rounded-lg p-4 mb-6">
-      <h2 class="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-        <span class="w-1 h-4 bg-chart-1 rounded-full"></span>
-        SNS情報 (自動収集)
-      </h2>
-      <div class="space-y-2">
-        <% @sns_reports.each do |report| %>
-          <div class="border border-border rounded-lg p-2.5">
-            <div class="flex items-center gap-2 mb-1">
-              <% if report.trophy_type.present? %>
-                <span class="bg-confirmed/10 text-confirmed text-xs font-medium rounded-md px-2 py-0.5"><%= report.trophy_type %></span>
-              <% end %>
-              <% if report.suggested_setting.present? %>
-                <span class="bg-setting-4/10 text-setting-4 text-xs font-medium rounded-md px-2 py-0.5"><%= report.suggested_setting %></span>
-              <% end %>
-              <span class="text-xs text-muted-foreground ml-auto"><%= report.reported_on&.strftime("%-m/%-d") %></span>
+    <details class="bg-card border border-border rounded-lg mb-6 group">
+      <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 rounded-lg transition-colors">
+        <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+          <span class="w-1 h-4 bg-chart-1 rounded-full"></span>
+          SNS情報 (自動収集)
+          <span class="text-[10px] font-normal text-muted-foreground">(<%= @sns_reports.size %>件)</span>
+        </h2>
+        <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </summary>
+      <div class="px-4 pb-4">
+        <div class="space-y-2">
+          <% @sns_reports.each do |report| %>
+            <div class="border border-border rounded-lg p-2.5">
+              <div class="flex items-center gap-2 mb-1">
+                <% if report.trophy_type.present? %>
+                  <span class="bg-confirmed/10 text-confirmed text-xs font-medium rounded-md px-2 py-0.5"><%= report.trophy_type %></span>
+                <% end %>
+                <% if report.suggested_setting.present? %>
+                  <span class="bg-setting-4/10 text-setting-4 text-xs font-medium rounded-md px-2 py-0.5"><%= report.suggested_setting %></span>
+                <% end %>
+                <span class="text-xs text-muted-foreground ml-auto"><%= report.reported_on&.strftime("%-m/%-d") %></span>
+              </div>
+              <p class="text-xs text-muted-foreground line-clamp-2"><%= report.source_title %></p>
             </div>
-            <p class="text-xs text-muted-foreground line-clamp-2"><%= report.source_title %></p>
-          </div>
-        <% end %>
+          <% end %>
+        </div>
+        <p class="text-[10px] text-muted-foreground mt-2">※ RSS等から自動収集した情報です。正確性は保証しません。</p>
       </div>
-      <p class="text-[10px] text-muted-foreground mt-2">※ RSS等から自動収集した情報です。正確性は保証しません。</p>
-    </div>
+    </details>
   <% end %>
 
-  <%# === Guide Links === %>
+  <%# === Guide Links (type-grouped) === %>
   <% if @guide_links.any? %>
-    <div class="bg-card border border-border rounded-lg p-4 mb-6">
-      <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-        <span class="w-1 h-4 bg-primary rounded-full"></span>
-        攻略情報
-      </h2>
-      <div class="space-y-2">
-        <% @guide_links.group_by(&:link_type).each do |type, links| %>
-          <% links.each do |guide_link| %>
-            <a href="<%= guide_link.url %>" target="_blank" rel="noopener noreferrer"
-               class="flex items-center gap-2 border border-border rounded-lg px-3 py-2.5 hover:bg-secondary transition-colors block">
-              <span class="text-base shrink-0"><%= guide_link.link_type_icon %></span>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-foreground truncate"><%= guide_link.title || guide_link.url %></p>
-                <div class="flex items-center gap-2 mt-0.5">
-                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-secondary text-secondary-foreground"><%= guide_link.link_type_label %></span>
-                  <span class="text-[10px] text-muted-foreground"><%= guide_link.source %></span>
-                </div>
+    <details class="bg-card border border-border rounded-lg mb-6 group">
+      <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 rounded-lg transition-colors">
+        <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+          <span class="w-1 h-4 bg-primary rounded-full"></span>
+          攻略情報リンク
+          <span class="text-[10px] font-normal text-muted-foreground">(<%= @guide_links.size %>件)</span>
+        </h2>
+        <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </summary>
+      <div class="px-4 pb-4">
+        <% link_type_order = %w[analysis ceiling trophy other] %>
+        <% grouped_links = @guide_links.group_by(&:link_type) %>
+        <div class="space-y-4">
+          <% link_type_order.each do |type| %>
+            <% next unless grouped_links[type] %>
+            <div>
+              <h3 class="text-xs font-bold text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                <span><%= MachineGuideLink::LINK_TYPE_BADGE.dig(type, :icon) %></span>
+                <%= MachineGuideLink::LINK_TYPE_LABELS[type] %>
+                <span class="text-[10px] font-normal">(<%= grouped_links[type].size %>件)</span>
+              </h3>
+              <div class="space-y-1.5">
+                <% grouped_links[type].each do |guide_link| %>
+                  <a href="<%= guide_link.url %>" target="_blank" rel="noopener noreferrer"
+                     class="flex items-center gap-2 border border-border rounded-lg px-3 py-2.5 hover:bg-secondary active:scale-[0.99] transition-all duration-150 block min-h-[44px]">
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-foreground truncate"><%= guide_link.title || guide_link.url %></p>
+                      <p class="text-[10px] text-muted-foreground mt-0.5"><%= guide_link.source %></p>
+                    </div>
+                    <svg class="w-4 h-4 text-muted-foreground shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                <% end %>
               </div>
-              <svg class="w-4 h-4 text-muted-foreground shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
+            </div>
           <% end %>
-        <% end %>
+        </div>
+        <p class="text-[10px] text-muted-foreground mt-3">※ 外部サイトの情報です。最新情報は各サイトでご確認ください。</p>
       </div>
-      <p class="text-[10px] text-muted-foreground mt-2">※ 外部サイトの情報です。最新情報は各サイトでご確認ください。</p>
-    </div>
+    </details>
   <% end %>
 
   <%# === Today's Votes === %>
-  <h2 class="text-lg font-bold text-foreground mb-3">本日の投票状況 (<%= Date.current.strftime("%-m/%-d") %>)</h2>
+  <h2 class="text-lg font-bold text-foreground mb-3">本日の記録状況 (<%= Date.current.strftime("%-m/%-d") %>)</h2>
 
   <% if @vote_summaries.any? %>
     <div class="space-y-2 mb-6">
@@ -247,7 +370,7 @@
             <%= link_to shop_path(vs.shop.slug), class: "font-medium text-sm text-primary hover:underline" do %>
               <%= vs.shop.name %>
             <% end %>
-            <span class="text-xs text-muted-foreground tabular-nums"><%= vs.total_votes %>票</span>
+            <span class="text-xs text-muted-foreground tabular-nums"><%= vs.total_votes %>件</span>
           </div>
           <div class="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground">
             <div>
@@ -255,18 +378,18 @@
               <% total_reset = vs.reset_yes_count + vs.reset_no_count %>
               <% if total_reset >= 3 %>
                 <span class="font-semibold text-vote-yes"><%= (vs.reset_yes_count.to_f / total_reset * 100).round %>% Yes</span>
-                (<%= total_reset %>票)
+                (<%= total_reset %>件)
               <% else %>
-                <span class="text-muted-foreground">データ不足</span>
+                <span class="text-muted-foreground">まだ記録が少ないです</span>
               <% end %>
             </div>
             <div>
               設定:
               <% if vs.setting_avg.present? && vs.total_votes >= 3 %>
                 <span class="font-semibold text-foreground">平均<%= vs.setting_avg %></span>
-                (<%= vs.total_votes %>票)
+                (<%= vs.total_votes %>件)
               <% else %>
-                <span class="text-muted-foreground">データ不足</span>
+                <span class="text-muted-foreground">まだ記録が少ないです</span>
               <% end %>
             </div>
           </div>
@@ -282,9 +405,9 @@
   <% else %>
     <div class="bg-card border border-border rounded-lg p-8 text-center mb-6">
       <div class="w-16 h-16 mx-auto mb-2">
-        <%= image_tag "empty_search.svg", alt: "投票なし", class: "w-full h-full opacity-50" %>
+        <%= image_tag "empty_search.svg", alt: "記録なし", class: "w-full h-full opacity-50" %>
       </div>
-      <p class="text-muted-foreground text-sm">本日の投票データはまだありません。</p>
+      <p class="text-muted-foreground text-sm">本日の記録データはまだありません。</p>
     </div>
   <% end %>
 

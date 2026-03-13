@@ -5,7 +5,7 @@ class MachinesController < ApplicationController
     @machine_model = MachineModel.find_by!(slug: params[:slug])
     @installed_shop_count = @machine_model.shop_machine_models.count
     # SEO meta tags with spec info
-    meta_desc_parts = ["#{@machine_model.name}の全店舗横断設定・リセット投票データ"]
+    meta_desc_parts = ["#{@machine_model.name}の全店舗横断設定・リセット記録データ"]
     meta_desc_parts << "機械割#{@machine_model.payout_rate_display}" if @machine_model.payout_rate_display
     meta_desc_parts << @machine_model.type_detail if @machine_model.type_detail.present?
     meta_desc_parts << "設定傾向をチェック"
@@ -13,7 +13,7 @@ class MachinesController < ApplicationController
     set_meta_tags title: "#{@machine_model.name} - 全店舗の設定傾向",
                   description: meta_desc,
                   keywords: "#{@machine_model.name}, パチスロ, 設定, リセット, #{@machine_model.maker}, #{@machine_model.generation_label}".squish,
-                  og: { title: "#{@machine_model.name} - 全店舗の設定傾向 | スロリセnavi",
+                  og: { title: "#{@machine_model.name} - 全店舗の設定傾向 | ヨミスロ",
                         description: meta_desc,
                         type: "website",
                         url: request.original_url.split("?").first,
@@ -47,7 +47,7 @@ class MachinesController < ApplicationController
     weighted_total        = all_stats[5].to_i
     @all_time_setting_avg = weighted_total > 0 ? (weighted_sum / weighted_total).round(1) : nil
 
-    # 設置店舗リスト (投票データなしでも表示)
+    # 設置店舗リスト (記録データなしでも表示)
     installed_scope = @machine_model.shops.includes(:prefecture)
     if params[:prefecture].present?
       installed_scope = installed_scope.where(prefectures: { slug: params[:prefecture] })

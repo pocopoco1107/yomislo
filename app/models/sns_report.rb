@@ -5,7 +5,7 @@ class SnsReport < ApplicationRecord
   enum :status, { pending: 0, approved: 1, rejected: 2 }
   enum :confidence, { unrated: 0, low: 1, medium: 2, high: 3 }, prefix: :confidence
 
-  validates :source, presence: true, inclusion: { in: %w[rss google_cse manual] }
+  validates :source, presence: true, inclusion: { in: %w[rss google_cse manual twitter] }
   validates :raw_text, presence: true
   validates :source_url, uniqueness: true, allow_blank: true
 

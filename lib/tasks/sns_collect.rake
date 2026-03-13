@@ -10,15 +10,13 @@ require "json"
 
 module SnsCollector
   # RSS feed sources for pachislot setting/trophy information
+  # Verified 2026-03-12: only these 3 feeds are reachable and return valid RSS.
+  # Removed 7 defunct/unreachable feeds: slot-jin, pachinkopachislo,
+  # pachislot-kitaichi, pachislot-kanzen, game8, slopachi-sta, nana-tetsu.
   RSS_FEEDS = [
     {
       name: "ちょんぼりすた",
       url: "https://chonborista.com/feed/",
-      type: "rss"
-    },
-    {
-      name: "スロットジン",
-      url: "https://slot-jin.com/feed/",
       type: "rss"
     },
     {
@@ -27,8 +25,8 @@ module SnsCollector
       type: "rss"
     },
     {
-      name: "パチンコ・パチスロ.com",
-      url: "https://pachinkopachislo.com/feed/",
+      name: "パチマガスロマガFREE",
+      url: "https://pachimaga.com/free/rss.xml",
       type: "rss"
     }
   ].freeze
@@ -38,7 +36,11 @@ module SnsCollector
   # Google Custom Search API config
   GOOGLE_CSE_QUERIES = [
     "%{machine} 設定示唆",
-    "%{machine} トロフィー 確定"
+    "%{machine} トロフィー 確定",
+    "%{machine} トロフィー 確定 設定",
+    "%{machine} リセット 朝一 挙動",
+    "%{machine} 据え置き 判別",
+    "%{machine} 設定6 確定演出 出現"
   ].freeze
 
   GOOGLE_CSE_ENDPOINT = "https://www.googleapis.com/customsearch/v1"
@@ -256,7 +258,7 @@ module SnsCollector
       http.read_timeout = 30
 
       request = Net::HTTP::Get.new(uri.request_uri)
-      request["User-Agent"] = "Mozilla/5.0 (compatible; SloSitteBot/1.0)"
+      request["User-Agent"] = "Mozilla/5.0 (compatible; YomiSloBot/1.0)"
       request["Accept"] = "application/rss+xml, application/xml, text/xml"
 
       response = http.request(request)
