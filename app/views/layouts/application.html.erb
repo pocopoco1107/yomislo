@@ -3,7 +3,7 @@
   <head>
     <%= display_meta_tags site: "ヨミスロ", reverse: true, separator: "|" %>
     <link rel="canonical" href="<%= canonical_url %>">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="turbo-prefetch" content="false">
     <meta name="theme-color" content="#22c55e">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -31,7 +31,7 @@
   <body class="min-h-screen flex flex-col">
     <%= render "shared/header" %>
 
-    <main class="flex-1 w-full max-w-6xl mx-auto px-4 pt-4 pb-8">
+    <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-12">
       <%= render "shared/flash" %>
       <%= yield %>
     </main>

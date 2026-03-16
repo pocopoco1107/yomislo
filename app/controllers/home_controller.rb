@@ -26,47 +26,40 @@ class HomeController < ApplicationController
         .count.size
     }
 
-    # Today's hot shops — single query with JOIN to avoid N+1
-    hot_shop_rows = VoteSummary.where(target_date: Date.current)
-                               .group(:shop_id)
-                               .select("shop_id, SUM(total_votes) as vote_total")
-                               .order("vote_total DESC")
-                               .limit(5)
-    hot_shop_ids = hot_shop_rows.map(&:shop_id)
-    hot_shops_by_id = Shop.where(id: hot_shop_ids).index_by(&:id)
-    @hot_shops = hot_shop_rows.filter_map { |vs|
-      shop = hot_shops_by_id[vs.shop_id]
-      next unless shop
-      { shop: shop, votes: vs.vote_total }
-    }
-
-    # High reset rate machines — limit candidate rows in SQL, then pick top 5
-    reset_rows = VoteSummary.where(target_date: Date.current)
-                            .where("reset_yes_count + reset_no_count >= 3")
-                            .select("id, machine_model_id, shop_id, reset_yes_count, reset_no_count")
-                            .order(Arel.sql("reset_yes_count::float / NULLIF(reset_yes_count + reset_no_count, 0) DESC"))
-                            .limit(20)
-                            .to_a
-    if reset_rows.any?
-      machine_ids = reset_rows.map(&:machine_model_id).uniq
-      shop_ids = reset_rows.map(&:shop_id).uniq
-      machines_by_id = MachineModel.where(id: machine_ids).select(:id, :name, :slug).index_by(&:id)
-      shops_by_id = Shop.where(id: shop_ids).select(:id, :name, :slug, :prefecture_id).index_by(&:id)
-
-      @high_reset_machines = reset_rows
-        .first(5)
-        .filter_map { |vs|
-          machine = machines_by_id[vs.machine_model_id]
-          shop = shops_by_id[vs.shop_id]
-          next unless machine && shop
-          { machine: machine, shop: shop, rate: vs.reset_rate }
-        }
+    # Weekly high-setting machines — setting 4-6 reports aggregated over the week
+    week_start = Date.current.beginning_of_week
+    high_setting_sql = <<~SQL.squish
+      COALESCE(SUM((setting_distribution->>'4')::int), 0) +
+      COALESCE(SUM((setting_distribution->>'5')::int), 0) +
+      COALESCE(SUM((setting_distribution->>'6')::int), 0)
+    SQL
+    total_setting_sql = <<~SQL.squish
+      COALESCE(SUM((setting_distribution->>'1')::int), 0) +
+      COALESCE(SUM((setting_distribution->>'2')::int), 0) +
+      COALESCE(SUM((setting_distribution->>'3')::int), 0) +
+      COALESCE(SUM((setting_distribution->>'4')::int), 0) +
+      COALESCE(SUM((setting_distribution->>'5')::int), 0) +
+      COALESCE(SUM((setting_distribution->>'6')::int), 0)
+    SQL
+    rows = VoteSummary.where(target_date: week_start..Date.current)
+                      .group(:machine_model_id)
+                      .having("#{total_setting_sql} >= 5")
+                      .order(Arel.sql("#{high_setting_sql} DESC"))
+                      .limit(5)
+                      .pluck(Arel.sql("machine_model_id"), Arel.sql(high_setting_sql), Arel.sql(total_setting_sql))
+    if rows.any?
+      machines_by_id = MachineModel.where(id: rows.map(&:first)).select(:id, :name, :slug).index_by(&:id)
+      @weekly_high_setting_machines = rows.filter_map { |mid, high, total|
+        machine = machines_by_id[mid]
+        next unless machine
+        pct = (high.to_f / total * 100).round
+        { machine: machine, high_count: high.to_i, total_count: total.to_i, pct: pct }
+      }
     else
-      @high_reset_machines = []
+      @weekly_high_setting_machines = []
     end
 
     # Weekly voter ranking — top 10 by vote count this week
-    week_start = Date.current.beginning_of_week
     @weekly_ranking = Vote.where(voted_on: week_start..Date.current)
                           .group(:voter_token)
                           .order(Arel.sql("COUNT(*) DESC"))

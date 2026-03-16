@@ -8,13 +8,13 @@
 
   <% if @has_votes %>
     <!-- Voter Identity -->
-    <div class="bg-card border border-border rounded-lg p-4 mb-4">
+    <div class="bg-card rounded-lg border-b border-border/50 p-4 mb-4">
       <p class="text-sm text-muted-foreground">あなたのユーザーID</p>
       <p class="text-xl font-bold text-primary mt-1"><%= @voter_label %></p>
     </div>
 
     <!-- 称号 -->
-    <div class="bg-gradient-to-r from-slot-yellow/10 via-card to-slot-yellow/10 border border-border rounded-lg p-5 mb-4 text-center">
+    <div class="bg-card rounded-lg border-l-2 border-l-slot-yellow p-5 mb-4 text-center">
       <p class="text-xs text-muted-foreground mb-1">あなたの称号</p>
       <p class="text-2xl font-bold text-foreground"><%= @profile.rank_title %></p>
       <p class="text-xs text-muted-foreground text-center mt-1">記録を続けて称号をランクアップさせよう</p>
@@ -31,26 +31,26 @@
 
     <!-- Stats -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-      <div class="bg-card border border-border rounded-lg p-4 text-center">
-        <p class="text-2xl font-bold text-primary tabular-nums"><%= @total_votes_count %></p>
+      <div class="bg-surface-inset rounded-lg p-4 text-center">
+        <p class="stat-number text-2xl text-primary"><%= @total_votes_count %></p>
         <p class="text-xs text-muted-foreground mt-1">累計記録</p>
       </div>
-      <div class="bg-card border border-border rounded-lg p-4 text-center">
-        <p class="text-2xl font-bold text-primary tabular-nums"><%= @shops_count %></p>
+      <div class="bg-surface-inset rounded-lg p-4 text-center">
+        <p class="stat-number text-2xl text-primary"><%= @shops_count %></p>
         <p class="text-xs text-muted-foreground mt-1">記録店舗</p>
       </div>
-      <div class="bg-card border border-border rounded-lg p-4 text-center">
-        <p class="text-2xl font-bold text-primary tabular-nums"><%= @machines_count %></p>
+      <div class="bg-surface-inset rounded-lg p-4 text-center">
+        <p class="stat-number text-2xl text-primary"><%= @machines_count %></p>
         <p class="text-xs text-muted-foreground mt-1">記録機種</p>
       </div>
-      <div class="bg-card border border-border rounded-lg p-4 text-center">
-        <p class="text-2xl font-bold text-primary tabular-nums"><%= @prefectures_count %></p>
+      <div class="bg-surface-inset rounded-lg p-4 text-center">
+        <p class="stat-number text-2xl text-primary"><%= @prefectures_count %></p>
         <p class="text-xs text-muted-foreground mt-1">記録都道府県</p>
       </div>
     </div>
 
     <!-- ストリーク -->
-    <div class="bg-card border border-border rounded-lg p-4 mb-6">
+    <div class="bg-card rounded-lg border-b border-border/50 p-4 mb-6">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
           <span class="w-1 h-4 bg-slot-red rounded-full"></span>
@@ -98,7 +98,7 @@
       %>
       <div class="grid <%= grid_class %> gap-3 mb-6">
         <% accuracy_cards.each do |card| %>
-          <div class="bg-card border border-border rounded-lg p-4 text-center <%= 'col-span-2 sm:col-span-1' if accuracy_cards.size == 3 && card == accuracy_cards.last %>">
+          <div class="bg-surface-inset rounded-lg p-4 text-center <%= 'col-span-2 sm:col-span-1' if accuracy_cards.size == 3 && card == accuracy_cards.last %>">
             <p class="text-2xl font-bold <%= card[:color] %> tabular-nums"><%= card[:value] %>%</p>
             <p class="text-xs text-muted-foreground mt-1"><%= card[:label] %></p>
           </div>
@@ -114,7 +114,7 @@
       </h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <% @badges.each do |badge| %>
-          <div class="flex items-center gap-3 bg-card border border-border rounded-lg p-3 <%= 'opacity-40' unless badge[:earned] %>">
+          <div class="flex items-center gap-3 bg-card rounded-lg border-b border-border/50 p-3 <%= 'opacity-40' unless badge[:earned] %>">
             <span class="text-2xl"><%= badge[:icon] %></span>
             <div>
               <p class="text-sm font-semibold text-foreground"><%= badge[:name] %></p>
@@ -139,7 +139,7 @@
         最近の記録履歴
       </h2>
       <% if @recent_votes.any? %>
-        <div class="bg-card border border-border rounded-lg divide-y divide-border">
+        <div class="bg-card rounded-lg divide-y divide-border/50 border-b border-border/50">
           <% @recent_votes.each do |vote| %>
             <div class="flex items-center gap-3 p-3">
               <div class="flex-1 min-w-0">
@@ -170,7 +170,7 @@
     </div>
 
     <!-- Token Backup -->
-    <div class="bg-card border border-border rounded-lg p-4 mb-6">
+    <div class="bg-card rounded-lg border-b border-border/50 p-4 mb-6">
       <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
         <span class="w-1 h-4 bg-slot-blue rounded-full"></span>
         トークンバックアップ
@@ -192,7 +192,7 @@
 
   <% else %>
     <!-- No votes yet -->
-    <div class="bg-card border border-border rounded-lg p-8 text-center">
+    <div class="bg-card rounded-lg border-b border-border/50 p-8 text-center">
       <p class="text-4xl mb-3">🎰</p>
       <h2 class="text-base font-semibold text-foreground mb-2">はじめての記録で称号GET!</h2>
       <p class="text-sm text-muted-foreground mb-4">店舗ページでリセット予想や設定読みをワンタップ記録。<br>記録するだけで「見習い」→「記録者」→「常連」...と称号がランクアップします。</p>
@@ -200,7 +200,7 @@
     </div>
 
     <!-- Token Restore -->
-    <div class="bg-card border border-border rounded-lg p-4 mt-4">
+    <div class="bg-card rounded-lg border-b border-border/50 p-4 mt-4">
       <h2 class="text-sm font-bold text-foreground mb-2">トークン復元</h2>
       <p class="text-xs text-muted-foreground mb-3">以前のトークンをお持ちの場合、ここから復元できます。</p>
       <%= form_tag restore_voter_token_path, method: :post, class: "flex items-center gap-2" do %>

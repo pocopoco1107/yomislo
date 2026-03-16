@@ -32,25 +32,25 @@
 
   <%# === Summary Cards === %>
   <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-    <div class="bg-card border border-border rounded-lg p-3 text-center">
+    <div class="bg-surface-inset rounded-lg p-3 text-center">
       <span class="text-xs text-muted-foreground block mb-1">今月の収支</span>
-      <span class="text-xl font-bold tabular-nums <%= @monthly_total >= 0 ? 'text-primary' : 'text-destructive' %>">
+      <span class="stat-number text-xl <%= @monthly_total >= 0 ? 'text-primary' : 'text-destructive' %>">
         <%= @monthly_total >= 0 ? "+" : "" %><%= number_with_delimiter(@monthly_total) %>
       </span>
     </div>
-    <div class="bg-card border border-border rounded-lg p-3 text-center">
+    <div class="bg-surface-inset rounded-lg p-3 text-center">
       <span class="text-xs text-muted-foreground block mb-1">勝率</span>
-      <span class="text-xl font-bold tabular-nums text-foreground"><%= @monthly_win_rate %>%</span>
+      <span class="stat-number text-xl text-foreground"><%= @monthly_win_rate %>%</span>
     </div>
-    <div class="bg-card border border-border rounded-lg p-3 text-center">
+    <div class="bg-surface-inset rounded-lg p-3 text-center">
       <span class="text-xs text-muted-foreground block mb-1">稼働日数</span>
-      <span class="text-xl font-bold tabular-nums text-foreground">
+      <span class="stat-number text-xl text-foreground">
         <%= @monthly_count %><span class="text-sm font-normal text-muted-foreground">日</span>
       </span>
     </div>
-    <div class="bg-card border border-border rounded-lg p-3 text-center">
+    <div class="bg-surface-inset rounded-lg p-3 text-center">
       <span class="text-xs text-muted-foreground block mb-1">累計収支</span>
-      <span class="text-xl font-bold tabular-nums <%= @total_result >= 0 ? 'text-primary' : 'text-destructive' %>">
+      <span class="stat-number text-xl <%= @total_result >= 0 ? 'text-primary' : 'text-destructive' %>">
         <%= @total_result >= 0 ? "+" : "" %><%= number_with_delimiter(@total_result) %>
       </span>
     </div>
@@ -59,7 +59,7 @@
   <%# === Month Navigation === %>
   <% prev_month = @current_month - 1.month %>
   <% next_month = @current_month + 1.month %>
-  <div class="bg-card border border-border rounded-lg p-3 mb-4">
+  <div class="bg-card rounded-lg border-b border-border/50 p-3 mb-4">
     <div class="flex items-center justify-center gap-4">
       <%= link_to play_records_path(month: prev_month.strftime("%Y-%m")),
           class: "inline-flex items-center gap-1 border border-border bg-background rounded-md px-4 py-2 text-sm text-foreground hover:bg-secondary active:scale-95 transition-all duration-150 min-h-[44px]" do %>
@@ -85,7 +85,7 @@
   </div>
 
   <%# === Calendar Grid === %>
-  <div class="bg-card border border-border rounded-lg p-3 mb-6" data-controller="calendar">
+  <div class="bg-card rounded-lg border-b border-border/50 p-3 mb-6" data-controller="calendar">
     <%# Weekday header %>
     <div class="grid grid-cols-7 gap-px mb-1">
       <% %w[日 月 火 水 木 金 土].each_with_index do |day_name, i| %>
@@ -154,8 +154,8 @@
   </div>
 
   <%# === Monthly Record List (Grouped by date+shop) === %>
-  <div class="bg-card border border-border rounded-lg p-4">
-    <h2 class="text-sm font-semibold text-foreground mb-3 border-b border-border pb-2 flex items-center gap-2">
+  <div class="bg-card rounded-lg border-b border-border/50 p-4">
+    <h2 class="text-sm font-semibold text-foreground mb-3 border-b border-border/50 pb-2 flex items-center gap-2">
       <svg class="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
         <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -252,7 +252,7 @@
       ============================================ %>
   <button type="button"
           data-action="click->record-modal#openForToday"
-          class="fixed bottom-6 right-6 z-30 flex items-center gap-2 bg-primary text-primary-foreground
+          class="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-6 z-30 flex items-center gap-2 bg-primary text-primary-foreground
                  rounded-full px-5 py-3 shadow-lg hover:bg-primary/90 active:scale-95
                  transition-all duration-150 min-h-[48px]"
           aria-label="今日の収支を記録">
@@ -268,12 +268,14 @@
   <%# Backdrop %>
   <div data-record-modal-target="backdrop"
        data-action="click->record-modal#backdropClose"
-       class="hidden fixed inset-0 bg-black/50 z-40 opacity-0 transition-opacity duration-300"></div>
+       style="display: none"
+       class="fixed inset-0 bg-black/50 z-40 opacity-0 transition-opacity duration-300"></div>
 
   <%# Panel: bottom sheet (mobile) / center dialog (desktop) %>
   <div data-record-modal-target="panel"
-       class="hidden fixed z-50 max-h-[90vh] overflow-y-auto overscroll-contain bg-card
-              inset-x-0 bottom-0 rounded-t-2xl border-t border-border
+       style="display: none"
+       class="fixed z-50 max-h-[85vh] sm:max-h-[90vh] flex flex-col bg-card
+              inset-x-0 bottom-0 rounded-t-2xl border-t border-border w-full
               sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:right-auto sm:max-w-lg sm:w-[calc(100%-2rem)]
               sm:rounded-2xl sm:border sm:shadow-xl"
        id="record-modal-panel">
@@ -303,7 +305,7 @@
     </div>
 
     <%# Modal Body — Form %>
-    <div class="px-4 py-4" data-controller="play-record-form machine-options"
+    <div class="px-4 py-4 overflow-y-auto overscroll-contain flex-1" data-controller="play-record-form machine-options"
          data-machine-options-url-value="<%= machines_for_shop_shops_path %>"
          data-action="shop-autocomplete:shopSelected->machine-options#update">
       <%= form_tag play_records_path, method: :post, class: "space-y-4" do %>
@@ -357,7 +359,7 @@
         </div>
 
         <%# Submit %>
-        <div class="pt-2 pb-2">
+        <div class="pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           <button type="submit"
               class="w-full bg-primary text-primary-foreground rounded-lg px-4 py-3 text-base font-medium hover:bg-primary/90 active:scale-[0.98] transition-all duration-150 min-h-[48px] cursor-pointer">
             記録する

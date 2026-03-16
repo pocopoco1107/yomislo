@@ -71,12 +71,12 @@
              data-entry-vote-target="resetHidden">
       <button type="button" data-action="click->entry-vote#selectReset"
               data-entry-vote-target="resetBtn" data-value="1"
-              class="bg-vote-yes/10 text-vote-yes rounded px-2.5 py-1 text-[11px] font-bold active:scale-95 transition-all min-h-[32px]">
+              class="bg-vote-yes/10 text-vote-yes rounded px-2.5 py-1 text-[11px] font-bold active:scale-95 transition-all min-h-[36px]">
         リセット
       </button>
       <button type="button" data-action="click->entry-vote#selectReset"
               data-entry-vote-target="resetBtn" data-value="0"
-              class="bg-vote-no/10 text-vote-no rounded px-2.5 py-1 text-[11px] font-bold active:scale-95 transition-all min-h-[32px]">
+              class="bg-vote-no/10 text-vote-no rounded px-2.5 py-1 text-[11px] font-bold active:scale-95 transition-all min-h-[36px]">
         据え置き
       </button>
     </div>
@@ -92,7 +92,7 @@
         <% (1..6).each do |s| %>
           <button type="button" data-action="click->entry-vote#selectSetting"
                   data-entry-vote-target="settingBtn" data-value="<%= s %>"
-                  class="bg-setting-<%= s %>/10 text-setting-<%= s %> rounded w-8 h-8 text-xs font-bold active:scale-90 transition-all">
+                  class="bg-setting-<%= s %>/10 text-setting-<%= s %> rounded w-9 h-9 text-xs font-bold active:scale-90 transition-all">
             <%= s %>
           </button>
         <% end %>
@@ -120,7 +120,7 @@
         <button type="button"
                data-entry-vote-target="confirmedBtn" data-tag="<%= tag %>"
                data-action="click->entry-vote#toggleConfirmed"
-               class="bg-<%= tag_color %>/10 text-<%= tag_color %> rounded px-2 py-1 text-[10px] font-bold cursor-pointer active:scale-95 transition-all min-h-[28px] inline-flex items-center">
+               class="bg-<%= tag_color %>/10 text-<%= tag_color %> rounded px-2 py-1 text-[10px] font-bold cursor-pointer active:scale-95 transition-all min-h-[36px] inline-flex items-center">
           <%= tag %>
         </button>
       <% end %>

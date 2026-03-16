@@ -5,12 +5,12 @@
     user_confirmed = user_vote&.confirmed_setting || []
 
     selected_classes = {
-      1 => 'bg-setting-1 text-white ring-1 ring-setting-1/50',
-      2 => 'bg-setting-2 text-white ring-1 ring-setting-2/50',
-      3 => 'bg-setting-3 text-white ring-1 ring-setting-3/50',
-      4 => 'bg-setting-4 text-white ring-1 ring-setting-4/50',
-      5 => 'bg-setting-5 text-white ring-1 ring-setting-5/50',
-      6 => 'bg-setting-6 text-white ring-1 ring-setting-6/50'
+      1 => 'bg-setting-1 text-white ring-2 ring-setting-1/40 shadow-[0_0_8px_rgba(96,165,250,0.3)]',
+      2 => 'bg-setting-2 text-white ring-2 ring-setting-2/40 shadow-[0_0_8px_rgba(34,211,238,0.3)]',
+      3 => 'bg-setting-3 text-white ring-2 ring-setting-3/40 shadow-[0_0_8px_rgba(74,222,128,0.3)]',
+      4 => 'bg-setting-4 text-white ring-2 ring-setting-4/40 shadow-[0_0_8px_rgba(250,204,21,0.3)]',
+      5 => 'bg-setting-5 text-white ring-2 ring-setting-5/40 shadow-[0_0_8px_rgba(251,146,60,0.3)]',
+      6 => 'bg-setting-6 text-white ring-2 ring-setting-6/40 shadow-[0_0_8px_rgba(248,113,113,0.3)]'
     }
     unselected_classes = {
       1 => 'bg-setting-1/10 text-setting-1 hover:bg-setting-1/20',
@@ -28,13 +28,13 @@
       '6確' => 'text-setting-6'
     }
     confirmed_btn_selected = {
-      '偶数確' => 'bg-setting-2 text-white ring-1 ring-setting-2/50',
-      '奇数確' => 'bg-setting-1 text-white ring-1 ring-setting-1/50',
-      '2以上' => 'bg-setting-2 text-white ring-1 ring-setting-2/50',
-      '3以上' => 'bg-setting-3 text-white ring-1 ring-setting-3/50',
-      '4以上' => 'bg-setting-4 text-white ring-1 ring-setting-4/50',
-      '5以上' => 'bg-setting-5 text-white ring-1 ring-setting-5/50',
-      '6確' => 'bg-setting-6 text-white ring-1 ring-setting-6/50'
+      '偶数確' => 'bg-setting-2 text-white ring-2 ring-setting-2/40',
+      '奇数確' => 'bg-setting-1 text-white ring-2 ring-setting-1/40',
+      '2以上' => 'bg-setting-2 text-white ring-2 ring-setting-2/40',
+      '3以上' => 'bg-setting-3 text-white ring-2 ring-setting-3/40',
+      '4以上' => 'bg-setting-4 text-white ring-2 ring-setting-4/40',
+      '5以上' => 'bg-setting-5 text-white ring-2 ring-setting-5/40',
+      '6確' => 'bg-setting-6 text-white ring-2 ring-setting-6/40'
     }
     confirmed_btn_unselected = {
       '偶数確' => 'bg-setting-2/10 text-setting-2 hover:bg-setting-2/20',
@@ -50,7 +50,7 @@
       (vote_summary ? vote_summary.reset_yes_count + vote_summary.reset_no_count : 0)
   %>
 
-  <details class="bg-card border border-border rounded-lg overflow-hidden group" data-controller="vote" <%= "open" if user_vote.present? || local_assigns[:user_play_record].present? %>>
+  <details class="bg-card rounded-lg overflow-hidden group shadow-sm" data-controller="vote" <%= "open" if user_vote.present? || local_assigns[:user_play_record].present? %>>
     <%# === ヘッダー: 画像+機種名+基本情報 === %>
     <summary class="list-none px-3 py-2 cursor-pointer select-none hover:bg-secondary/50 active:bg-secondary transition-colors min-h-[44px]">
       <div class="flex items-center gap-2">
@@ -163,7 +163,7 @@
                 <%= f.hidden_field :voted_on, value: date %>
                 <%= f.hidden_field :setting_vote, value: setting %>
                 <button type="submit"
-                        class="<%= color_class %> rounded-lg w-9 h-9 text-xs font-bold active:scale-90 transition-all duration-150"
+                        class="<%= color_class %> rounded-lg w-10 h-10 text-sm font-bold active:scale-90 transition-all duration-150"
                         data-action="click->vote#submit"
                         data-vote-target="button"><%= setting %></button>
               <% end %>
@@ -205,7 +205,7 @@
               <%= f.hidden_field :voted_on, value: date %>
               <%= f.hidden_field :confirmed_setting, value: tag %>
               <button type="submit"
-                      class="<%= btn_class %> rounded-md px-3 py-1.5 text-[11px] font-bold active:scale-95 transition-all duration-150 min-h-[32px]"
+                      class="<%= btn_class %> rounded-md px-3 py-1.5 text-[11px] font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
                       data-action="click->vote#submit"
                       data-vote-target="button"><%= tag %></button>
             <% end %>
@@ -242,7 +242,7 @@
             <% end %>
             <%= button_to play_record_path(user_pr), method: :delete,
                 data: { turbo_confirm: "この収支記録を削除しますか？" },
-                class: "text-[10px] text-muted-foreground hover:text-destructive transition-colors min-h-[32px] px-1" do %>
+                class: "text-[10px] text-muted-foreground hover:text-destructive transition-colors min-h-[36px] px-1" do %>
               削除
             <% end %>
           </div>
@@ -253,17 +253,17 @@
               <input type="hidden" name="play_record[machine_model_id]" value="<%= machine_model.id %>">
               <input type="hidden" name="play_record[played_on]" value="<%= date %>">
               <button type="button" data-action="click->result-input#toggleSign"
-                      class="shrink-0 w-8 h-8 flex items-center justify-center rounded-md border border-border bg-background text-sm font-bold transition-colors hover:bg-secondary">
+                      class="shrink-0 w-9 h-9 flex items-center justify-center rounded-md border border-border bg-background text-sm font-bold transition-colors hover:bg-secondary">
                 <span data-result-input-target="sign" class="text-primary">+</span>
               </button>
               <input type="number" min="0" max="999999" placeholder="収支(枚)" inputmode="numeric"
                      data-result-input-target="amount"
                      data-action="input->result-input#input"
-                     class="w-24 border border-input bg-background text-foreground rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring tabular-nums min-h-[32px]">
+                     class="flex-1 min-w-0 border border-input bg-background text-foreground rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring tabular-nums min-h-[36px]">
               <input type="hidden" name="play_record[result_amount]" value="0"
                      data-result-input-target="hidden">
               <button type="submit"
-                      class="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-xs font-medium hover:bg-primary/90 active:scale-95 transition-all duration-150 min-h-[32px]">
+                      class="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-xs font-medium hover:bg-primary/90 active:scale-95 transition-all duration-150 min-h-[36px]">
                 記録
               </button>
             <% end %>

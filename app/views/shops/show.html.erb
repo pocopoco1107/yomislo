@@ -43,9 +43,9 @@
   </nav>
 
   <%# === Shop Header === %>
-  <div class="bg-card border border-border rounded-lg p-4 mb-4">
+  <div class="bg-card rounded-lg p-4 mb-4 shadow-sm border-l-2 border-l-primary/20">
     <div class="flex items-center gap-2">
-      <h1 class="text-2xl md:text-3xl font-bold text-foreground tracking-tight flex-1"><%= @shop.name %></h1>
+      <h1 class="text-2xl md:text-3xl font-bold text-foreground flex-1"><%= @shop.name %></h1>
       <div data-controller="favorite" data-favorite-shop-slug-value="<%= @shop.slug %>">
         <button data-action="click->favorite#toggle"
                 class="text-2xl leading-none p-1 hover:scale-110 transition-transform min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
@@ -83,8 +83,8 @@
   </div>
 
   <%# === Shop Info Card === %>
-  <div class="bg-card border border-border rounded-lg p-4 mb-6">
-    <h2 class="text-sm font-semibold text-foreground mb-3 border-b border-border pb-2">店舗情報</h2>
+  <div class="bg-card rounded-lg p-4 mb-6 border-b border-border/50">
+    <h2 class="text-sm font-semibold text-foreground mb-3 border-b border-border/50 pb-2">店舗情報</h2>
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
       <div>
         <span class="text-xs text-muted-foreground block">レート</span>
@@ -167,7 +167,7 @@
   <%# === Play Record Stats === %>
   <% shop_summary = PlayRecordSummary.find_by(scope_type: "shop", scope_id: @shop.id, period_type: :all_time, period_key: "all") %>
   <% if shop_summary && shop_summary.total_records >= 3 %>
-    <div class="bg-card border border-border rounded-lg p-4 mb-6">
+    <div class="bg-surface-inset rounded-lg p-4 mb-6">
       <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
         <span class="w-1 h-4 bg-slot-yellow rounded-full"></span>
         収支統計
@@ -209,7 +209,7 @@
   <% end %>
 
   <%# === Monthly Calendar === %>
-  <div class="bg-card border border-border rounded-lg p-3 mb-4">
+  <div class="bg-card rounded-lg p-3 mb-4 border-b border-border/50">
     <turbo-frame id="shop_calendar">
       <%= render "shops/calendar", shop: @shop, calendar_month: @calendar_month,
                  calendar_data: @calendar_data, current_date: @date %>
@@ -283,7 +283,7 @@
         </div>
       <% end %>
     <% else %>
-      <div class="bg-card border border-border rounded-lg p-8 text-center">
+      <div class="bg-card rounded-lg border-b border-border/50 p-8 text-center">
         <p class="text-muted-foreground text-sm">まだ記録がありません。上の検索から機種を探して記録しましょう。</p>
       </div>
     <% end %>
@@ -312,7 +312,7 @@
       </h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <% @same_rate_shops.each do |other_shop| %>
-          <%= link_to shop_path(other_shop.slug), class: "bg-card border border-border rounded-lg px-3 py-2.5 hover:bg-secondary hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-150 block min-h-[44px]" do %>
+          <%= link_to shop_path(other_shop.slug), class: "bg-card rounded-lg border-b border-border/50 px-3 py-2.5 hover:-translate-y-px hover:shadow-sm active:scale-[0.98] transition-all duration-150 block min-h-[44px]" do %>
             <span class="text-sm font-medium text-primary"><%= favorite_mark(other_shop) %> <%= other_shop.name %></span>
             <div class="flex flex-wrap items-center gap-1 mt-1">
               <% if other_shop.slot_rates.present? %>

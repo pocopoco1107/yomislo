@@ -61,7 +61,7 @@
       }
       exchange_display_to_value = { "等価" => "equal_rate", "5.6枚交換" => "rate_56", "5.0枚交換" => "rate_50", "非等価" => "non_equal" }
     %>
-    <div class="bg-card border border-border rounded-lg p-5 mb-6 cursor-pointer hover:border-primary/30 transition-colors"
+    <div class="bg-card rounded-lg border-b border-border/50 p-5 mb-6 cursor-pointer hover:shadow-sm transition-all"
          data-controller="accordion" data-action="click->accordion#toggle">
       <%# サマリー行: 常に表示 %>
       <div class="flex flex-wrap items-center gap-2 text-xs">
@@ -312,7 +312,7 @@
       </h2>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <% @recommendations.each_with_index do |rec, i| %>
-          <%= link_to shop_path(rec.shop.slug), class: "bg-card border border-border rounded-lg p-3.5 hover:border-primary/50 transition-colors block" do %>
+          <%= link_to shop_path(rec.shop.slug), class: "bg-card rounded-lg border-b border-border/50 p-3.5 hover:-translate-y-px hover:shadow-sm transition-all duration-150 block" do %>
             <div class="flex items-center gap-2.5">
               <span class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold tabular-nums
                 <%= case i when 0 then 'bg-primary/15 text-primary' when 1 then 'bg-slot-blue/15 text-slot-blue' else 'bg-secondary text-muted-foreground' end %>">
@@ -347,7 +347,7 @@
   <%# 県の収支統計 %>
   <% pref_summary = PlayRecordSummary.find_by(scope_type: "prefecture", scope_id: @prefecture.id, period_type: :all_time, period_key: "all") %>
   <% if pref_summary && pref_summary.total_records >= 5 %>
-    <div class="bg-card border border-border rounded-lg p-4 mb-6">
+    <div class="bg-surface-inset rounded-lg p-4 mb-6">
       <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
         <span class="w-1 h-4 bg-slot-yellow rounded-full"></span>
         <%= @prefecture.name %>の収支統計
@@ -403,7 +403,7 @@
       </span>
     </div>
 
-    <div data-shop-filter-target="panel" class="hidden mt-3 bg-card border border-border rounded-lg p-5 shadow-sm">
+    <div data-shop-filter-target="panel" class="hidden mt-3 bg-card rounded-lg border-b border-border/50 p-5 shadow-sm">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
         <%# 換金率 %>
@@ -508,7 +508,7 @@
       <% @grouped_shops.each_with_index do |(city, shops), idx| %>
         <div data-controller="accordion" data-city-group>
           <button type="button" data-action="click->accordion#toggle"
-                  class="w-full flex items-center justify-between bg-card border border-border rounded-lg px-4 py-3 hover:border-primary/30 transition-colors min-h-[44px]">
+                  class="w-full flex items-center justify-between bg-card rounded-lg border-b border-border/50 px-4 py-3 hover:shadow-sm transition-all min-h-[44px]">
             <div class="flex items-center gap-2.5">
               <span class="text-sm font-semibold text-foreground"><%= city %></span>
               <span data-city-count class="text-[11px] text-muted-foreground bg-secondary rounded-md px-2 py-0.5 tabular-nums"><%= shops.size %>店</span>
@@ -534,7 +534,7 @@
                   end
                 %>
                 <%= link_to shop_path(shop.slug),
-                    class: "bg-card border border-border rounded-lg p-3.5 hover:border-primary/50 transition-colors block h-full",
+                    class: "bg-card rounded-lg border-b border-border/50 p-3.5 hover:-translate-y-px hover:shadow-sm transition-all duration-150 block h-full",
                     data: {
                       filter_name: shop.name.downcase,
                       shop_card: true,
@@ -602,7 +602,7 @@
       <% end %>
     </div>
   <% else %>
-    <div class="bg-card border border-border rounded-lg p-8 text-center mt-4">
+    <div class="bg-card rounded-lg border-b border-border/50 p-8 text-center mt-4">
       <p class="text-muted-foreground">この都道府県にはまだ店舗が登録されていません。</p>
     </div>
   <% end %>

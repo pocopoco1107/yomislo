@@ -62,7 +62,7 @@
 
   <%# === My Rank Card === %>
   <% if @my_rank %>
-    <div class="bg-gradient-to-r from-slot-blue/5 via-slot-green/5 to-slot-yellow/5 border border-primary/30 rounded-lg p-4 mb-4">
+    <div class="bg-card rounded-lg p-4 mb-4 border-l-2 border-l-primary/30">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-xs text-muted-foreground">あなたの順位</p>
@@ -90,7 +90,7 @@
 
   <%# === Rankings List === %>
   <% if @rankings.any? %>
-    <div class="bg-card border border-border rounded-lg divide-y divide-border">
+    <div class="bg-card rounded-lg divide-y divide-border/50 border-b border-border/50">
       <% @rankings.each do |entry| %>
         <%
           is_me = cookies[:voter_token].present? && entry.voter_token == cookies[:voter_token]
@@ -136,7 +136,7 @@
       <% end %>
     </div>
   <% else %>
-    <div class="bg-card border border-border rounded-lg p-8 text-center">
+    <div class="bg-card rounded-lg border-b border-border/50 p-8 text-center">
       <div class="flex flex-col items-center">
         <svg class="w-12 h-12 text-muted-foreground/40 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
           <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2" stroke-linecap="round" stroke-linejoin="round"/>

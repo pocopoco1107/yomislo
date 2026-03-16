@@ -1,7 +1,6 @@
-<header class="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-sm"
-        data-controller="mobile-nav">
-  <%# 演出カラーのグラデーションライン %>
-  <div class="h-0.5 w-full bg-gradient-to-r from-slot-blue via-slot-green via-50% via-slot-yellow to-slot-red"></div>
+<div data-controller="mobile-nav">
+<header class="sticky top-0 z-50 w-full bg-background/90 backdrop-blur-md border-b border-border/30">
+  <div class="h-px w-full bg-primary/30"></div>
   <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
     <%# === Logo === %>
     <a href="/" class="flex items-center">
@@ -11,15 +10,15 @@
     <%# === Desktop Navigation === %>
     <nav class="hidden items-center gap-6 md:flex">
       <%= link_to "ホーム", root_path,
-            class: "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" %>
+            class: "text-sm font-medium transition-colors #{current_page?(root_path) ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}" %>
       <%= link_to "検索", search_path,
-            class: "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" %>
+            class: "text-sm font-medium transition-colors #{current_page?(search_path) ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}" %>
       <%= link_to "収支", play_records_path,
-            class: "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" %>
+            class: "text-sm font-medium transition-colors #{current_page?(play_records_path) ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}" %>
       <%= link_to "ランキング", rankings_path,
-            class: "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" %>
+            class: "text-sm font-medium transition-colors #{current_page?(rankings_path) ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}" %>
       <%= link_to "マイ", voter_status_path,
-            class: "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" %>
+            class: "text-sm font-medium transition-colors #{current_page?(voter_status_path) ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}" %>
     </nav>
 
     <%# === Right side: theme toggle + mobile menu === %>
@@ -44,65 +43,66 @@
       </button>
     </div>
   </div>
-
-  <%# === Mobile Drawer === %>
-  <%# Overlay %>
-  <div data-mobile-nav-target="overlay"
-       data-action="click->mobile-nav#close"
-       class="fixed inset-0 z-40 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden">
-  </div>
-
-  <%# Drawer panel %>
-  <div data-mobile-nav-target="drawer"
-       class="fixed top-0 right-0 z-50 h-full w-64 translate-x-full bg-background border-l border-border shadow-xl transition-transform duration-300 ease-in-out md:hidden">
-    <div class="flex items-center justify-between p-4 border-b border-border">
-      <span class="text-sm font-semibold text-foreground">メニュー</span>
-      <button data-action="click->mobile-nav#close"
-              class="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              aria-label="メニューを閉じる">
-        <%= icon_x("w-5 h-5") %>
-      </button>
-    </div>
-
-    <nav class="flex flex-col gap-1 p-4">
-      <%= link_to root_path,
-            class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-secondary min-h-[44px]" do %>
-        <%= icon_home("w-5 h-5 text-muted-foreground") %>
-        ホーム
-      <% end %>
-      <%= link_to search_path,
-            class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
-        <%= icon_search("w-5 h-5 text-muted-foreground") %>
-        検索
-      <% end %>
-      <%= link_to play_records_path,
-            class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
-        <svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 10v1m0 0c-1.11 0-2.08-.402-2.599-1M12 8c1.11 0 2.08.402 2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        収支カレンダー
-      <% end %>
-      <%= link_to rankings_path,
-            class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
-        <svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        ランキング
-      <% end %>
-      <%= link_to voter_status_path,
-            class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
-        <%= icon_user("w-5 h-5 text-muted-foreground") %>
-        マイステータス
-      <% end %>
-
-      <div class="my-2 border-t border-border"></div>
-
-      <%= link_to new_feedback_path,
-            class: "flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
-        <%= icon_message("w-5 h-5 text-muted-foreground") %>
-        ご意見・ご要望
-      <% end %>
-      <%= link_to new_shop_request_path,
-            class: "flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
-        <%= icon_plus_circle("w-5 h-5 text-muted-foreground") %>
-        店舗追加リクエスト
-      <% end %>
-    </nav>
-  </div>
 </header>
+
+<%# === Mobile Drawer (headerの外 — backdrop-blurのスタッキングコンテキスト影響を回避) === %>
+<%# Overlay %>
+<div data-mobile-nav-target="overlay"
+     data-action="click->mobile-nav#close"
+     class="fixed inset-0 z-[60] bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden">
+</div>
+
+<%# Drawer panel %>
+<div data-mobile-nav-target="drawer"
+     class="fixed top-0 right-0 z-[70] h-full w-64 translate-x-full invisible bg-background border-l border-border shadow-xl transition-[transform,visibility] duration-300 ease-in-out md:hidden">
+  <div class="flex items-center justify-between p-4 border-b border-border">
+    <span class="text-sm font-semibold text-foreground">メニュー</span>
+    <button data-action="click->mobile-nav#close"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            aria-label="メニューを閉じる">
+      <%= icon_x("w-5 h-5") %>
+    </button>
+  </div>
+
+  <nav class="flex flex-col gap-1 p-4">
+    <%= link_to root_path,
+          class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-secondary min-h-[44px]" do %>
+      <%= icon_home("w-5 h-5 text-muted-foreground") %>
+      ホーム
+    <% end %>
+    <%= link_to search_path,
+          class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
+      <%= icon_search("w-5 h-5 text-muted-foreground") %>
+      検索
+    <% end %>
+    <%= link_to play_records_path,
+          class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
+      <svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 10v1m0 0c-1.11 0-2.08-.402-2.599-1M12 8c1.11 0 2.08.402 2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      収支カレンダー
+    <% end %>
+    <%= link_to rankings_path,
+          class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
+      <svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      ランキング
+    <% end %>
+    <%= link_to voter_status_path,
+          class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
+      <%= icon_user("w-5 h-5 text-muted-foreground") %>
+      マイステータス
+    <% end %>
+
+    <div class="my-2 border-t border-border"></div>
+
+    <%= link_to new_feedback_path,
+          class: "flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
+      <%= icon_message("w-5 h-5 text-muted-foreground") %>
+      ご意見・ご要望
+    <% end %>
+    <%= link_to new_shop_request_path,
+          class: "flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
+      <%= icon_plus_circle("w-5 h-5 text-muted-foreground") %>
+      店舗追加リクエスト
+    <% end %>
+  </nav>
+</div>
+</div>

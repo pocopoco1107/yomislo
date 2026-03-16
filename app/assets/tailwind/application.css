@@ -28,25 +28,25 @@
    Light mode
    ============================================ */
 :root {
-  --background: #ffffff;
+  --background: #fafafa;
   --foreground: #111827;
-  --card: #f9fafb;
+  --card: #ffffff;
   --card-foreground: #111827;
   --popover: #ffffff;
   --popover-foreground: #111827;
-  --primary: #22c55e;
+  --primary: #10b981;
   --primary-foreground: #ffffff;
   --secondary: #f3f4f6;
   --secondary-foreground: #111827;
   --muted: #f3f4f6;
   --muted-foreground: #6b7280;
-  --accent: #22c55e;
+  --accent: #10b981;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: #e5e7eb;
   --input: #e5e7eb;
-  --ring: #22c55e;
+  --ring: #10b981;
   --chart-1: #3b82f6;
   --chart-2: #06b6d4;
   --chart-3: #22c55e;
@@ -66,7 +66,9 @@
   --text-secondary: #6b7280;
   --text-tertiary: #9ca3af;
   --accent-muted: rgba(34, 197, 94, 0.12);
-  --accent-text: #16a34a;
+  --accent-text: #059669;
+  --surface-inset: #f0f1f3;
+  --glow-primary: rgba(16, 185, 129, 0.06);
   --vote-yes: #22c55e;
   --vote-no: #ef4444;
   --confirmed: #7c3aed;
@@ -83,25 +85,25 @@
    Dark mode (デフォルト)
    ============================================ */
 .dark {
-  --background: #0f1117;
+  --background: #0c0e14;
   --foreground: #f4f4f5;
-  --card: #181a22;
+  --card: #14161e;
   --card-foreground: #f4f4f5;
-  --popover: #1e2028;
+  --popover: #1a1c24;
   --popover-foreground: #f4f4f5;
-  --primary: #4ade80;
-  --primary-foreground: #0f1117;
-  --secondary: #232530;
+  --primary: #34d399;
+  --primary-foreground: #0c0e14;
+  --secondary: #1c1e28;
   --secondary-foreground: #f4f4f5;
-  --muted: #232530;
+  --muted: #1c1e28;
   --muted-foreground: #8b8d98;
-  --accent: #4ade80;
-  --accent-foreground: #0f1117;
+  --accent: #34d399;
+  --accent-foreground: #0c0e14;
   --destructive: #f87171;
-  --destructive-foreground: #0f1117;
-  --border: #2e3040;
-  --input: #2e3040;
-  --ring: #4ade80;
+  --destructive-foreground: #0c0e14;
+  --border: #252838;
+  --input: #252838;
+  --ring: #34d399;
   --chart-1: #60a5fa;
   --chart-2: #22d3ee;
   --chart-3: #4ade80;
@@ -120,7 +122,9 @@
   --text-secondary: #a1a3ae;
   --text-tertiary: #6b6e7b;
   --accent-muted: rgba(74, 222, 128, 0.12);
-  --accent-text: #86efac;
+  --accent-text: #6ee7b7;
+  --surface-inset: #0a0c12;
+  --glow-primary: rgba(52, 211, 153, 0.08);
   --vote-yes: #4ade80;
   --vote-no: #f87171;
   --confirmed: #a78bfa;
@@ -199,6 +203,8 @@
   --color-setting-4: var(--setting-4);
   --color-setting-5: var(--setting-5);
   --color-setting-6: var(--setting-6);
+  --color-surface-inset: var(--surface-inset);
+  --color-glow-primary: var(--glow-primary);
 
   /* Animations */
   --animate-fade-in: fade-in 0.3s ease-out;
@@ -260,6 +266,12 @@
   50% { opacity: 0.6; }
 }
 
+@keyframes vote-success {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
 /* ============================================
    Base layer
    ============================================ */
@@ -270,12 +282,14 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    overflow-x: hidden;
   }
 
-  /* スムーズスクロール */
+  /* スムーズスクロール + 横スクロール防止 */
   html {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
   }
 
   /* turbo-frame をブロック要素化 (gridの子要素として正しく動作させる) */
@@ -302,8 +316,8 @@
 
   /* Typography: 見出し */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight;
-    letter-spacing: -0.05em;
+    @apply font-bold;
+    letter-spacing: -0.025em;
   }
 
   /* Typography: 数値 tabular-nums */
@@ -322,6 +336,33 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* 数値表示用統一スタイル */
+  .stat-number {
+    font-family: 'Inter', 'Geist Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+    font-weight: 700;
+  }
+
+  /* 微かなノイズテクスチャ */
+  .noise-texture {
+    position: relative;
+  }
+  .noise-texture::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    border-radius: inherit;
+  }
+
+  /* プライマリグロウ */
+  .glow-primary {
+    box-shadow: 0 0 20px var(--glow-primary), 0 0 40px var(--glow-primary);
   }
 }
 
