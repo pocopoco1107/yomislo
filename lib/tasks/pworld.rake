@@ -398,17 +398,12 @@ module PworldScraper
               # Avoid empty slugs
               next if slug.blank?
 
-              model = MachineModel.find_or_initialize_by(slug: slug)
-              if model.new_record?
-                model.name = machine_name
-                model.maker = maker_name
-                model.save!
-                total_imported += 1
-              elsif maker_name.present? && model.maker.blank?
+              # 機種マスタはDMMぱちタウンが正。P-WORLDではマッチのみ（新規作成しない）
+              model = MachineModel.find_by(slug: slug)
+              next unless model
+              if maker_name.present? && model.maker.blank?
                 model.update!(maker: maker_name)
               end
-            rescue ActiveRecord::RecordInvalid => e
-              puts "    WARNING: Could not save machine '#{machine_name}': #{e.message}"
             rescue StandardError => e
               puts "    WARNING: Error processing machine entry: #{e.message}"
             end
@@ -662,14 +657,10 @@ module PworldScraper
         slug = pm[:slug]
         machine = existing_machines[slug]
 
-        if machine.nil?
-          machine = MachineModel.create!(
-            slug: slug, name: pm[:name], active: true
-          )
-          existing_machines[slug] = machine
-        elsif !machine.active?
-          machine.update!(active: true)
-        end
+        # 機種マスタはDMMぱちタウンが正。P-WORLDでは新規作成せずマッチのみ
+        next if machine.nil?
+
+        machine.update!(active: true) unless machine.active?
 
         unless existing_smms.key?(slug)
           ShopMachineModel.create!(shop: shop, machine_model: machine)
@@ -900,15 +891,12 @@ module PworldScraper
 
           next if slug.blank?
 
-          model = MachineModel.find_or_initialize_by(slug: slug)
-          if model.new_record?
-            model.name = machine_name
-            model.maker = maker_name
-            model.save!
-            total_imported += 1
+          # 機種マスタはDMMぱちタウンが正。P-WORLDではマッチのみ（新規作成しない）
+          model = MachineModel.find_by(slug: slug)
+          next unless model
+          if maker_name.present? && model.maker.blank?
+            model.update!(maker: maker_name)
           end
-        rescue ActiveRecord::RecordInvalid => e
-          puts "  WARNING: Could not save machine '#{machine_name}': #{e.message}"
         rescue StandardError => e
           puts "  WARNING: Error processing machine: #{e.message}"
         end

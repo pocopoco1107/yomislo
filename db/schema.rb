@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_13_002754) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_13_131601) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -242,10 +242,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_13_002754) do
     t.string "access_info"
     t.string "features"
     t.integer "geocode_precision", default: 0, null: false
+    t.integer "ptown_shop_id"
     t.index ["address"], name: "index_shops_on_address"
     t.index ["exchange_rate"], name: "index_shops_on_exchange_rate"
     t.index ["prefecture_id", "name"], name: "index_shops_on_prefecture_id_and_name"
     t.index ["prefecture_id"], name: "index_shops_on_prefecture_id"
+    t.index ["ptown_shop_id"], name: "index_shops_on_ptown_shop_id", unique: true
     t.index ["slot_rates"], name: "index_shops_on_slot_rates", using: :gin
     t.index ["slug"], name: "index_shops_on_slug", unique: true
   end

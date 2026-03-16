@@ -89,6 +89,21 @@ module PtownScraper
         .truncate(100, omission: "")
     end
 
+    # あいまいマッチ用: プレフィックス/サフィックス(型式記号)を除去したコア名
+    def core_name(name)
+      name
+        .unicode_normalize(:nfkc)
+        .gsub(/\A[SLPA]\s*(?=[^\x00-\x7F])/, "") # 先頭の型式記号 + 日本語が続く場合 (L, S, P, A)
+        .gsub(/\Aパチスロ\s*/, "")                # "パチスロ"プレフィックス
+        .gsub(/\Aスロット\s*/, "")                # "スロット"プレフィックス
+        .gsub(/\Aスマスロ\s*/, "")                # "スマスロ"プレフィックス
+        .gsub(/\Aスマート沖スロ\s*/, "")          # "スマート沖スロ"プレフィックス
+        .gsub(/\s+[A-Z]{1,3}\z/, "")             # 末尾の型式コード (KR, ZF, KM等)
+        .gsub(/[[:space:]]+/, "")                 # 全スペース除去
+        .gsub(/[^\p{L}\p{N}]/, "")               # 記号除去
+        .downcase
+    end
+
     # Parse list page: extract machine entries with basic info
     def parse_list_page(doc)
       machines = []
@@ -187,9 +202,140 @@ module PtownScraper
       info[:zone_info] = zone_text if zone_text.present?
 
       # タイプ情報 (span.text-icon: "スマスロ", "AT機", "Aタイプ" 等)
-      type_tags = doc.css("span.text-icon").map { |t| t.text.strip }.reject(&:blank?)
+      # ページ全体から取得するため、機種タイプに関係ないタグ("店舗","導入済み"等)を除外
+      valid_type_keywords = /\A(スマスロ|スマート|AT|ART|RT|CZ|Aタイプ|ノーマル|ボーナス|天井|純増|疑似|リアル|\d+[\.\d]*号機|\d+Φ|30Φ)/
+      type_tags = doc.css("span.text-icon").map { |t| t.text.strip }
+                     .reject(&:blank?)
+                     .select { |t| t.match?(valid_type_keywords) }
       info[:type_detail] = type_tags.join("、") if type_tags.any?
 
+      info
+    end
+
+    # ── 店舗スクレイピング ──
+
+    # 都道府県ページからarea(市区町村)URLリストを抽出
+    def parse_prefecture_areas(doc, pref_slug)
+      areas = []
+      doc.css("a[href*='/shops/#{pref_slug}/area/']").each do |link|
+        href = link["href"]
+        next unless href.match?(%r{/area/\d+})
+        text = link.text.strip
+        # "千代田区(5)" → name: "千代田区", count: 5
+        name = text.sub(/\(\d+\)$/, "").strip
+        count = text.match(/\((\d+)\)/)&.[](1)&.to_i || 0
+        areas << { url: "#{BASE_URL}#{href}", name: name, count: count }
+      end
+      areas
+    end
+
+    # areaページから店舗エントリを抽出
+    # HTML構造: <a class="link" href="/shops/{pref}/{id}">
+    #   <div class="cell"><p class="title">店舗名</p><p class="lead">住所</p><p class="lead">営業時間</p>...</div>
+    # </a>
+    def parse_area_shops(doc, pref_slug)
+      shops = []
+      doc.css("a.link[href]").each do |link|
+        href = link["href"]
+        next unless href.match?(%r{/shops/#{Regexp.escape(pref_slug)}/\d+\z})
+
+        shop_id = href.split("/").last.to_i
+
+        name = link.at_css("p.title")&.text&.strip
+        next if name.blank?
+
+        # p.lead: 住所(1個目) と 営業時間(2個目, "営業時間"含む)
+        leads = link.css("p.lead").map { |p| p.text.strip }
+        address = leads.find { |t| t.match?(/[都道府県]/) }
+        hours_text = leads.find { |t| t.match?(/営業時間/) }
+        hours = hours_text&.sub(/営業時間[：:]?\s*/, "")&.strip
+
+        shops << {
+          ptown_shop_id: shop_id,
+          name: name.unicode_normalize(:nfkc),
+          address: address&.unicode_normalize(:nfkc),
+          business_hours: hours&.unicode_normalize(:nfkc),
+          url: "#{BASE_URL}#{href}"
+        }
+      end
+      shops
+    end
+
+    # 店舗詳細ページからJSON-LD + 機種リストを抽出
+    def parse_shop_detail(doc)
+      info = {}
+
+      # JSON-LDから基本情報
+      doc.css('script[type="application/ld+json"]').each do |script|
+        begin
+          data = JSON.parse(script.text)
+          next unless data["@type"]&.match?(/Business|LocalBusiness|Entertainment/i)
+          info[:name] = data["name"]
+          info[:phone_number] = data["telephone"]
+          info[:business_hours] = data["openingHours"]
+          if data["address"].is_a?(Hash)
+            region = data.dig("address", "addressRegion") || ""
+            locality = data.dig("address", "addressLocality") || ""
+            street = data.dig("address", "streetAddress") || ""
+            info[:address] = "#{region}#{locality}#{street}"
+          end
+          if data["geo"].is_a?(Hash)
+            info[:lat] = data.dig("geo", "latitude")&.to_f
+            info[:lng] = data.dig("geo", "longitude")&.to_f
+          end
+        rescue JSON::ParserError
+          next
+        end
+      end
+
+      # アクセス・駐車場等のテキスト情報
+      doc.text.scan(/駐車場[：:]?\s*(\d+)台/).each do |m|
+        info[:parking_spaces] = m[0].to_i
+      end
+
+      # スロット設置機種リスト (#anc-slot セクション)
+      machines = []
+      slot_section = doc.at_css("#anc-slot")
+      if slot_section
+        # #anc-slot以降の要素を走査
+        current_rate = nil
+        node = slot_section.next_element
+        while node
+          # レートのh4見出し: "[21.739] スロ"
+          if node.name == "h4"
+            rate_text = node.text.strip
+            if rate_text.match(/\[(.+?)\]\s*スロ/)
+              current_rate = $1.strip
+            end
+          end
+
+          # 機種リストのli要素
+          node.css("a[href^='/machines/']").each do |link|
+            href = link["href"]
+            ptown_id = href.split("/").last.to_i
+            machine_name = link.text.strip
+            next if machine_name.blank?
+
+            # 台数: 同じli内の<span>
+            li = link.ancestors("li").first || link.parent
+            unit_text = li&.css("span")&.map(&:text)&.find { |t| t.match?(/\d+\s*台/) }
+            unit_count = unit_text&.match(/(\d+)\s*台/)&.[](1)&.to_i
+
+            machines << {
+              ptown_id: ptown_id,
+              name: machine_name.unicode_normalize(:nfkc),
+              unit_count: unit_count,
+              rate: current_rate
+            }
+          end
+
+          # 次のh3(パチンコセクション等)が来たら終了
+          break if node.name == "h3" && node["id"] != "anc-slot"
+          node = node.next_element
+        end
+      end
+
+      info[:machines] = machines
       info
     end
 
@@ -261,18 +407,40 @@ namespace :ptown do
     updated = 0
     skipped = 0
 
+    # Build core_name lookup for fuzzy matching
+    core_name_lookup = MachineModel.pluck(:id, :name).each_with_object({}) do |(id, name), h|
+      cn = PtownScraper.core_name(name)
+      h[cn] ||= id
+    end
+
     all_machines.each_with_index do |data, i|
       slug = PtownScraper.normalize_slug(data[:name])
       machine = MachineModel.find_by(slug: slug)
+      # Fuzzy fallback: core_nameで再検索
+      if machine.nil?
+        cn = PtownScraper.core_name(data[:name])
+        machine_id = core_name_lookup[cn]
+        machine = MachineModel.find_by(id: machine_id) if machine_id
+      end
+
+      # スマスロ判定（名前のＬプレフィックスやスマスロキーワード）
+      is_smart = data[:name].match?(/\A[Ｌ]/) || data[:name].include?("スマスロ")
 
       if machine
         attrs = {}
         attrs[:maker] = data[:maker] if data[:maker].present? && machine.maker.blank?
-        attrs[:payout_rate_min] = data[:payout_rate_min] if data[:payout_rate_min] && machine.payout_rate_min.blank?
-        attrs[:payout_rate_max] = data[:payout_rate_max] if data[:payout_rate_max] && machine.payout_rate_max.blank?
+        attrs[:payout_rate_min] = data[:payout_rate_min] if data[:payout_rate_min]
+        attrs[:payout_rate_max] = data[:payout_rate_max] if data[:payout_rate_max]
         attrs[:introduced_on] = data[:introduced_on] if data[:introduced_on] && machine.introduced_on.blank?
-        attrs[:image_url] = data[:image_url] if data[:image_url].present? && machine.image_url.blank?
-        attrs[:ptown_id] = data[:ptown_id] if data[:ptown_id] && machine.ptown_id.blank?
+        attrs[:image_url] = data[:image_url] if data[:image_url].present?  # 常に最新画像で上書き
+        # ptown_id重複チェック（ユニーク制約）
+        if data[:ptown_id] && machine.ptown_id.blank?
+          unless MachineModel.exists?(ptown_id: data[:ptown_id])
+            attrs[:ptown_id] = data[:ptown_id]
+          end
+        end
+        attrs[:is_smart_slot] = true if is_smart && !machine.is_smart_slot?
+        attrs[:active] = true unless machine.active?
 
         if attrs.any?
           machine.update!(attrs)
@@ -281,6 +449,11 @@ namespace :ptown do
           skipped += 1
         end
       else
+        # 新規作成前にptown_id重複チェック
+        if data[:ptown_id] && MachineModel.exists?(ptown_id: data[:ptown_id])
+          skipped += 1
+          next
+        end
         MachineModel.create!(
           name: data[:name],
           slug: slug,
@@ -290,6 +463,7 @@ namespace :ptown do
           introduced_on: data[:introduced_on],
           image_url: data[:image_url],
           ptown_id: data[:ptown_id],
+          is_smart_slot: is_smart,
           active: true
         )
         created += 1
@@ -344,7 +518,7 @@ namespace :ptown do
         # 天井・リセット情報は上書き（DMMぱちタウンの方が正確な場合が多い）
         attrs[:ceiling_info] = info[:ceiling_info] if info[:ceiling_info].present?
         attrs[:reset_info] = info[:reset_info] if info[:reset_info].present?
-        attrs[:type_detail] = info[:type_detail] if info[:type_detail].present? && machine.type_detail.blank?
+        attrs[:type_detail] = info[:type_detail] if info[:type_detail].present?  # ptownが正。常に上書き
 
         if attrs.any?
           machine.update!(attrs)
@@ -354,7 +528,7 @@ namespace :ptown do
           skipped += 1
           puts "  → スキップ（更新項目なし）"
         end
-      rescue => e
+      rescue ActiveRecord::RecordInvalid => e
         errors += 1
         puts "  → ERROR: #{e.message}"
       end
@@ -469,6 +643,349 @@ namespace :ptown do
     puts "スキップ (重複): #{skipped}"
     puts "エラー: #{errors}"
   end
+
+  desc "DMMぱちタウンから店舗一覧を取得・更新（都道府県指定可）"
+  task :import_shops, [:pref_slug] => :environment do |_t, args|
+    $stdout.sync = true
+    pref_slug = args[:pref_slug]
+
+    prefectures = if pref_slug.present?
+                    Prefecture.where(slug: pref_slug)
+                  else
+                    Prefecture.order(:id)
+                  end
+
+    if prefectures.empty?
+      puts "ERROR: Prefecture '#{pref_slug}' not found"
+      next
+    end
+
+    puts "=== DMMぱちタウン 店舗インポート ==="
+    total_created = 0
+    total_updated = 0
+    total_matched = 0
+
+    prefectures.each do |pref|
+      puts "\n--- #{pref.name} (#{pref.slug}) ---"
+
+      # Step 1: 都道府県ページからareaリストを取得
+      pref_url = "#{PtownScraper::BASE_URL}/shops/#{pref.slug}"
+      pref_doc = PtownScraper.fetch_page(pref_url)
+      unless pref_doc
+        puts "  ページ取得失敗: #{pref_url}"
+        next
+      end
+
+      areas = PtownScraper.parse_prefecture_areas(pref_doc, pref.slug)
+      puts "  #{areas.size} エリア検出 (計 #{areas.sum { |a| a[:count] }} 店舗)"
+      sleep PtownScraper::REQUEST_INTERVAL
+
+      # Step 2: 各areaページから店舗リストを取得
+      all_shops = []
+      areas.each_with_index do |area, ai|
+        next if area[:count] == 0
+
+        area_doc = PtownScraper.fetch_page(area[:url])
+        unless area_doc
+          puts "  #{area[:name]}: 取得失敗"
+          next
+        end
+
+        shops = PtownScraper.parse_area_shops(area_doc, pref.slug)
+        all_shops.concat(shops)
+        print "\r  エリア: #{ai + 1}/#{areas.size} (累計: #{all_shops.size}店舗)"
+        sleep PtownScraper::REQUEST_INTERVAL
+      end
+      puts ""
+
+      # Step 3: 店舗をDB反映
+      # 既存店舗との名前マッチング（同県内で名前の部分一致）
+      pref_shops = pref.shops.to_a
+      existing_shops = pref_shops.index_by { |s| s.name.unicode_normalize(:nfkc).gsub(/[[:space:]]/, "") }
+      # 前方一致用: normalized name → shop のルックアップ
+      shops_by_prefix = pref_shops.each_with_object({}) do |s, h|
+        norm = s.name.unicode_normalize(:nfkc).gsub(/[[:space:]]/, "")
+        prefix = norm[0..5]
+        (h[prefix] ||= []) << [norm, s] if prefix
+      end
+
+      pref_created = 0
+      pref_updated = 0
+      pref_matched = 0
+
+      all_shops.each do |shop_data|
+        normalized_name = shop_data[:name].gsub(/[[:space:]]/, "")
+
+        # ptown_shop_idで既存マッチ
+        shop = Shop.find_by(ptown_shop_id: shop_data[:ptown_shop_id])
+
+        # 名前でマッチ（完全一致→前方一致）
+        if shop.nil?
+          shop = existing_shops[normalized_name]
+          if shop.nil?
+            prefix = normalized_name[0..5]
+            candidates = shops_by_prefix[prefix]
+            if candidates
+              shop = candidates.find { |norm, _s| norm.start_with?(prefix) && normalized_name.start_with?(norm[0..5]) }&.last
+            end
+          end
+        end
+
+        if shop
+          attrs = {}
+          attrs[:ptown_shop_id] = shop_data[:ptown_shop_id] if shop.ptown_shop_id.blank?
+          attrs[:address] = shop_data[:address] if shop_data[:address].present? && shop.address.blank?
+          attrs[:business_hours] = shop_data[:business_hours] if shop_data[:business_hours].present? && shop.business_hours.blank?
+
+          if attrs.any?
+            shop.update!(attrs)
+            pref_updated += 1
+          else
+            pref_matched += 1
+          end
+        else
+          # 新規店舗（ptownにしかない）
+          slug = PtownScraper.normalize_slug(shop_data[:name])
+          # slug重複回避
+          if Shop.exists?(slug: slug)
+            slug = "#{slug}-#{shop_data[:ptown_shop_id]}"
+          end
+
+          Shop.create!(
+            prefecture: pref,
+            name: shop_data[:name],
+            slug: slug,
+            ptown_shop_id: shop_data[:ptown_shop_id],
+            address: shop_data[:address],
+            business_hours: shop_data[:business_hours]
+          )
+          pref_created += 1
+        end
+      end
+
+      total_created += pref_created
+      total_updated += pref_updated
+      total_matched += pref_matched
+      puts "  #{pref.name}: 新規 #{pref_created}, 更新 #{pref_updated}, 既存 #{pref_matched}"
+    end
+
+    puts "\n=== 結果 ==="
+    puts "新規作成: #{total_created}"
+    puts "更新: #{total_updated}"
+    puts "既存マッチ: #{total_matched}"
+    puts "合計: #{Shop.count} 店舗"
+  end
+
+  desc "DMMぱちタウンから店舗の設置機種リストを同期（都道府県指定可）"
+  task :sync_shop_machines, [:pref_slug] => :environment do |_t, args|
+    $stdout.sync = true
+    pref_slug = args[:pref_slug]
+
+    shops = if pref_slug.present?
+              Shop.joins(:prefecture).where(prefectures: { slug: pref_slug }).where.not(ptown_shop_id: nil)
+            else
+              Shop.where.not(ptown_shop_id: nil)
+            end
+
+    total = shops.count
+    puts "=== DMMぱちタウン 設置機種同期 (#{total}店舗) ==="
+
+    # ptown_id → MachineModel のルックアップ
+    machine_by_ptown_id = MachineModel.where.not(ptown_id: nil).index_by(&:ptown_id)
+
+    synced = 0
+    errors = 0
+    machines_added = 0
+    machines_removed = 0
+
+    shops.find_each.with_index do |shop, i|
+      pref_slug_for_url = shop.prefecture.slug
+      url = "#{PtownScraper::BASE_URL}/shops/#{pref_slug_for_url}/#{shop.ptown_shop_id}"
+
+      doc = PtownScraper.fetch_page(url)
+      unless doc
+        errors += 1
+        next
+      end
+
+      begin
+        info = PtownScraper.parse_shop_detail(doc)
+
+        # 店舗基本情報の更新
+        shop_attrs = {}
+        shop_attrs[:phone_number] = info[:phone_number] if info[:phone_number].present? && shop.phone_number.blank?
+        shop_attrs[:address] = info[:address] if info[:address].present? && shop.address.blank?
+        shop_attrs[:business_hours] = info[:business_hours] if info[:business_hours].present? && shop.business_hours.blank?
+        shop_attrs[:parking_spaces] = info[:parking_spaces] if info[:parking_spaces] && shop.parking_spaces.blank?
+        shop_attrs[:lat] = info[:lat] if info[:lat] && shop.lat.blank?
+        shop_attrs[:lng] = info[:lng] if info[:lng] && shop.lng.blank?
+        shop.update!(shop_attrs) if shop_attrs.any?
+
+        # 設置機種の同期
+        page_ptown_ids = info[:machines].map { |m| m[:ptown_id] }.to_set
+        existing_smms = shop.shop_machine_models.includes(:machine_model).index_by { |smm| smm.machine_model&.ptown_id }
+
+        # 追加
+        info[:machines].each do |m_data|
+          machine = machine_by_ptown_id[m_data[:ptown_id]]
+          next unless machine  # ptownマスタにない機種はスキップ
+
+          smm = existing_smms[m_data[:ptown_id]]
+          if smm
+            # 台数更新
+            smm.update_column(:unit_count, m_data[:unit_count]) if m_data[:unit_count] && smm.unit_count != m_data[:unit_count]
+          else
+            smm_new = ShopMachineModel.create(shop: shop, machine_model: machine, unit_count: m_data[:unit_count])
+            machines_added += 1 if smm_new.persisted?
+          end
+        end
+
+        # 削除（ptownに載っていない機種を除去）
+        stale = existing_smms.reject { |pid, _| pid.nil? || page_ptown_ids.include?(pid) }
+        if stale.any?
+          ShopMachineModel.where(id: stale.values.map(&:id)).delete_all
+          machines_removed += stale.size
+        end
+
+        synced += 1
+      rescue ActiveRecord::RecordInvalid, JSON::ParserError => e
+        errors += 1
+        puts "  ERROR #{shop.name}: #{e.message}"
+      end
+
+      print "\r  #{i + 1}/#{total} 同期済: #{synced} 追加: #{machines_added} 削除: #{machines_removed}" if (i + 1) % 10 == 0
+      sleep PtownScraper::REQUEST_INTERVAL
+    end
+
+    puts "\n\n=== 結果 ==="
+    puts "同期完了: #{synced}"
+    puts "機種追加: #{machines_added}"
+    puts "機種削除: #{machines_removed}"
+    puts "エラー: #{errors}"
+  end
+
+  desc "重複機種のマージ（core_name一致でShopMachineModel移行）"
+  task merge_duplicates: :environment do
+    $stdout.sync = true
+    puts "=== 重複機種マージ ==="
+
+    # core_nameでグループ化
+    groups = {}
+    MachineModel.active.find_each do |m|
+      cn = PtownScraper.core_name(m.name)
+      next if cn.blank? || cn.size < 2
+      (groups[cn] ||= []) << m
+    end
+
+    duplicates = groups.select { |_, machines| machines.size > 1 }
+    puts "重複グループ: #{duplicates.size}件"
+
+    # N+1回避: 全重複候補のshop_machine_models countを一括取得
+    dup_ids = duplicates.values.flatten.map(&:id)
+    smm_counts = ShopMachineModel.where(machine_model_id: dup_ids).group(:machine_model_id).count
+
+    merged = 0
+    moved_smms = 0
+
+    duplicates.each do |cn, machines|
+      # 優先: ptown_id有り > image_url有り > shop_machine_models数 > id小さい(古い)
+      keeper = machines.sort_by { |m|
+        [
+          m.ptown_id.present? ? 0 : 1,
+          m.image_url.present? ? 0 : 1,
+          -(smm_counts[m.id] || 0),
+          m.id
+        ]
+      }.first
+
+      machines.each do |dup|
+        next if dup.id == keeper.id
+
+        ActiveRecord::Base.transaction do
+          # ShopMachineModelを移行
+          dup.shop_machine_models.each do |smm|
+            # keeper側に同じshopの紐づけが既にあればスキップ
+            if keeper.shop_machine_models.exists?(shop_id: smm.shop_id)
+              existing = keeper.shop_machine_models.find_by(shop_id: smm.shop_id)
+              # 台数が大きい方を残す
+              if smm.unit_count.to_i > existing.unit_count.to_i
+                existing.update_column(:unit_count, smm.unit_count)
+              end
+              smm.destroy
+            else
+              smm.update_column(:machine_model_id, keeper.id)
+              moved_smms += 1
+            end
+          end
+
+          # Vote, PlayRecord等も移行
+          Vote.where(machine_model_id: dup.id).update_all(machine_model_id: keeper.id)
+          VoteSummary.where(machine_model_id: dup.id).update_all(machine_model_id: keeper.id)
+          PlayRecord.where(machine_model_id: dup.id).update_all(machine_model_id: keeper.id)
+
+          # keeperにない属性を補完
+          attrs = %i[maker ptown_id image_url type_detail payout_rate_min payout_rate_max
+                     introduced_on ceiling_info reset_info].each_with_object({}) do |attr, h|
+            h[attr] = dup.send(attr) if dup.send(attr).present? && keeper.send(attr).blank?
+          end
+          attrs[:is_smart_slot] = true if dup.is_smart_slot? && !keeper.is_smart_slot?
+          keeper.update!(attrs) if attrs.any?
+
+          # 重複を非アクティブ化
+          dup.update_column(:active, false)
+          merged += 1
+        end
+      end
+    end
+
+    puts "マージ完了: #{merged}件の重複を統合"
+    puts "移行したShopMachineModel: #{moved_smms}件"
+    puts "アクティブ機種: #{MachineModel.active.count}件"
+  end
+
+  desc "汚染されたtype_detailをクリーンアップし、画像なし機種を再取得対象に"
+  task cleanup: :environment do
+    $stdout.sync = true
+    puts "=== DMMぱちタウン データクリーンアップ ==="
+
+    # 1. type_detailに「店舗」「導入済み」が含まれるレコードをリセット
+    contaminated = MachineModel.where("type_detail LIKE ? OR type_detail LIKE ?", "%店舗%", "%導入済み%")
+    count = contaminated.count
+    contaminated.update_all(type_detail: nil)
+    puts "type_detail汚染修正: #{count}件をNULLリセット"
+
+    # 2. is_smart_slot と名前ベースで明らかにスマスロの機種を補正
+    smart_fixed = 0
+    MachineModel.where(is_smart_slot: false).where("name LIKE ? OR name LIKE ? OR name LIKE ?", "%スマスロ%", "Ｌ %", "Ｌ%").find_each do |m|
+      # Ｌ始まりは6.5号機(スマスロ)の型式記号
+      if m.name.match?(/\AＬ/) || m.name.include?("スマスロ")
+        m.update_columns(is_smart_slot: true)
+        smart_fixed += 1
+      end
+    end
+    puts "is_smart_slot補正: #{smart_fixed}件"
+
+    # 3. active: false だが設置店舗がある機種をactive化
+    inactive_with_shops = MachineModel.where(active: false)
+                                       .joins(:shop_machine_models)
+                                       .distinct
+    reactivated = 0
+    inactive_with_shops.find_each do |m|
+      next if MachineModel.pachinko_name?(m.name)  # パチンコは除外
+      m.update_columns(active: true)
+      reactivated += 1
+    end
+    puts "再アクティブ化: #{reactivated}件（設置店舗あり & 非パチンコ）"
+
+    # 4. サマリー
+    puts "\n--- クリーンアップ後の状態 ---"
+    active = MachineModel.active.count
+    no_img = MachineModel.active.where(image_url: [nil, ""]).count
+    no_ptown = MachineModel.active.where(ptown_id: nil).count
+    puts "アクティブ機種: #{active}"
+    puts "画像なし: #{no_img} (#{(no_img * 100.0 / active).round(1)}%)"
+    puts "ptown_id未マッチ: #{no_ptown} (#{(no_ptown * 100.0 / active).round(1)}%)"
+  end
 end
 
 # Helper: build mapping of MachineModel -> ptown_id
@@ -523,15 +1040,40 @@ def fetch_ptown_id_mapping
   end
 
   existing_ptown_ids = matched.map(&:last).to_set
+
+  # Phase 2: slug完全一致 → core_nameあいまい一致 (1パスで処理)
+  ptown_by_core = ptown_entries.each_with_object({}) do |entry, h|
+    cn = PtownScraper.core_name(entry[:name])
+    h[cn] ||= entry
+  end
+
+  slug_matched = 0
+  fuzzy_matched = 0
   MachineModel.active.where(ptown_id: nil).find_each do |machine|
+    # slug完全一致を先に試行
     slug = PtownScraper.normalize_slug(machine.name)
     ptown_id = ptown_by_slug[slug]
     if ptown_id && !existing_ptown_ids.include?(ptown_id)
       machine.update_column(:ptown_id, ptown_id)
       matched << [machine, ptown_id]
       existing_ptown_ids << ptown_id
+      slug_matched += 1
+      next
+    end
+
+    # core_nameあいまい一致にフォールバック
+    cn = PtownScraper.core_name(machine.name)
+    entry = ptown_by_core[cn]
+    if entry && !existing_ptown_ids.include?(entry[:ptown_id])
+      attrs = { ptown_id: entry[:ptown_id] }
+      attrs[:image_url] = entry[:image_url] if entry[:image_url].present? && machine.image_url.blank?
+      machine.update_columns(attrs)
+      matched << [machine, entry[:ptown_id]]
+      existing_ptown_ids << entry[:ptown_id]
+      fuzzy_matched += 1
     end
   end
+  puts "  slug完全一致: +#{slug_matched}件, あいまい一致: +#{fuzzy_matched}件"
 
   puts "マッチ: #{matched.size}/#{MachineModel.active.count} (#{(matched.size.to_f / MachineModel.active.count * 100).round(1)}%)"
   matched
