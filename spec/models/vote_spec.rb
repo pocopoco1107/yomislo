@@ -13,18 +13,18 @@ RSpec.describe Vote, type: :model do
     end
 
     it "is valid with only confirmed_setting" do
-      vote = build(:vote, reset_vote: nil, setting_vote: nil, confirmed_setting: ["6確"])
+      vote = build(:vote, reset_vote: nil, setting_vote: nil, confirmed_setting: [ "6確" ])
       expect(vote).to be_valid
     end
 
     it "rejects invalid confirmed_setting tags" do
-      vote = build(:vote, confirmed_setting: ["invalid_tag"])
+      vote = build(:vote, confirmed_setting: [ "invalid_tag" ])
       expect(vote).not_to be_valid
       expect(vote.errors[:confirmed_setting]).to be_present
     end
 
     it "accepts valid confirmed_setting tags" do
-      vote = build(:vote, confirmed_setting: ["偶数確", "4以上"])
+      vote = build(:vote, confirmed_setting: [ "偶数確", "4以上" ])
       expect(vote).to be_valid
     end
 
@@ -153,28 +153,28 @@ RSpec.describe Vote, type: :model do
     end
 
     it "rejects when mixing valid and invalid tags" do
-      vote = build(:vote, confirmed_setting: ["6確", "invalid"])
+      vote = build(:vote, confirmed_setting: [ "6確", "invalid" ])
       expect(vote).not_to be_valid
     end
 
     it "persists and reloads confirmed_setting array correctly" do
-      vote = create(:vote, reset_vote: nil, setting_vote: nil, confirmed_setting: ["偶数確", "6確"])
+      vote = create(:vote, reset_vote: nil, setting_vote: nil, confirmed_setting: [ "偶数確", "6確" ])
       vote.reload
-      expect(vote.confirmed_setting).to eq(["偶数確", "6確"])
+      expect(vote.confirmed_setting).to eq([ "偶数確", "6確" ])
     end
 
     it "can add a tag by updating the array" do
-      vote = create(:vote, reset_vote: nil, setting_vote: nil, confirmed_setting: ["6確"])
-      vote.update!(confirmed_setting: vote.confirmed_setting + ["偶数確"])
+      vote = create(:vote, reset_vote: nil, setting_vote: nil, confirmed_setting: [ "6確" ])
+      vote.update!(confirmed_setting: vote.confirmed_setting + [ "偶数確" ])
       vote.reload
       expect(vote.confirmed_setting).to contain_exactly("6確", "偶数確")
     end
 
     it "can remove a tag by updating the array" do
-      vote = create(:vote, reset_vote: nil, setting_vote: nil, confirmed_setting: ["6確", "偶数確"])
-      vote.update!(confirmed_setting: vote.confirmed_setting - ["偶数確"])
+      vote = create(:vote, reset_vote: nil, setting_vote: nil, confirmed_setting: [ "6確", "偶数確" ])
+      vote.update!(confirmed_setting: vote.confirmed_setting - [ "偶数確" ])
       vote.reload
-      expect(vote.confirmed_setting).to eq(["6確"])
+      expect(vote.confirmed_setting).to eq([ "6確" ])
     end
   end
 

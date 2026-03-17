@@ -199,7 +199,7 @@ class RecommendationService
     # 理由をスコア影響度順にソート
     reasons.sort_by! { |r| -score_for_type(r[:type]) }
 
-    [score, reasons]
+    [ score, reasons ]
   end
 
   def score_for_type(type)

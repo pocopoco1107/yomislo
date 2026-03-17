@@ -15,10 +15,10 @@ class CreatePlayRecords < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :play_records, [:voter_token, :shop_id, :machine_model_id, :played_on],
+    add_index :play_records, [ :voter_token, :shop_id, :machine_model_id, :played_on ],
               unique: true, name: "idx_play_records_unique"
     add_index :play_records, :voter_token
-    add_index :play_records, [:played_on, :is_public], name: "idx_play_records_public_date"
+    add_index :play_records, [ :played_on, :is_public ], name: "idx_play_records_public_date"
     add_index :play_records, :tags, using: :gin
   end
 end

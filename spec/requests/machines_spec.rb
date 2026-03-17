@@ -76,7 +76,7 @@ RSpec.describe "Machines", type: :request do
     end
 
     it "shows rate badges on shop cards" do
-      shop = create(:shop, slot_rates: ["20スロ", "5スロ"])
+      shop = create(:shop, slot_rates: [ "20スロ", "5スロ" ])
       ShopMachineModel.create!(shop: shop, machine_model: machine)
 
       get machine_path(machine.slug)
@@ -111,7 +111,7 @@ RSpec.describe "Machines", type: :request do
       shop = create(:shop)
       ShopMachineModel.create!(shop: shop, machine_model: machine)
       # Create VoteSummary records directly (Vote model only allows today/yesterday)
-      [Date.current, Date.current - 1, Date.current - 2].each do |date|
+      [ Date.current, Date.current - 1, Date.current - 2 ].each do |date|
         VoteSummary.create!(shop: shop, machine_model: machine,
                             target_date: date, total_votes: 5,
                             reset_yes_count: 3, reset_no_count: 2,

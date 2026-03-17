@@ -3,7 +3,7 @@ class VoteSummary < ApplicationRecord
   belongs_to :machine_model
 
   validates :target_date, presence: true
-  validates :shop_id, uniqueness: { scope: [:machine_model_id, :target_date] }
+  validates :shop_id, uniqueness: { scope: [ :machine_model_id, :target_date ] }
 
   def self.refresh_for(shop_id, machine_model_id, target_date)
     # Single query: load only the columns we need for aggregation
@@ -11,9 +11,9 @@ class VoteSummary < ApplicationRecord
                     .pluck(:reset_vote, :setting_vote, :confirmed_setting)
 
     # Use advisory lock to prevent race conditions on concurrent refreshes
-    lock_key = [shop_id, machine_model_id, target_date.to_s].join("-").hash.abs % (2**31)
+    lock_key = [ shop_id, machine_model_id, target_date.to_s ].join("-").hash.abs % (2**31)
     transaction do
-      connection.execute("SELECT pg_advisory_xact_lock(#{lock_key})")
+      connection.exec_query("SELECT pg_advisory_xact_lock($1)", "advisory_lock", [ lock_key ])
 
       summary = find_or_initialize_by(shop_id: shop_id, machine_model_id: machine_model_id, target_date: target_date)
 

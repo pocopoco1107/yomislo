@@ -46,6 +46,6 @@ class Rack::Attack
       "Content-Type" => "text/plain",
       "Retry-After" => (match_data[:period] - (now.to_i % match_data[:period])).to_s
     }
-    [429, headers, ["リクエスト制限に達しました。しばらく待ってからお試しください。\n"]]
+    [ 429, headers, [ "リクエスト制限に達しました。しばらく待ってからお試しください。\n" ] ]
   end
 end

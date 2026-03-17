@@ -4,7 +4,7 @@ class VoterRanking < ApplicationRecord
   validates :voter_token, presence: true
   validates :period_key, presence: true
   validates :rank_position, presence: true, numericality: { greater_than: 0 }
-  validates :voter_token, uniqueness: { scope: [:period_type, :period_key, :scope_type, :scope_id] }
+  validates :voter_token, uniqueness: { scope: [ :period_type, :period_key, :scope_type, :scope_id ] }
 
   scope :national, -> { where(scope_type: "national") }
   scope :top, ->(n = 10) { where("rank_position <= ?", n).order(:rank_position) }
@@ -43,7 +43,7 @@ class VoterRanking < ApplicationRecord
     # Prefecture rankings
     pref_counts = vote_scope.joins(:shop).group("shops.prefecture_id", :voter_token).count
     pref_counts.group_by { |(pref_id, _token), _count| pref_id }.each do |pref_id, entries|
-      counts = entries.to_h { |(_, token), count| [token, count] }
+      counts = entries.to_h { |(_, token), count| [ token, count ] }
       save_rankings!(period, key, "prefecture", pref_id, counts)
     end
   end
@@ -57,10 +57,10 @@ class VoterRanking < ApplicationRecord
 
     # Minimum threshold: weekly 5 votes, monthly 10, all_time 1
     min_votes = case period.to_s
-                when "weekly" then 5
-                when "monthly" then 10
-                else 1
-                end
+    when "weekly" then 5
+    when "monthly" then 10
+    else 1
+    end
 
     records = sorted.filter_map.with_index(1) do |(token, count), rank|
       next if count < min_votes

@@ -550,7 +550,7 @@ namespace :ptown do
   end
 
   desc "DMMぱちタウンからイベント情報を取得（取材・新台入替等）"
-  task :import_events, [:area] => :environment do |_t, args|
+  task :import_events, [ :area ] => :environment do |_t, args|
     $stdout.sync = true
     area = args[:area]
 
@@ -558,11 +558,11 @@ namespace :ptown do
 
     # DMMぱちタウンのエリアページ一覧（area未指定時は全エリア）
     areas = if area.present?
-              [area]
-            else
+              [ area ]
+    else
               # 主要エリアスラッグ (DMMぱちタウンの /shops/{area} 形式)
               Prefecture.pluck(:slug)
-            end
+    end
 
     created = 0
     skipped = 0
@@ -589,9 +589,9 @@ namespace :ptown do
 
           event_date = if date_text.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/)
                          Date.new($1.to_i, $2.to_i, $3.to_i) rescue nil
-                       elsif date_text.match(/(\d{1,2})月(\d{1,2})日/)
+          elsif date_text.match(/(\d{1,2})月(\d{1,2})日/)
                          Date.new(Date.current.year, $1.to_i, $2.to_i) rescue nil
-                       end
+          end
           next unless event_date
 
           shop_name = event_el.at_css(".shop-name, .shopName, .name")&.text&.strip
@@ -603,12 +603,12 @@ namespace :ptown do
 
           # イベントタイプ判定
           event_type = case title
-                       when /取材|来店/ then :filming
-                       when /新台|入替|導入/ then :new_machine
-                       when /リニューアル/ then :remodel
-                       when /特定日|旧イベ/ then :special_day
-                       else :other
-                       end
+          when /取材|来店/ then :filming
+          when /新台|入替|導入/ then :new_machine
+          when /リニューアル/ then :remodel
+          when /特定日|旧イベ/ then :special_day
+          else :other
+          end
 
           source_url_el = event_el.at_css("a[href]")
           source_url = source_url_el ? "#{PtownScraper::BASE_URL}#{source_url_el['href']}" : nil
@@ -646,15 +646,15 @@ namespace :ptown do
   end
 
   desc "DMMぱちタウンから店舗一覧を取得・更新（都道府県指定可）"
-  task :import_shops, [:pref_slug] => :environment do |_t, args|
+  task :import_shops, [ :pref_slug ] => :environment do |_t, args|
     $stdout.sync = true
     pref_slug = args[:pref_slug]
 
     prefectures = if pref_slug.present?
                     Prefecture.where(slug: pref_slug)
-                  else
+    else
                     Prefecture.order(:id)
-                  end
+    end
 
     if prefectures.empty?
       puts "ERROR: Prefecture '#{pref_slug}' not found"
@@ -707,7 +707,7 @@ namespace :ptown do
       shops_by_prefix = pref_shops.each_with_object({}) do |s, h|
         norm = s.name.unicode_normalize(:nfkc).gsub(/[[:space:]]/, "")
         prefix = norm[0..5]
-        (h[prefix] ||= []) << [norm, s] if prefix
+        (h[prefix] ||= []) << [ norm, s ] if prefix
       end
 
       pref_created = 0
@@ -778,15 +778,15 @@ namespace :ptown do
   end
 
   desc "DMMぱちタウンから店舗の設置機種リストを同期（都道府県指定可）"
-  task :sync_shop_machines, [:pref_slug] => :environment do |_t, args|
+  task :sync_shop_machines, [ :pref_slug ] => :environment do |_t, args|
     $stdout.sync = true
     pref_slug = args[:pref_slug]
 
     shops = if pref_slug.present?
               Shop.joins(:prefecture).where(prefectures: { slug: pref_slug }).where.not(ptown_shop_id: nil)
-            else
+    else
               Shop.where.not(ptown_shop_id: nil)
-            end
+    end
 
     total = shops.count
     puts "=== DMMぱちタウン 設置機種同期 (#{total}店舗) ==="
@@ -981,7 +981,7 @@ namespace :ptown do
     # 4. サマリー
     puts "\n--- クリーンアップ後の状態 ---"
     active = MachineModel.active.count
-    no_img = MachineModel.active.where(image_url: [nil, ""]).count
+    no_img = MachineModel.active.where(image_url: [ nil, "" ]).count
     no_ptown = MachineModel.active.where(ptown_id: nil).count
     puts "アクティブ機種: #{active}"
     puts "画像なし: #{no_img} (#{(no_img * 100.0 / active).round(1)}%)"
@@ -1095,7 +1095,7 @@ def fetch_ptown_id_mapping
   puts "--- ptown_id マッピング構築中... ---"
 
   # Phase 1: Use already-stored ptown_ids from DB
-  matched = MachineModel.active.where.not(ptown_id: nil).map { |m| [m, m.ptown_id] }
+  matched = MachineModel.active.where.not(ptown_id: nil).map { |m| [ m, m.ptown_id ] }
   puts "  DB保存済み: #{matched.size}件"
 
   if matched.size >= MachineModel.active.count / 2
@@ -1156,7 +1156,7 @@ def fetch_ptown_id_mapping
     ptown_id = ptown_by_slug[slug]
     if ptown_id && !existing_ptown_ids.include?(ptown_id)
       machine.update_column(:ptown_id, ptown_id)
-      matched << [machine, ptown_id]
+      matched << [ machine, ptown_id ]
       existing_ptown_ids << ptown_id
       slug_matched += 1
       next
@@ -1169,7 +1169,7 @@ def fetch_ptown_id_mapping
       attrs = { ptown_id: entry[:ptown_id] }
       attrs[:image_url] = entry[:image_url] if entry[:image_url].present? && machine.image_url.blank?
       machine.update_columns(attrs)
-      matched << [machine, entry[:ptown_id]]
+      matched << [ machine, entry[:ptown_id] ]
       existing_ptown_ids << entry[:ptown_id]
       fuzzy_matched += 1
     end

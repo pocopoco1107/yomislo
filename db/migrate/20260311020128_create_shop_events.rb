@@ -13,7 +13,7 @@ class CreateShopEvents < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :shop_events, [:shop_id, :event_date]
+    add_index :shop_events, [ :shop_id, :event_date ]
     add_index :shop_events, :status
     add_index :shop_events, :voter_token
   end

@@ -603,12 +603,12 @@ module PworldScraper
 
         value = if md5 == UNIT_SUFFIX_HASH
                   :suffix
-                elsif DIGIT_IMAGE_HASHES.key?(md5)
+        elsif DIGIT_IMAGE_HASHES.key?(md5)
                   DIGIT_IMAGE_HASHES[md5]
-                else
+        else
                   puts "    WARNING: Unknown number image hash #{md5} for #{src}"
                   nil
-                end
+        end
 
         digit_map[src] = value
         PworldScraper.instance_variable_get(:@digit_image_cache)[src] = value
@@ -949,7 +949,7 @@ namespace :pworld do
   end
 
   desc "Import shops from P-WORLD (single prefecture by slug, e.g. rake pworld:import_prefecture[tokyo])"
-  task :import_prefecture, [:slug] => :environment do |_t, args|
+  task :import_prefecture, [ :slug ] => :environment do |_t, args|
     slug = args[:slug]
 
     unless slug.present?
@@ -1021,7 +1021,7 @@ namespace :pworld do
   end
 
   desc "Import installed machines for shops in a prefecture (by slug, e.g. rake pworld:import_shop_machines_by_pref[fukuoka])"
-  task :import_shop_machines_by_pref, [:slug] => :environment do |_t, args|
+  task :import_shop_machines_by_pref, [ :slug ] => :environment do |_t, args|
     slug = args[:slug]
 
     unless slug.present?
@@ -1072,7 +1072,7 @@ namespace :pworld do
   end
 
   desc "Import installed machines for a single shop (by slug)"
-  task :import_shop_machines_for, [:slug] => :environment do |_t, args|
+  task :import_shop_machines_for, [ :slug ] => :environment do |_t, args|
     slug = args[:slug]
 
     unless slug.present?
@@ -1133,7 +1133,7 @@ namespace :pworld do
   end
 
   desc "Weekly refresh: sync shop-machine links for a prefecture (e.g. rake pworld:refresh_by_pref[tokyo])"
-  task :refresh_by_pref, [:slug] => :environment do |_t, args|
+  task :refresh_by_pref, [ :slug ] => :environment do |_t, args|
     slug = args[:slug]
 
     unless slug.present?
@@ -1253,11 +1253,11 @@ namespace :pworld do
     puts "Shop details scrape complete in #{elapsed}s"
     puts "  Updated: #{total_updated}, Skipped: #{total_skipped}"
     puts "  Shops with slot_machines: #{Shop.where.not(slot_machines: nil).count}"
-    puts "  Shops with business_hours: #{Shop.where.not(business_hours: [nil, '']).count}"
+    puts "  Shops with business_hours: #{Shop.where.not(business_hours: [ nil, '' ]).count}"
     puts "  Shops with parking_spaces: #{Shop.where.not(parking_spaces: nil).count}"
-    puts "  Shops with morning_entry: #{Shop.where.not(morning_entry: [nil, '']).count}"
-    puts "  Shops with phone_number: #{Shop.where.not(phone_number: [nil, '']).count}"
-    puts "  Shops with pworld_url: #{Shop.where.not(pworld_url: [nil, '']).count}"
+    puts "  Shops with morning_entry: #{Shop.where.not(morning_entry: [ nil, '' ]).count}"
+    puts "  Shops with phone_number: #{Shop.where.not(phone_number: [ nil, '' ]).count}"
+    puts "  Shops with pworld_url: #{Shop.where.not(pworld_url: [ nil, '' ]).count}"
 
     if errors.any?
       puts "  Errors (#{errors.size}):"
@@ -1268,7 +1268,7 @@ namespace :pworld do
   end
 
   desc "Scrape shop details for a prefecture (e.g. rake pworld:scrape_shop_details_by_pref[tokyo])"
-  task :scrape_shop_details_by_pref, [:slug] => :environment do |_t, args|
+  task :scrape_shop_details_by_pref, [ :slug ] => :environment do |_t, args|
     slug = args[:slug]
 
     unless slug.present?
@@ -1326,8 +1326,8 @@ namespace :pworld do
     puts "#{prefecture.name} shop details scrape complete in #{elapsed}s"
     puts "  Updated: #{total_updated}, Skipped: #{total_skipped}"
     puts "  Shops with slot_machines: #{pref_shops.where.not(slot_machines: nil).count}/#{total_shops}"
-    puts "  Shops with business_hours: #{pref_shops.where.not(business_hours: [nil, '']).count}/#{total_shops}"
-    puts "  Shops with pworld_url: #{pref_shops.where.not(pworld_url: [nil, '']).count}/#{total_shops}"
+    puts "  Shops with business_hours: #{pref_shops.where.not(business_hours: [ nil, '' ]).count}/#{total_shops}"
+    puts "  Shops with pworld_url: #{pref_shops.where.not(pworld_url: [ nil, '' ]).count}/#{total_shops}"
 
     if errors.any?
       puts "  Errors (#{errors.size}):"
@@ -1417,7 +1417,7 @@ namespace :pworld do
       total_removed = 0
       shop_errors = 0
       Prefecture.order(:id).each do |pref|
-        shops = pref.shops.where.not(pworld_url: [nil, ""])
+        shops = pref.shops.where.not(pworld_url: [ nil, "" ])
         next if shops.empty?
 
         blog.info "  #{pref.name} (#{shops.count}店)..."
@@ -1473,11 +1473,11 @@ namespace :pworld do
     start_time = Time.current
     total_updated = 0
     total_skipped = 0
-    total_shops = Shop.where.not(pworld_url: [nil, ""]).count
+    total_shops = Shop.where.not(pworld_url: [ nil, "" ]).count
     errors = []
     processed = 0
 
-    Shop.includes(:prefecture).where.not(pworld_url: [nil, ""]).find_each do |shop|
+    Shop.includes(:prefecture).where.not(pworld_url: [ nil, "" ]).find_each do |shop|
       processed += 1
       begin
         result = PworldScraper.scrape_unit_counts_for_shop(shop)
@@ -1500,7 +1500,7 @@ namespace :pworld do
     end
 
     elapsed = (Time.current - start_time).round(1)
-    with_count = ShopMachineModel.where.not(unit_count: [nil, 0]).count
+    with_count = ShopMachineModel.where.not(unit_count: [ nil, 0 ]).count
     total_links = ShopMachineModel.count
 
     puts ""
@@ -1520,7 +1520,7 @@ namespace :pworld do
   end
 
   desc "Update unit counts for a prefecture (e.g. rake pworld:update_unit_counts_by_pref[tokyo])"
-  task :update_unit_counts_by_pref, [:slug] => :environment do |_t, args|
+  task :update_unit_counts_by_pref, [ :slug ] => :environment do |_t, args|
     $stdout.sync = true
     slug = args[:slug]
 
@@ -1535,7 +1535,7 @@ namespace :pworld do
       exit 1
     end
 
-    shops = prefecture.shops.where.not(pworld_url: [nil, ""]).order(:id)
+    shops = prefecture.shops.where.not(pworld_url: [ nil, "" ]).order(:id)
     total_shops = shops.count
 
     puts "=" * 60
@@ -1568,7 +1568,7 @@ namespace :pworld do
 
     elapsed = (Time.current - start_time).round(1)
     pref_links = ShopMachineModel.joins(:shop).where(shops: { prefecture_id: prefecture.id })
-    with_count = pref_links.where.not(unit_count: [nil, 0]).count
+    with_count = pref_links.where.not(unit_count: [ nil, 0 ]).count
     total_links = pref_links.count
 
     puts ""
@@ -1592,15 +1592,15 @@ namespace :pworld do
     require_relative "../batch_logger"
 
     BatchLogger.with_logging("monthly_refresh") do |blog|
-      shops_before = Shop.where.not(business_hours: [nil, ""]).count
+      shops_before = Shop.where.not(business_hours: [ nil, "" ]).count
 
       blog.info "Refreshing shop details for all shops..."
       Rake::Task["pworld:scrape_shop_details"].invoke
 
-      shops_after = Shop.where.not(business_hours: [nil, ""]).count
+      shops_after = Shop.where.not(business_hours: [ nil, "" ]).count
       total_shops = Shop.count
-      rate_coverage = Shop.where.not(slot_rates: [nil, [], [""]]).count
-      parking_coverage = Shop.where.not(parking_spaces: [nil, ""]).count
+      rate_coverage = Shop.where.not(slot_rates: [ nil, [], [ "" ] ]).count
+      parking_coverage = Shop.where.not(parking_spaces: [ nil, "" ]).count
 
       blog.summary(
         total_shops: total_shops,

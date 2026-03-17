@@ -7,8 +7,8 @@ class Vote < ApplicationRecord
 
   validates :voted_on, presence: true
   validates :voter_token, presence: true
-  validates :voter_token, uniqueness: { scope: [:shop_id, :machine_model_id, :voted_on], message: "は1日1店舗1機種につき1票です" }
-  validates :reset_vote, inclusion: { in: [0, 1], allow_nil: true }
+  validates :voter_token, uniqueness: { scope: [ :shop_id, :machine_model_id, :voted_on ], message: "は1日1店舗1機種につき1票です" }
+  validates :reset_vote, inclusion: { in: [ 0, 1 ], allow_nil: true }
   validates :setting_vote, inclusion: { in: 1..6, allow_nil: true }
   validate :voted_on_not_future
   validate :voted_on_not_too_old
@@ -18,7 +18,7 @@ class Vote < ApplicationRecord
 
   after_save :update_vote_summary
   after_destroy :update_vote_summary
-  after_commit :enqueue_voter_profile_refresh, on: [:create, :update, :destroy]
+  after_commit :enqueue_voter_profile_refresh, on: [ :create, :update, :destroy ]
 
   private
 

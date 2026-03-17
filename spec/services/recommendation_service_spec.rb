@@ -90,7 +90,7 @@ RSpec.describe RecommendationService, type: :service do
 
     it "指定した都道府県の店舗のみ返す" do
       results = described_class.top_for_prefecture(prefecture, limit: 5)
-      expect(results.map { |r| r.shop.prefecture_id }.uniq).to eq([prefecture.id])
+      expect(results.map { |r| r.shop.prefecture_id }.uniq).to eq([ prefecture.id ])
     end
 
     it "他県の店舗を含まない" do
@@ -101,28 +101,28 @@ RSpec.describe RecommendationService, type: :service do
 
   describe ".generate_comment" do
     it "高設定理由のコメントを生成する" do
-      data = { reasons: [{ type: :high_setting, label: "高設定記録60%", value: 60 }] }
+      data = { reasons: [ { type: :high_setting, label: "高設定記録60%", value: 60 } ] }
       comment = described_class.generate_comment(shop1, data)
       expect(comment).to include(shop1.name)
       expect(comment).to include("高設定記録")
     end
 
     it "記録量理由のコメントを生成する" do
-      data = { reasons: [{ type: :vote_volume, label: "記録が多い", value: 20 }] }
+      data = { reasons: [ { type: :vote_volume, label: "記録が多い", value: 20 } ] }
       comment = described_class.generate_comment(shop1, data)
       expect(comment).to include(shop1.name)
       expect(comment).to include("記録が集中")
     end
 
     it "リセット率理由のコメントを生成する" do
-      data = { reasons: [{ type: :reset_rate, label: "リセット率80%", value: 80 }] }
+      data = { reasons: [ { type: :reset_rate, label: "リセット率80%", value: 80 } ] }
       comment = described_class.generate_comment(shop1, data)
       expect(comment).to include(shop1.name)
       expect(comment).to include("リセット率")
     end
 
     it "レビュー評価理由のコメントを生成する" do
-      data = { reasons: [{ type: :review_rating, label: "評価4.5", value: 4.5 }] }
+      data = { reasons: [ { type: :review_rating, label: "評価4.5", value: 4.5 } ] }
       comment = described_class.generate_comment(shop1, data)
       expect(comment).to include(shop1.name)
       expect(comment).to include("ユーザー評価")

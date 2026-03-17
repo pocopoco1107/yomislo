@@ -37,11 +37,11 @@ RSpec.describe VoteSummary, type: :model do
 
     it "aggregates confirmed_setting_counts" do
       create(:vote, shop: shop, machine_model: machine, voted_on: date,
-             reset_vote: nil, setting_vote: nil, confirmed_setting: ["6確", "偶数確"])
+             reset_vote: nil, setting_vote: nil, confirmed_setting: [ "6確", "偶数確" ])
       create(:vote, shop: shop, machine_model: machine, voted_on: date,
-             reset_vote: nil, setting_vote: nil, confirmed_setting: ["6確"])
+             reset_vote: nil, setting_vote: nil, confirmed_setting: [ "6確" ])
       create(:vote, shop: shop, machine_model: machine, voted_on: date,
-             reset_vote: 1, setting_vote: nil, confirmed_setting: ["4以上"])
+             reset_vote: 1, setting_vote: nil, confirmed_setting: [ "4以上" ])
 
       summary = VoteSummary.find_by(shop: shop, machine_model: machine, target_date: date)
       expect(summary.confirmed_setting_counts["6確"]).to eq(2)
@@ -125,7 +125,7 @@ RSpec.describe VoteSummary, type: :model do
       it "handles a single vote with multiple tags" do
         create(:vote, shop: shop, machine_model: machine, voted_on: date,
                reset_vote: nil, setting_vote: nil,
-               confirmed_setting: ["偶数確", "4以上", "6確"])
+               confirmed_setting: [ "偶数確", "4以上", "6確" ])
 
         summary = VoteSummary.find_by(shop: shop, machine_model: machine, target_date: date)
         expect(summary.confirmed_setting_counts).to eq({ "偶数確" => 1, "4以上" => 1, "6確" => 1 })
@@ -235,7 +235,7 @@ RSpec.describe VoteSummary, type: :model do
       it "aggregates same tags from multiple votes" do
         3.times do
           create(:vote, shop: shop, machine_model: machine, voted_on: date,
-                 reset_vote: nil, setting_vote: nil, confirmed_setting: ["6確"])
+                 reset_vote: nil, setting_vote: nil, confirmed_setting: [ "6確" ])
         end
 
         summary = VoteSummary.find_by(shop: shop, machine_model: machine, target_date: date)
@@ -244,11 +244,11 @@ RSpec.describe VoteSummary, type: :model do
 
       it "correctly counts overlapping and unique tags across votes" do
         create(:vote, shop: shop, machine_model: machine, voted_on: date,
-               reset_vote: nil, setting_vote: nil, confirmed_setting: ["6確", "偶数確"])
+               reset_vote: nil, setting_vote: nil, confirmed_setting: [ "6確", "偶数確" ])
         create(:vote, shop: shop, machine_model: machine, voted_on: date,
-               reset_vote: nil, setting_vote: nil, confirmed_setting: ["6確", "4以上"])
+               reset_vote: nil, setting_vote: nil, confirmed_setting: [ "6確", "4以上" ])
         create(:vote, shop: shop, machine_model: machine, voted_on: date,
-               reset_vote: nil, setting_vote: nil, confirmed_setting: ["偶数確"])
+               reset_vote: nil, setting_vote: nil, confirmed_setting: [ "偶数確" ])
 
         summary = VoteSummary.find_by(shop: shop, machine_model: machine, target_date: date)
         expect(summary.confirmed_setting_counts["6確"]).to eq(2)

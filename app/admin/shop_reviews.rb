@@ -16,7 +16,7 @@ ActiveAdmin.register ShopReview do
 
   filter :shop
   filter :rating
-  filter :category, as: :select, collection: ShopReview::CATEGORY_LABELS.map { |k, v| [v, k] }
+  filter :category, as: :select, collection: ShopReview::CATEGORY_LABELS.map { |k, v| [ v, k ] }
   filter :created_at
 
   show do

@@ -5,6 +5,6 @@ ActiveAdmin.setup do |config|
   config.logout_link_path = :destroy_user_session_path
   config.root_to = "dashboard#index"
   config.batch_actions = true
-  config.filter_attributes = [:encrypted_password, :password, :password_confirmation]
+  config.filter_attributes = [ :encrypted_password, :password, :password_confirmation ]
   config.comments = false
 end

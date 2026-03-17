@@ -45,7 +45,7 @@ class VoterProfile < ApplicationRecord
 
     streak = calculate_streak(dates)
     profile.current_streak = streak
-    profile.max_streak = [streak, profile.max_streak || 0].max
+    profile.max_streak = [ streak, profile.max_streak || 0 ].max
 
     # Accuracy rates
     profile.accuracy_confirmed = nil # Will implement in batch later
@@ -66,7 +66,7 @@ class VoterProfile < ApplicationRecord
     current_found = false
     RANK_TITLES.reverse_each do |rank|
       if current_found
-        points_needed = [rank[:min_points] - profile.points, 0].max
+        points_needed = [ rank[:min_points] - profile.points, 0 ].max
         accuracy_needed = rank[:min_accuracy] && (profile.accuracy_majority.nil? || profile.accuracy_majority < rank[:min_accuracy]) ? rank[:min_accuracy] : nil
         return {
           title: rank[:title],
@@ -118,17 +118,18 @@ class VoterProfile < ApplicationRecord
     vote_keys = setting_votes.pluck(:shop_id, :machine_model_id, :voted_on)
     return nil if vote_keys.empty?
 
-    conditions = vote_keys.map { "(?, ?, ?)" }.join(", ")
-    flat_values = vote_keys.flatten
     summaries = VoteSummary.where(
-      "(shop_id, machine_model_id, target_date) IN (#{conditions})", *flat_values
-    ).index_by { |s| [s.shop_id, s.machine_model_id, s.target_date] }
+      shop_id: vote_keys.map(&:first),
+      machine_model_id: vote_keys.map { |k| k[1] },
+      target_date: vote_keys.map(&:last)
+    ).select { |s| vote_keys.include?([ s.shop_id, s.machine_model_id, s.target_date ]) }
+     .index_by { |s| [ s.shop_id, s.machine_model_id, s.target_date ] }
 
     matches = 0
     total = 0
 
     setting_votes.find_each do |vote|
-      summary = summaries[[vote.shop_id, vote.machine_model_id, vote.voted_on]]
+      summary = summaries[[ vote.shop_id, vote.machine_model_id, vote.voted_on ]]
       next unless summary&.setting_distribution.present?
 
       distribution = summary.setting_distribution
@@ -150,7 +151,7 @@ class VoterProfile < ApplicationRecord
     total = setting_votes.count
     return nil if total < 5
 
-    high_count = setting_votes.where(setting_vote: [4, 5, 6]).count
+    high_count = setting_votes.where(setting_vote: [ 4, 5, 6 ]).count
     (high_count.to_f / total * 100).round(1)
   end
 

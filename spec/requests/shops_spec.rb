@@ -26,8 +26,8 @@ RSpec.describe "Shops", type: :request do
 
     it "shows same rate shops in same prefecture" do
       pref = shop.prefecture
-      same_rate_shop = create(:shop, prefecture: pref, slot_rates: ["20スロ"], name: "同レート店舗A")
-      shop.update!(slot_rates: ["20スロ"])
+      same_rate_shop = create(:shop, prefecture: pref, slot_rates: [ "20スロ" ], name: "同レート店舗A")
+      shop.update!(slot_rates: [ "20スロ" ])
 
       get shop_path(shop.slug)
       expect(response).to have_http_status(:ok)
@@ -83,7 +83,7 @@ RSpec.describe "Shops", type: :request do
       machine = create(:machine_model)
       ShopMachineModel.create!(shop: shop, machine_model: machine)
       # Create VoteSummary records directly (Vote model only allows today/yesterday)
-      [Date.current, Date.current - 1, Date.current - 2].each do |date|
+      [ Date.current, Date.current - 1, Date.current - 2 ].each do |date|
         VoteSummary.create!(shop: shop, machine_model: machine,
                             target_date: date, total_votes: 5,
                             reset_yes_count: 3, reset_no_count: 2,

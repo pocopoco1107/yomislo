@@ -118,7 +118,7 @@ RSpec.describe VoterProfile, type: :model do
 
     it "returns current_streak=0 when yesterday ended a 3-day streak but no vote today" do
       # Voted 2, 3, 4 days ago (3-day streak ending 2 days ago, gap yesterday)
-      [2, 3, 4].each do |days_ago|
+      [ 2, 3, 4 ].each do |days_ago|
         insert_vote(voter_token: token, shop: shop,
                     machine_model: create(:machine_model),
                     voted_on: Date.current - days_ago.days)

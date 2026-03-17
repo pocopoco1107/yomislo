@@ -39,7 +39,8 @@
       <% if @shop_request.url.present? %>
         <div>
           <dt class="font-medium text-muted-foreground">公式サイト</dt>
-          <dd class="mt-0.5"><%= link_to @shop_request.url, @shop_request.url, target: "_blank", rel: "noopener", class: "text-primary hover:underline break-all" %></dd>
+          <% safe_url = @shop_request.url.match?(%r{\Ahttps?://}) ? @shop_request.url : "#" %>
+          <dd class="mt-0.5"><%= link_to safe_url, safe_url, target: "_blank", rel: "noopener", class: "text-primary hover:underline break-all" %></dd>
         </div>
       <% end %>
 

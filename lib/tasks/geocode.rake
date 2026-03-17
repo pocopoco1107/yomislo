@@ -6,7 +6,7 @@ require "json"
 
 namespace :geocode do
   desc "Geocode shops using GSI API (primary) + Nominatim (fallback). Usage: rake geocode:shops / rake geocode:shops[kumamoto]"
-  task :shops, [:pref_slug] => :environment do |_t, args|
+  task :shops, [ :pref_slug ] => :environment do |_t, args|
     scope = Shop.where(lat: nil).where("address IS NOT NULL AND address != ''")
     scope = filter_by_pref(scope, args[:pref_slug])
 
@@ -52,7 +52,7 @@ namespace :geocode do
   end
 
   desc "Re-geocode imprecise shops (precision 0-1). Usage: rake geocode:fix_imprecise / rake geocode:fix_imprecise[kumamoto]"
-  task :fix_imprecise, [:pref_slug] => :environment do |_t, args|
+  task :fix_imprecise, [ :pref_slug ] => :environment do |_t, args|
     scope = Shop.where("geocode_precision <= 1").where("address IS NOT NULL AND address != ''")
     scope = filter_by_pref(scope, args[:pref_slug])
 
@@ -93,7 +93,7 @@ namespace :geocode do
   end
 
   desc "Detect shops sharing identical coordinates and mark as precision=1. Usage: rake geocode:detect_duplicates / rake geocode:detect_duplicates[kumamoto]"
-  task :detect_duplicates, [:pref_slug] => :environment do |_t, args|
+  task :detect_duplicates, [ :pref_slug ] => :environment do |_t, args|
     scope = Shop.where.not(lat: nil).where.not(lng: nil)
     scope = filter_by_pref(scope, args[:pref_slug])
 
@@ -119,7 +119,7 @@ namespace :geocode do
   end
 
   desc "Show geocode precision stats. Usage: rake geocode:stats / rake geocode:stats[kumamoto]"
-  task :stats, [:pref_slug] => :environment do |_t, args|
+  task :stats, [ :pref_slug ] => :environment do |_t, args|
     scope = Shop.all
     scope = filter_by_pref(scope, args[:pref_slug])
 
@@ -191,7 +191,7 @@ def geocode_with_gsi(address)
 
   precision = determine_gsi_precision(title)
 
-  [lat, lng, precision]
+  [ lat, lng, precision ]
 end
 
 def determine_gsi_precision(title)
@@ -230,5 +230,5 @@ def geocode_with_nominatim(address)
 
   lat = results[0]["lat"].to_f
   lng = results[0]["lon"].to_f
-  [lat, lng]
+  [ lat, lng ]
 end

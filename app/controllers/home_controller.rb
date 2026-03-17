@@ -98,6 +98,5 @@ class HomeController < ApplicationController
         @my_play_summary = { total: total.to_i, days: days.to_i, win_rate: win_rate }
       end
     end
-
   end
 end

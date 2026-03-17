@@ -9,16 +9,16 @@ class RankingsController < ApplicationController
     @prefecture_id = params[:prefecture_id]
 
     scope_type = case @scope
-                 when "prefecture" then "prefecture"
-                 else "national"
-                 end
+    when "prefecture" then "prefecture"
+    else "national"
+    end
     scope_id = @scope == "prefecture" ? @prefecture_id : nil
 
     period_key = case @period
-                 when "weekly" then Date.current.strftime("%G-W%V")
-                 when "monthly" then Date.current.strftime("%Y-%m")
-                 else "all"
-                 end
+    when "weekly" then Date.current.strftime("%G-W%V")
+    when "monthly" then Date.current.strftime("%Y-%m")
+    else "all"
+    end
 
     @rankings = VoterRanking.where(
       period_type: @period,

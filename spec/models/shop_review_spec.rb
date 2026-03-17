@@ -108,7 +108,7 @@ RSpec.describe ShopReview, type: :model do
       shop = create(:shop)
       old_review = create(:shop_review, shop: shop, voter_token: "old_tok", created_at: 1.day.ago)
       new_review = create(:shop_review, shop: shop, voter_token: "new_tok", created_at: Time.current)
-      expect(ShopReview.recent).to eq([new_review, old_review])
+      expect(ShopReview.recent).to eq([ new_review, old_review ])
     end
   end
 end

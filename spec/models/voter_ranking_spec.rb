@@ -152,7 +152,7 @@ RSpec.describe VoterRanking, type: :model do
         create(:voter_ranking, voter_token: "top_#{i}", rank_position: i + 1)
       end
       expect(VoterRanking.top(2).count).to eq(2)
-      expect(VoterRanking.top(2).pluck(:rank_position)).to eq([1, 2])
+      expect(VoterRanking.top(2).pluck(:rank_position)).to eq([ 1, 2 ])
     end
   end
 end

@@ -16,7 +16,7 @@ RSpec.describe "Search flow", type: :system do
     end
 
     it "filters shops by prefecture" do
-      visit search_path(prefectures: [tokyo.slug])
+      visit search_path(prefectures: [ tokyo.slug ])
 
       expect(page).to have_content("新宿パチスロ館")
       expect(page).not_to have_content("梅田スロットセンター")

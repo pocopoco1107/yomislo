@@ -55,7 +55,7 @@ RSpec.describe "Prefectures", type: :request do
         prefecture: prefecture,
         name: "テスト等価店",
         exchange_rate: :equal_rate,
-        slot_rates: ["20スロ", "5スロ"],
+        slot_rates: [ "20スロ", "5スロ" ],
         notes: "Wi-Fi、充電器",
         business_hours: "9:00〜23:00",
         parking_spaces: 100,
@@ -94,10 +94,10 @@ RSpec.describe "Prefectures", type: :request do
     context "statistics reverse lookup" do
       before do
         create(:shop, prefecture: prefecture, name: "等価店A", exchange_rate: :equal_rate,
-               slot_rates: ["20スロ"], business_hours: "9:00〜23:00",
+               slot_rates: [ "20スロ" ], business_hours: "9:00〜23:00",
                notes: "Wi-Fi、充電器", parking_spaces: 50, morning_entry: "整理券配布8:30")
         create(:shop, prefecture: prefecture, name: "非等価店B", exchange_rate: :non_equal,
-               slot_rates: ["5スロ"], business_hours: "10:00〜22:45")
+               slot_rates: [ "5スロ" ], business_hours: "10:00〜22:45")
       end
 
       it "renders clickable exchange rate stats with preset data" do

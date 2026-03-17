@@ -5,7 +5,7 @@ class MachinesController < ApplicationController
     @machine_model = MachineModel.find_by!(slug: params[:slug])
     @installed_shop_count = @machine_model.shop_machine_models.count
     # SEO meta tags with spec info
-    meta_desc_parts = ["#{@machine_model.name}の全店舗横断設定・リセット記録データ"]
+    meta_desc_parts = [ "#{@machine_model.name}の全店舗横断設定・リセット記録データ" ]
     meta_desc_parts << "機械割#{@machine_model.payout_rate_display}" if @machine_model.payout_rate_display
     meta_desc_parts << @machine_model.type_detail if @machine_model.type_detail.present?
     meta_desc_parts << "設定傾向をチェック"

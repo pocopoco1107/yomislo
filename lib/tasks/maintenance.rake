@@ -2,7 +2,7 @@
 
 namespace :maintenance do
   desc "Delete VoteSummary and Vote records older than N days (default: 30)"
-  task :cleanup_old_votes, [:days] => :environment do |_t, args|
+  task :cleanup_old_votes, [ :days ] => :environment do |_t, args|
     $stdout.sync = true
     days = (args[:days] || 30).to_i
     cutoff = Date.current - days

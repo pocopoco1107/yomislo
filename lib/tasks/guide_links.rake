@@ -2,7 +2,7 @@
 
 namespace :guide_links do
   desc "全アクティブ機種の攻略リンクを Google CSE で取得 (rake guide_links:fetch / rake guide_links:fetch[machine_slug])"
-  task :fetch, [:machine_slug] => :environment do |_task, args|
+  task :fetch, [ :machine_slug ] => :environment do |_task, args|
     $stdout.sync = true
 
     dry_run = ENV["DRY_RUN"] == "1"

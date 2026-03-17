@@ -4,7 +4,7 @@ class PlayRecordSummary < ApplicationRecord
   validates :scope_type, presence: true, inclusion: { in: %w[machine_model shop prefecture] }
   validates :scope_id, presence: true
   validates :period_key, presence: true
-  validates :scope_type, uniqueness: { scope: [:scope_id, :period_type, :period_key] }
+  validates :scope_type, uniqueness: { scope: [ :scope_id, :period_type, :period_key ] }
 
   # Only aggregate public records with reasonable amounts
   AGGREGATION_SCOPE = -> { PlayRecord.where(is_public: true).where("ABS(result_amount) <= 500000") }
@@ -50,13 +50,13 @@ class PlayRecordSummary < ApplicationRecord
     base = AGGREGATION_SCOPE.call
 
     records = case scope_type
-              when "machine_model"
+    when "machine_model"
                 base.where(machine_model_id: scope_id)
-              when "shop"
+    when "shop"
                 base.where(shop_id: scope_id)
-              when "prefecture"
+    when "prefecture"
                 base.joins(:shop).where(shops: { prefecture_id: scope_id })
-              end
+    end
 
     if period_key && period_key != "all"
       date = Date.parse("#{period_key}-01")

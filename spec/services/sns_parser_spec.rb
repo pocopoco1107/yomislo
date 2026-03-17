@@ -127,11 +127,11 @@ RSpec.describe SnsParser do
 
   describe "strategy pattern" do
     it "accepts a custom strategy" do
-      custom_strategy = double("strategy", call: { trophies: ["カスタム"], settings: [], confidence: "high", keywords: [] })
+      custom_strategy = double("strategy", call: { trophies: [ "カスタム" ], settings: [], confidence: "high", keywords: [] })
       report = build_report(text: "anything")
       result = described_class.new(report, strategy: custom_strategy).parse
 
-      expect(result[:trophies]).to eq(["カスタム"])
+      expect(result[:trophies]).to eq([ "カスタム" ])
     end
   end
 end

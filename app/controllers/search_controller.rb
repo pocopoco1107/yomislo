@@ -51,7 +51,7 @@ class SearchController < ApplicationController
 
     # 朝入場ルール
     if params[:morning_entry] == "yes"
-      scope = scope.where.not(morning_entry: [nil, ""])
+      scope = scope.where.not(morning_entry: [ nil, "" ])
     end
 
     # フリーワード（店舗名部分一致）

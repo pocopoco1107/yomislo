@@ -12,7 +12,7 @@ class RemoveUserRequirementFromVotesAndComments < ActiveRecord::Migration[8.0]
 
     # Replace the unique index to use voter_token instead of user_id
     remove_index :votes, name: :index_votes_unique_per_user_shop_machine_date
-    add_index :votes, [:voter_token, :shop_id, :machine_model_id, :voted_on], unique: true, name: 'idx_votes_unique_per_voter'
+    add_index :votes, [ :voter_token, :shop_id, :machine_model_id, :voted_on ], unique: true, name: 'idx_votes_unique_per_voter'
 
     # Make user_id nullable on comments
     change_column_null :comments, :user_id, true

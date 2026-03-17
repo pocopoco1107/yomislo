@@ -16,7 +16,7 @@ class PrefecturesController < ApplicationController
 
     # 市区町村グループ化 (アコーディオン表示用)
     @grouped_shops = all_shops.group_by { |s| extract_city(s.address) || "その他" }
-                              .sort_by { |city, shops| [-shops.size, city] }
+                              .sort_by { |city, shops| [ -shops.size, city ] }
 
     # Compute all stats in a single pass over the loaded shops array
     exchange_rate_counts = Hash.new(0)

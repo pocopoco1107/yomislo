@@ -71,7 +71,7 @@ RSpec.describe MachineGuideLink, type: :model do
     it ".approved returns only approved links" do
       approved = create(:machine_guide_link, machine_model: machine, status: :approved)
       _pending = create(:machine_guide_link, machine_model: machine, status: :pending)
-      expect(MachineGuideLink.approved).to eq([approved])
+      expect(MachineGuideLink.approved).to eq([ approved ])
     end
   end
 

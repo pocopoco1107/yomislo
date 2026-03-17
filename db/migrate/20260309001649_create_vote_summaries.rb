@@ -13,6 +13,6 @@ class CreateVoteSummaries < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :vote_summaries, [:shop_id, :machine_model_id, :target_date], unique: true, name: "index_vote_summaries_unique_shop_machine_date"
+    add_index :vote_summaries, [ :shop_id, :machine_model_id, :target_date ], unique: true, name: "index_vote_summaries_unique_shop_machine_date"
   end
 end

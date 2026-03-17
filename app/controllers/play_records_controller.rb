@@ -1,6 +1,6 @@
 class PlayRecordsController < ApplicationController
   before_action :require_voter_token
-  before_action :set_play_record, only: [:update, :destroy]
+  before_action :set_play_record, only: [ :update, :destroy ]
 
   def index
     set_meta_tags title: "収支カレンダー", noindex: true
@@ -8,9 +8,9 @@ class PlayRecordsController < ApplicationController
 
     @current_month = if params[:month].present?
                        Date.parse("#{params[:month]}-01")
-                     else
+    else
                        Date.current.beginning_of_month
-                     end
+    end
 
     @records = PlayRecord.where(voter_token: token)
                          .by_month(@current_month)
@@ -34,18 +34,18 @@ class PlayRecordsController < ApplicationController
     @total_result = all_records.sum(:result_amount)
 
     # Grouped records for display (date+shop grouping)
-    @grouped_records = @records.group_by { |r| [r.played_on, r.shop_id] }
+    @grouped_records = @records.group_by { |r| [ r.played_on, r.shop_id ] }
 
     # Load user votes and vote summaries for records that have a machine_model
-    record_keys = @records.select(&:machine_model_id).map { |r| [r.shop_id, r.machine_model_id, r.played_on] }.uniq
+    record_keys = @records.select(&:machine_model_id).map { |r| [ r.shop_id, r.machine_model_id, r.played_on ] }.uniq
     if record_keys.any?
       vote_conditions = record_keys.map { |sid, mid, d| "(shop_id = #{sid.to_i} AND machine_model_id = #{mid.to_i} AND voted_on = '#{d}')" }
       votes = Vote.where(voter_token: token).where(vote_conditions.join(" OR "))
-      @user_votes_by_key = votes.index_by { |v| [v.shop_id, v.machine_model_id, v.voted_on] }
+      @user_votes_by_key = votes.index_by { |v| [ v.shop_id, v.machine_model_id, v.voted_on ] }
 
       summary_conditions = record_keys.map { |sid, mid, d| "(shop_id = #{sid.to_i} AND machine_model_id = #{mid.to_i} AND target_date = '#{d}')" }
       summaries = VoteSummary.where(summary_conditions.join(" OR "))
-      @vote_summaries_by_key = summaries.index_by { |vs| [vs.shop_id, vs.machine_model_id, vs.target_date] }
+      @vote_summaries_by_key = summaries.index_by { |vs| [ vs.shop_id, vs.machine_model_id, vs.target_date ] }
     else
       @user_votes_by_key = {}
       @vote_summaries_by_key = {}

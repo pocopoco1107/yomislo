@@ -21,7 +21,7 @@ RSpec.describe "Search", type: :request do
       shop1 = create(:shop, prefecture: pref1, name: "東京店舗")
       create(:shop, prefecture: pref2, name: "大阪店舗")
 
-      get search_path, params: { prefectures: ["tokyo"] }
+      get search_path, params: { prefectures: [ "tokyo" ] }
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("東京店舗")
       expect(response.body).not_to include("大阪店舗")
@@ -31,17 +31,17 @@ RSpec.describe "Search", type: :request do
       create(:shop, name: "等価店", exchange_rate: :equal_rate)
       create(:shop, name: "非等価店", exchange_rate: :non_equal)
 
-      get search_path, params: { exchange_rates: ["equal_rate"] }
+      get search_path, params: { exchange_rates: [ "equal_rate" ] }
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("等価店")
       expect(response.body).not_to include("非等価店")
     end
 
     it "filters by slot rate" do
-      create(:shop, name: "20スロ店", slot_rates: ["20スロ"])
-      create(:shop, name: "5スロ店", slot_rates: ["5スロ"])
+      create(:shop, name: "20スロ店", slot_rates: [ "20スロ" ])
+      create(:shop, name: "5スロ店", slot_rates: [ "5スロ" ])
 
-      get search_path, params: { rates: ["20スロ"] }
+      get search_path, params: { rates: [ "20スロ" ] }
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("20スロ店")
       expect(response.body).not_to include("5スロ店")
@@ -51,7 +51,7 @@ RSpec.describe "Search", type: :request do
       create(:shop, name: "WiFi店", notes: "Wi-Fi、充電器")
       create(:shop, name: "普通店", notes: "")
 
-      get search_path, params: { facilities: ["Wi-Fi"] }
+      get search_path, params: { facilities: [ "Wi-Fi" ] }
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("WiFi店")
       expect(response.body).not_to include("普通店")
@@ -61,7 +61,7 @@ RSpec.describe "Search", type: :request do
       create(:shop, name: "駐車場店", parking_spaces: 100)
       create(:shop, name: "駐車場なし店", parking_spaces: nil)
 
-      get search_path, params: { facilities: ["parking"] }
+      get search_path, params: { facilities: [ "parking" ] }
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("駐車場店")
       expect(response.body).not_to include("駐車場なし店")
@@ -71,7 +71,7 @@ RSpec.describe "Search", type: :request do
       create(:shop, name: "9時店", business_hours: "9:00〜23:00")
       create(:shop, name: "10時店", business_hours: "10:00〜23:00")
 
-      get search_path, params: { opening_hours: ["9"] }
+      get search_path, params: { opening_hours: [ "9" ] }
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("9時店")
       expect(response.body).not_to include("10時店")
@@ -103,7 +103,7 @@ RSpec.describe "Search", type: :request do
       create(:shop, name: "東京非等価店", prefecture: pref, exchange_rate: :non_equal)
       create(:shop, name: "大阪等価店", exchange_rate: :equal_rate)
 
-      get search_path, params: { prefectures: ["tokyo"], exchange_rates: ["equal_rate"] }
+      get search_path, params: { prefectures: [ "tokyo" ], exchange_rates: [ "equal_rate" ] }
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("東京等価店")
       expect(response.body).not_to include("東京非等価店")

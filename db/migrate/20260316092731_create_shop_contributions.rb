@@ -9,6 +9,6 @@ class CreateShopContributions < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :shop_contributions, [:voter_token, :shop_id, :contribution_type], unique: true, name: "idx_shop_contributions_unique"
+    add_index :shop_contributions, [ :voter_token, :shop_id, :contribution_type ], unique: true, name: "idx_shop_contributions_unique"
   end
 end

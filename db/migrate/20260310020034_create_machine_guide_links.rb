@@ -11,7 +11,7 @@ class CreateMachineGuideLinks < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :machine_guide_links, [:machine_model_id, :url], unique: true
+    add_index :machine_guide_links, [ :machine_model_id, :url ], unique: true
     add_index :machine_guide_links, :status
     add_index :machine_guide_links, :link_type
   end

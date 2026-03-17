@@ -26,7 +26,7 @@ ActiveAdmin.register ShopEvent do
   end
 
   filter :shop
-  filter :event_type, as: :select, collection: ShopEvent::EVENT_TYPE_LABELS.map { |k, v| [v, k] }
+  filter :event_type, as: :select, collection: ShopEvent::EVENT_TYPE_LABELS.map { |k, v| [ v, k ] }
   filter :status, as: :select, collection: ShopEvent.statuses.keys
   filter :event_date
   filter :created_at

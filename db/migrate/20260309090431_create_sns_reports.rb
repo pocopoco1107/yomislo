@@ -16,7 +16,7 @@ class CreateSnsReports < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :sns_reports, [:machine_model_id, :reported_on]
+    add_index :sns_reports, [ :machine_model_id, :reported_on ]
     add_index :sns_reports, :status
   end
 end

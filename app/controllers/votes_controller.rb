@@ -21,9 +21,9 @@ class VotesController < ApplicationController
       tag = vote_params[:confirmed_setting]
       current_tags = @vote.confirmed_setting || []
       if current_tags.include?(tag)
-        merge_params[:confirmed_setting] = current_tags - [tag]
+        merge_params[:confirmed_setting] = current_tags - [ tag ]
       else
-        merge_params[:confirmed_setting] = current_tags + [tag]
+        merge_params[:confirmed_setting] = current_tags + [ tag ]
       end
     end
     @vote.assign_attributes(vote_params.slice(:shop_id, :machine_model_id, :voted_on).merge(merge_params))

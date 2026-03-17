@@ -11,7 +11,7 @@ class CreateVotes < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :votes, [:user_id, :shop_id, :machine_model_id, :voted_on], unique: true, name: "index_votes_unique_per_user_shop_machine_date"
-    add_index :votes, [:shop_id, :machine_model_id, :voted_on], name: "index_votes_for_aggregation"
+    add_index :votes, [ :user_id, :shop_id, :machine_model_id, :voted_on ], unique: true, name: "index_votes_unique_per_user_shop_machine_date"
+    add_index :votes, [ :shop_id, :machine_model_id, :voted_on ], name: "index_votes_for_aggregation"
   end
 end

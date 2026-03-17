@@ -15,6 +15,6 @@ class CreateShopRequests < ActiveRecord::Migration[8.0]
 
     add_index :shop_requests, :status
     add_index :shop_requests, :voter_token
-    add_index :shop_requests, [:prefecture_id, :name, :status], name: "index_shop_requests_on_pref_name_status"
+    add_index :shop_requests, [ :prefecture_id, :name, :status ], name: "index_shop_requests_on_pref_name_status"
   end
 end

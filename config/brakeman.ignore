@@ -1,0 +1,22 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "0b43c0759c3cda48c59c6c920cd3cd93e1ce81493479c5edf7f3909cf95ce50e",
+      "code": "Shop.where.not(:lat => nil).where.not(:lng => nil).where(precision_condition).where(\"#{distance_sql} <= ?\", radius_km)",
+      "message": "Possible SQL injection",
+      "file": "app/controllers/shops_controller.rb",
+      "line": 223,
+      "note": "False positive: distance_sql is pre-sanitized via sanitize_sql_array"
+    },
+    {
+      "fingerprint": "d91c4618decb0d979b912a0ea9c16e67b6e68ede0dd3a55283fb922170391f75",
+      "code": "link_to((ShopRequest.find(params[:id]).url or \"#\"), (ShopRequest.find(params[:id]).url or \"#\"), :target => \"_blank\", :rel => \"noopener\", :class => \"text-primary hover:underline break-all\")",
+      "message": "Potentially unsafe model attribute in `link_to` href",
+      "file": "app/views/shop_requests/show.html.erb",
+      "line": 43,
+      "note": "False positive: URL is validated to http(s) protocol before rendering"
+    }
+  ],
+  "updated": "2026-03-17 10:16:50 +0900",
+  "brakeman_version": "8.0.4"
+}

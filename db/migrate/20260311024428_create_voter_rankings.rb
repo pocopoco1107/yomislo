@@ -12,9 +12,9 @@ class CreateVoterRankings < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :voter_rankings, [:period_type, :period_key, :scope_type, :scope_id, :voter_token],
+    add_index :voter_rankings, [ :period_type, :period_key, :scope_type, :scope_id, :voter_token ],
               unique: true, name: "idx_voter_rankings_unique"
-    add_index :voter_rankings, [:period_type, :period_key, :scope_type, :scope_id, :rank_position],
+    add_index :voter_rankings, [ :period_type, :period_key, :scope_type, :scope_id, :rank_position ],
               name: "idx_voter_rankings_lookup"
     add_index :voter_rankings, :voter_token
   end

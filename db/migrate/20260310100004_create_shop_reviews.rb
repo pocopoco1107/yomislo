@@ -12,8 +12,8 @@ class CreateShopReviews < ActiveRecord::Migration[8.0]
       t.timestamps
     end
     add_index :shop_reviews, :voter_token
-    add_index :shop_reviews, [:shop_id, :voter_token], unique: true
-    add_index :shop_reviews, [:shop_id, :created_at]
+    add_index :shop_reviews, [ :shop_id, :voter_token ], unique: true
+    add_index :shop_reviews, [ :shop_id, :created_at ]
     add_index :shop_reviews, :category
   end
 end

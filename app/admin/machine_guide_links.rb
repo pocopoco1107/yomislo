@@ -47,8 +47,8 @@ ActiveAdmin.register MachineGuideLink do
       f.input :url
       f.input :title
       f.input :source
-      f.input :link_type, as: :select, collection: MachineGuideLink::LINK_TYPE_LABELS.map { |k, v| [v, k] }
-      f.input :status, as: :select, collection: MachineGuideLink.statuses.keys.map { |s| [I18n.t("activerecord.attributes.machine_guide_link.statuses.#{s}", default: s), s] }
+      f.input :link_type, as: :select, collection: MachineGuideLink::LINK_TYPE_LABELS.map { |k, v| [ v, k ] }
+      f.input :status, as: :select, collection: MachineGuideLink.statuses.keys.map { |s| [ I18n.t("activerecord.attributes.machine_guide_link.statuses.#{s}", default: s), s ] }
     end
     f.actions
   end

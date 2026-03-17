@@ -78,18 +78,18 @@ RSpec.describe PlayRecord, type: :model do
 
     describe "tags validation" do
       it "accepts valid tags" do
-        record = build(:play_record, tags: ["天井", "朝一"])
+        record = build(:play_record, tags: [ "天井", "朝一" ])
         expect(record).to be_valid
       end
 
       it "rejects invalid tags" do
-        record = build(:play_record, tags: ["invalid_tag"])
+        record = build(:play_record, tags: [ "invalid_tag" ])
         expect(record).not_to be_valid
         expect(record.errors[:tags].first).to include("無効なタグ")
       end
 
       it "rejects when mix of valid and invalid tags" do
-        record = build(:play_record, tags: ["天井", "不正タグ", "朝一"])
+        record = build(:play_record, tags: [ "天井", "不正タグ", "朝一" ])
         expect(record).not_to be_valid
         expect(record.errors[:tags].first).to include("不正タグ")
       end

@@ -79,9 +79,9 @@ group :development do
   gem "web-console"
 end
 
-gem "bullet", "~> 8.1", :groups => [:development, :test]
+gem "bullet", "~> 8.1", groups: [ :development, :test ]
 
-gem "simplecov", "~> 0.22.0", :group => :test, :require => false
+gem "simplecov", "~> 0.22.0", group: :test, require: false
 
 group :test do
   gem "capybara"

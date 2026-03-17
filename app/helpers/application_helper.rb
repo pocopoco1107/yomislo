@@ -143,13 +143,13 @@ module ApplicationHelper
       reset_rates = week.select { |d| d[:reset_rate] }
       avg_reset = if reset_rates.any?
                     (reset_rates.sum { |d| d[:reset_rate] } / reset_rates.size).round(1)
-                  end
+      end
 
       # Weighted setting average
       settings = week.select { |d| d[:setting_avg] }
       avg_setting = if settings.any?
                       (settings.sum { |d| d[:setting_avg] } / settings.size).round(1)
-                    end
+      end
 
       first_date = week.first[:date]
       last_date = week.last[:date]

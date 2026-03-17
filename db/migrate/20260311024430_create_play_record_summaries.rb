@@ -16,9 +16,9 @@ class CreatePlayRecordSummaries < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :play_record_summaries, [:scope_type, :scope_id, :period_type, :period_key],
+    add_index :play_record_summaries, [ :scope_type, :scope_id, :period_type, :period_key ],
               unique: true, name: "idx_play_record_summaries_unique"
-    add_index :play_record_summaries, [:scope_type, :period_type, :period_key],
+    add_index :play_record_summaries, [ :scope_type, :period_type, :period_key ],
               name: "idx_play_record_summaries_lookup"
   end
 end

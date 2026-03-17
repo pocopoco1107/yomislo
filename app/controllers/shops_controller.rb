@@ -105,7 +105,7 @@ class ShopsController < ApplicationController
     SQL
 
     distance_sql = ActiveRecord::Base.sanitize_sql_array(
-      [haversine_sql, { user_lat: lat, user_lng: lng }]
+      [ haversine_sql, { user_lat: lat, user_lng: lng } ]
     )
 
     @nearby_shops = nearby_query(distance_sql, radius_km, "geocode_precision >= 2", 20)
@@ -158,7 +158,7 @@ class ShopsController < ApplicationController
     machine_ids = (registered_ids + voted_ids).uniq
 
     @machine_models = MachineModel.where(id: machine_ids).order(:name).to_a
-                        .sort_by { |m| [m.display_type_sort, m.name] }
+                        .sort_by { |m| [ m.display_type_sort, m.name ] }
 
     # ShopMachineModel台数マップ (machine_model_id => unit_count)
     @unit_counts = ShopMachineModel.where(shop_id: @shop.id, machine_model_id: machine_ids)
