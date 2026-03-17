@@ -25,7 +25,7 @@ require "uri"
 module PtownScraper
   BASE_URL = "https://p-town.dmm.com"
   USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-  REQUEST_INTERVAL = 3.0
+  REQUEST_INTERVAL = 5.0
   MAX_RETRIES = 3
 
   class << self
@@ -70,8 +70,9 @@ module PtownScraper
         rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET => e
           retries += 1
           if retries <= MAX_RETRIES
-            puts "  #{e.class}, retry #{retries}/#{MAX_RETRIES}..."
-            sleep 5
+            wait = 15 * retries
+            puts "  #{e.class}, retry #{retries}/#{MAX_RETRIES} (waiting #{wait}s)..."
+            sleep wait
             next
           end
           puts "  ERROR: #{e.class} after #{MAX_RETRIES} retries for #{url}"
