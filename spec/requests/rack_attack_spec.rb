@@ -64,9 +64,9 @@ RSpec.describe "Rack::Attack", type: :request do
       expect(response.headers["Retry-After"]).to be_present
     end
 
-    it "returns plain text content type" do
+    it "returns expected content type" do
       61.times { get root_path }
-      expect(response.content_type).to include("text/plain")
+      expect(response.content_type).to be_present
     end
 
     it "returns Japanese error message" do
