@@ -158,6 +158,17 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 2. **件数の妥当性チェック**: 変更前後の件数を表示し、大幅な増減がないか確認
 3. **パチンコ混入チェック**: `pachinko_name?` でパチンコ機種が混入していないか
 
+### 既知のデータ制限
+- **設置機種未掲載店舗**: DMMぱちタウン側で `#anc-slot` セクションがない店舗が約1,002件存在（パチンコ専門店・小規模店が中心）
+- 確認クエリ:
+  ```ruby
+  Shop.where.not(ptown_shop_id: nil)
+      .where.not(last_synced_at: nil)
+      .left_joins(:shop_machine_models)
+      .group('shops.id')
+      .having('count(shop_machine_models.id) = 0')
+  ```
+
 ### DMMぱちタウンスクレイピング規約
 - レート制限: `sleep 3.0` (1リクエストあたり)
 - User-Agent: 標準ブラウザUA使用

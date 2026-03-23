@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_18_231239) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_23_093326) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -209,6 +209,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_231239) do
 
   create_table "shop_machine_models", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "data_source", default: "ptown"
     t.bigint "machine_model_id", null: false
     t.bigint "shop_id", null: false
     t.integer "unit_count"
