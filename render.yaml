@@ -1,5 +1,6 @@
 databases:
   - name: yomislo-db
+    region: singapore
     plan: free
     databaseName: yomislo_production
     user: yomislo
@@ -7,6 +8,7 @@ databases:
 services:
   - type: web
     name: yomislo
+    region: singapore
     runtime: ruby
     plan: starter
     buildCommand: ./bin/render-build.sh
@@ -35,6 +37,7 @@ services:
   # ※毎月1日はスキップ (Job内判定、月次ジョブが代わりに実行)
   - type: cron
     name: yomislo-daily-refresh
+    region: singapore
     runtime: ruby
     plan: starter
     schedule: "0 18 * * *"
@@ -56,6 +59,7 @@ services:
   # ランキング + 収支集計 + VoterProfile — 04:00 JST (19:00 UTC前日)
   - type: cron
     name: yomislo-daily-aggregation
+    region: singapore
     runtime: ruby
     plan: starter
     schedule: "0 19 * * *"
@@ -74,6 +78,7 @@ services:
   # 毎月1日 03:00 JST (前月末日 18:00 UTC) — 約5時間
   - type: cron
     name: yomislo-monthly
+    region: singapore
     runtime: ruby
     plan: starter
     schedule: "0 18 1 * *"
