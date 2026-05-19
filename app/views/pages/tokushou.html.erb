@@ -1,0 +1,47 @@
+<% content_for(:title) { "特定商取引法に基づく表記 - ヨミスロ" } %>
+
+<section class="mt-4 max-w-3xl mx-auto px-4">
+  <h1 class="text-2xl font-bold text-foreground mb-2">特定商取引法に基づく表記</h1>
+  <p class="text-xs text-muted-foreground mb-6">最終更新日: 2026年5月20日</p>
+
+  <div class="bg-card border border-border rounded-lg p-5 md:p-7 text-sm leading-relaxed text-foreground">
+    <p class="text-muted-foreground mb-5">
+      本サイトは商品・役務の販売を行っておりません。第三者の商品・サービスへのアフィリエイト広告を掲載する場合があり、関連する情報を以下のとおり開示します。
+    </p>
+
+    <dl class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] gap-y-3 gap-x-4">
+      <dt class="font-medium text-foreground">サイト名</dt>
+      <dd class="text-muted-foreground">ヨミスロ</dd>
+
+      <dt class="font-medium text-foreground">サイトURL</dt>
+      <dd class="text-muted-foreground"><%= request.base_url %></dd>
+
+      <dt class="font-medium text-foreground">運営者</dt>
+      <dd class="text-muted-foreground">個人運営（請求があった場合に遅滞なく開示します）</dd>
+
+      <dt class="font-medium text-foreground">所在地</dt>
+      <dd class="text-muted-foreground">請求があった場合に遅滞なく開示します</dd>
+
+      <dt class="font-medium text-foreground">連絡先</dt>
+      <dd class="text-muted-foreground">
+        <%= link_to "お問い合わせフォーム", new_feedback_path, class: "text-primary underline" %>
+        よりご連絡ください
+      </dd>
+
+      <dt class="font-medium text-foreground">提供サービス</dt>
+      <dd class="text-muted-foreground">
+        パチスロ機種・店舗情報の集約および利用者投稿型の情報共有プラットフォーム
+      </dd>
+
+      <dt class="font-medium text-foreground">料金</dt>
+      <dd class="text-muted-foreground">無料（広告収入により運営）</dd>
+
+      <dt class="font-medium text-foreground">広告掲載について</dt>
+      <dd class="text-muted-foreground">
+        第三者の商品・サービスをアフィリエイト広告として掲載することがあります。
+        広告経由でのご購入・お申し込みに関する取引は、各広告主との直接取引となり、
+        本サイト運営者は当該取引に関与しません。
+      </dd>
+    </dl>
+  </div>
+</section>

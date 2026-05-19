@@ -46,6 +46,12 @@ Rails.application.routes.draw do
 
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # Static pages (legal / about)
+  get "privacy",       to: "pages#privacy"
+  get "terms",         to: "pages#terms"
+  get "legal/tokushou", to: "pages#tokushou", as: :tokushou
+  get "about",         to: "pages#about"
+
   # Error pages
   match "/404", to: "errors#not_found", via: :all
   match "/500", to: "errors#internal_server_error", via: :all

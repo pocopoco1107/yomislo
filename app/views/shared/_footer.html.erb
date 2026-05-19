@@ -1,8 +1,8 @@
 <footer class="mt-8 md:mt-12 mb-16 md:mb-0">
   <div class="h-px w-full bg-border/50"></div>
-  <div class="mx-auto max-w-6xl px-4 py-8">
+  <div class="mx-auto max-w-6xl px-4 py-8 space-y-4">
     <div class="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-      <%# Links %>
+      <%# Service Links %>
       <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
         <%= link_to rankings_path,
               class: "text-muted-foreground transition-colors hover:text-foreground inline-flex items-center gap-1.5 py-2 min-h-[44px]" do %>
@@ -30,6 +30,17 @@
         <p class="mt-0.5">ログインなし、匿名OK。みんなで使うパチスロ記録サイト。</p>
         <p class="mt-1 text-[10px] text-muted-foreground/50">当サイトはパチスロメーカーとは無関係の個人プロジェクトです</p>
       </div>
+    </div>
+
+    <%# Legal Links %>
+    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-[11px] text-muted-foreground/70 border-t border-border/30 pt-3">
+      <%= link_to "ヨミスロについて", about_path, class: "hover:text-foreground transition-colors" %>
+      <span>·</span>
+      <%= link_to "プライバシーポリシー", privacy_path, class: "hover:text-foreground transition-colors" %>
+      <span>·</span>
+      <%= link_to "利用規約", terms_path, class: "hover:text-foreground transition-colors" %>
+      <span>·</span>
+      <%= link_to "特定商取引法に基づく表記", tokushou_path, class: "hover:text-foreground transition-colors" %>
     </div>
   </div>
 </footer>

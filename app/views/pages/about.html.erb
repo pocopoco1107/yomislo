@@ -1,0 +1,62 @@
+<% content_for(:title) { "ヨミスロについて - パチスロの設定・収支を匿名で記録するCGMサイト" } %>
+
+<section class="mt-4 max-w-3xl mx-auto px-4">
+  <h1 class="text-2xl font-bold text-foreground mb-2">ヨミスロについて</h1>
+  <p class="text-sm text-muted-foreground mb-6">パチスロを打つ人のための、みんなで作る情報サイト</p>
+
+  <div class="bg-card border border-border rounded-lg p-5 md:p-7 space-y-6 text-sm leading-relaxed text-foreground">
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">サイトの目的</h2>
+      <p class="text-muted-foreground">
+        ヨミスロは、パチスロの設定推測情報・店舗の傾向・自分の収支を、ログイン不要でワンタップ記録できる集合知サイトです。
+        ホールで打つ前に「ここは設定入ってるのか」「この機種の天井は」を素早く調べられること、
+        そして自分の打ち手データを残せることを目指しています。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">特徴</h2>
+      <ul class="list-disc list-inside space-y-1 text-muted-foreground">
+        <li><strong class="text-foreground">ログイン不要</strong>: メールアドレスもパスワードも不要。Cookie で匿名識別</li>
+        <li><strong class="text-foreground">ワンタップ記録</strong>: 設定推測・リセット情報を1秒で記録</li>
+        <li><strong class="text-foreground">全国対応</strong>: DMM ぱちタウン連携により全国6,000店舗以上をカバー</li>
+        <li><strong class="text-foreground">収支カレンダー</strong>: 月間収支・勝率・機種別データを自動集計</li>
+        <li><strong class="text-foreground">称号・ランキング</strong>: 投稿数や的中率に応じた称号、週間/月間/累計ランキング</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">データの出典</h2>
+      <p class="text-muted-foreground">
+        店舗マスタ・機種マスタは DMM ぱちタウン (<a href="https://p-town.dmm.com" target="_blank" rel="noopener" class="text-primary underline">p-town.dmm.com</a>) を出典としています。
+        設定推測・リセット情報・収支記録は利用者投稿によるものです。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">運営について</h2>
+      <p class="text-muted-foreground">
+        本サイトは個人運営のプロジェクトです。パチスロメーカー、ホール運営会社、関連団体とは無関係です。
+        運営費用の補填を目的にアフィリエイト広告を掲載することがありますが、掲載箇所には「PR」表記を行います。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">お問い合わせ</h2>
+      <p class="text-muted-foreground">
+        機能要望・不具合報告・店舗追加リクエスト・データ削除依頼などは、
+        <%= link_to "お問い合わせフォーム", new_feedback_path, class: "text-primary underline" %> よりご連絡ください。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">関連情報</h2>
+      <ul class="space-y-1 text-muted-foreground">
+        <li>・<%= link_to "プライバシーポリシー", privacy_path, class: "text-primary underline" %></li>
+        <li>・<%= link_to "利用規約", terms_path, class: "text-primary underline" %></li>
+        <li>・<%= link_to "特定商取引法に基づく表記", tokushou_path, class: "text-primary underline" %></li>
+      </ul>
+    </section>
+  </div>
+</section>

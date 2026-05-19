@@ -1,0 +1,86 @@
+<% content_for(:title) { "プライバシーポリシー - ヨミスロ" } %>
+
+<section class="mt-4 max-w-3xl mx-auto px-4">
+  <h1 class="text-2xl font-bold text-foreground mb-2">プライバシーポリシー</h1>
+  <p class="text-xs text-muted-foreground mb-6">最終更新日: 2026年5月20日</p>
+
+  <div class="bg-card border border-border rounded-lg p-5 md:p-7 space-y-6 text-sm leading-relaxed text-foreground">
+
+    <p>
+      ヨミスロ（以下「本サイト」）は、利用者のプライバシーを尊重し、個人情報の保護に最大限の注意を払います。
+      本ポリシーは、本サイトが取得する情報の種類、利用目的、管理方法を定めるものです。
+    </p>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">1. 取得する情報</h2>
+      <p class="mb-2">本サイトでは、サービス提供のため以下の情報を取得します。</p>
+      <ul class="list-disc list-inside space-y-1 text-muted-foreground">
+        <li>Cookie に保存される識別子（<code class="text-xs bg-muted px-1 rounded">voter_token</code>、有効期間1年）</li>
+        <li>サーバーログ（IPアドレス、ブラウザ情報、アクセス日時、参照元URL）</li>
+        <li>利用者が任意で投稿した情報（設定推測、収支、コメント、お問い合わせ内容など）</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">2. Cookie の利用</h2>
+      <p class="text-muted-foreground">
+        本サイトはログイン機能を持たず、利用者を匿名識別するために Cookie（<code class="text-xs bg-muted px-1 rounded">voter_token</code>）を使用します。
+        Cookie は同一利用者の重複投稿防止、お気に入り保存、ランキング集計などに利用されます。
+      </p>
+      <p class="mt-2 text-muted-foreground">
+        Cookie はブラウザの設定からいつでも削除できます。削除すると過去の投稿との紐付けが失われ、新しい識別子が発行されます。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">3. 利用目的</h2>
+      <ul class="list-disc list-inside space-y-1 text-muted-foreground">
+        <li>サービスの提供・運営・改善</li>
+        <li>不正利用・スパムの防止</li>
+        <li>統計データの作成（個人を特定しない形式）</li>
+        <li>アフィリエイト広告の表示・効果測定</li>
+        <li>お問い合わせへの回答</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">4. データの保管場所</h2>
+      <p class="text-muted-foreground">
+        本サイトのデータは、Render Services, Inc.（アメリカ合衆国法人）が運営するシンガポール所在のサーバーに保管されます。
+        通信は SSL/TLS により暗号化され、保存データには適切なアクセス制御が施されています。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">5. 第三者提供</h2>
+      <p class="text-muted-foreground">
+        本サイトは、法令に基づく場合を除き、取得した情報を第三者に提供しません。
+        統計データを公開する場合は、個人を特定できない形に加工した上で行います。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">6. 外部サービスの利用</h2>
+      <p class="text-muted-foreground">
+        本サイトは、運営費用回収のためアフィリエイト広告を掲載することがあります。
+        広告リンクをクリックして遷移した先のサービスにおける情報取得・利用については、各サービスのプライバシーポリシーに従います。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">7. 開示・削除のご請求</h2>
+      <p class="text-muted-foreground">
+        ご自身の投稿の開示や削除をご希望の場合は、<%= link_to "お問い合わせフォーム", new_feedback_path, class: "text-primary underline" %> よりご連絡ください。
+        匿名利用のため本人確認が困難な場合があり、その際は voter_token などの情報をお知らせいただくことがあります。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">8. 本ポリシーの改定</h2>
+      <p class="text-muted-foreground">
+        本ポリシーは、法令の改正やサービス内容の変更に応じて見直すことがあります。
+        改定時は本ページに掲載してお知らせします。
+      </p>
+    </section>
+  </div>
+</section>
