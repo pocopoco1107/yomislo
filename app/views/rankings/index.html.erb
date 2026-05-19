@@ -47,6 +47,8 @@
     </button>
   </div>
 
+  <%= render_promotion :rankings_top, variant: :banner %>
+
   <%# === Prefecture Selector (shown only when scope=prefecture) === %>
   <% if @scope == "prefecture" && @prefectures %>
     <div class="mb-4">

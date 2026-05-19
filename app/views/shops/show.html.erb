@@ -76,6 +76,8 @@
     </div>
   </div>
 
+  <%= render_promotion :shop_detail_top, variant: :banner %>
+
   <%# === Shop Info Card === %>
   <div class="bg-card rounded-lg p-4 mb-6 border-b border-border/50">
     <h2 class="text-sm font-semibold text-foreground mb-3 border-b border-border/50 pb-2">店舗情報</h2>
@@ -251,6 +253,8 @@
       </div>
     <% end %>
   </div>
+
+  <%= render_promotion :shop_detail_bottom, variant: :card %>
 
   <%# === Events === %>
   <%= render "shops/events", shop: @shop, upcoming_events: @upcoming_events, past_events: @past_events %>

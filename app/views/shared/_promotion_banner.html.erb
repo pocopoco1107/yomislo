@@ -1,0 +1,30 @@
+<%# 横長バナー型おすすめ案件。ヒーロー下や設置店舗リスト上などの幅広エリア向け。 %>
+<aside class="relative my-4 overflow-hidden rounded-lg border border-border bg-card shadow-sm"
+       style="aspect-ratio: 16 / 5;"
+       data-promotion-slot="<%= slot_key %>">
+  <a href="<%= promotion.target_url %>"
+     target="_blank"
+     rel="sponsored noopener"
+     class="absolute inset-0 flex items-center gap-3 px-4 py-3 md:gap-5 md:px-6 md:py-4 hover:bg-secondary/40 transition-colors"
+     aria-label="<%= promotion.title %>（おすすめ）">
+    <% if promotion.image_url.present? %>
+      <img src="<%= promotion.image_url %>"
+           alt=""
+           loading="lazy"
+           class="h-full w-auto max-w-[40%] flex-shrink-0 rounded-md object-cover">
+    <% end %>
+    <div class="min-w-0 flex-1">
+      <p class="text-sm md:text-base font-semibold text-foreground truncate">
+        <%= promotion.title %>
+      </p>
+      <% if promotion.description.present? %>
+        <p class="mt-1 text-xs md:text-sm text-muted-foreground line-clamp-2">
+          <%= promotion.description %>
+        </p>
+      <% end %>
+    </div>
+  </a>
+  <span class="pointer-events-none absolute right-2 top-2 rounded-md bg-foreground/70 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-background">
+    PR
+  </span>
+</aside>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_23_093326) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_19_175740) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -163,6 +163,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_093326) do
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_prefectures_on_name", unique: true
     t.index ["slug"], name: "index_prefectures_on_slug", unique: true
+  end
+
+  create_table "promotions", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.integer "category", default: 0, null: false
+    t.integer "clicks_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.string "description"
+    t.string "image_url"
+    t.integer "priority", default: 0, null: false
+    t.text "slot_keys", default: [], null: false, array: true
+    t.string "target_url", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active", "priority"], name: "index_promotions_on_active_and_priority"
+    t.index ["slot_keys"], name: "index_promotions_on_slot_keys", using: :gin
   end
 
   create_table "reports", force: :cascade do |t|

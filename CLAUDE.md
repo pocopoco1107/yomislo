@@ -54,6 +54,7 @@ bin/dev  # サーバー起動 (Tailwind watch + Rails)
 | Feedback | ユーザー要望・不具合報告 |
 | Comment | コメント (匿名、commenter_name任意) |
 | Report | 通報 |
+| Promotion | おすすめ案件（アフィリエイト広告枠、ActiveAdmin管理） |
 
 ## 重要ファイル
 - `app/views/shops/show.html.erb` — 最重要ページ（記録UI）
@@ -176,11 +177,7 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 - **機種名正規化**: NFKC正規化必須。`core_name()` で接頭辞/末尾型式コード除去
 
 ## UI/フロントエンド規約
-
-### Tailwind CSS v4
-- `@import "tailwindcss"` + `@theme` ブロック (v4形式)
-- カスタムカラーは `app/assets/tailwind/application.css` の `@theme` で定義
-- 設定ヒートマップ: 1=blue→2=cyan→3=emerald→4=amber→5=orange→6=red
+→ **`DESIGN.md`** を参照（カラートークン、サーフェス、タイポグラフィ、コンポーネント、Do's/Don'ts）
 
 ### Hotwire パターン
 - 記録UI: Turbo Frame (`<turbo-frame id="vote_...">`) で部分更新
@@ -188,10 +185,24 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 - お気に入り: localStorage + Stimulus `favorite` / `favorites-list`
 - フィルタ: Stimulus `machine-filter` コントローラ
 
-### モバイルファースト
-- `sm:` ブレークポイントでデスクトップ対応
-- タップ領域: 最小44x44px
-- 機種記録行: コンパクトさ重視（縦幅を抑える）
+### 広告（おすすめ案件キュレーション）
+
+- ASP アフィリエイト案件を自社キュレーションして「おすすめ」として掲載。AdSense は採用しない（パチスロ系は配信品質・BANリスクの面で不向き）
+- モデル: `Promotion`（title / description / image_url / target_url / category / slot_keys / priority / active）
+- 管理: ActiveAdmin `/admin/promotions`
+- 表示制御: `ENV['PROMOTIONS_ENABLED']` が `"true"` の場合のみ描画。未設定/false なら全スロットで何も出ない
+- 描画: `<%= render_promotion :slot_key, variant: :banner | :card %>`（[app/helpers/promotions_helper.rb](app/helpers/promotions_helper.rb)）
+- スロット一覧（実装と一致させること）:
+  - `home_hero` (banner) — ホーム ヒーロー直下
+  - `home_zone_split` (card) — ホーム Zone A 末尾
+  - `shop_detail_top` (banner) — 店舗詳細 ヘッダー下
+  - `shop_detail_bottom` (card) — 店舗詳細 機種リスト末尾
+  - `machine_detail` (banner) — 機種詳細 スペック下・設置店舗前
+  - `voter_status` (card) — マイステータス 履歴上
+  - `rankings_top` (banner) — ランキング テーブル上
+- 配置ルール: 1ページ最大2枠、リスト前後・セクション境界のみ。**in-feed（機種リスト中・vote row 隣接）禁止**（記録動線阻害回避）
+- リンクは `target="_blank" rel="sponsored noopener"` 必須（景表法・特商法・Google推奨）。右上に「PR」ラベル必須
+- Turbo Frame 内には絶対に置かない（再描画でASP計測が暴れる）
 
 ## Rakeタスク命名規約
 - namespace: `ptown:`

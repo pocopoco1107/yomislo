@@ -33,6 +33,10 @@
   </div>
 </section>
 
+<div class="max-w-6xl mx-auto px-4">
+  <%= render_promotion :home_hero, variant: :banner %>
+</div>
+
 <!-- ============================================
      Two-Zone Container
      ============================================ -->
@@ -259,6 +263,8 @@
           </ol>
         </div>
       <% end %>
+
+      <%= render_promotion :home_zone_split, variant: :card %>
 
     </div>
 

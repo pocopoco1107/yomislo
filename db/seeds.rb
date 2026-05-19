@@ -346,6 +346,12 @@ puts "  ShopMachineModels: #{ShopMachineModel.count}"
 end # unless Rails.env.production?
 
 # -----------------------------------------------
+# Promotions (all environments)
+# -----------------------------------------------
+puts "Seeding promotions..."
+load Rails.root.join("db/seeds/promotions.rb")
+
+# -----------------------------------------------
 # Admin User (all environments)
 # -----------------------------------------------
 admin_email = ENV.fetch("ADMIN_EMAIL", "admin@example.com")
