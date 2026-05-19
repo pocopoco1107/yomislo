@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "rake"
+
 # Monthly job to fully sync shops, machines, and details from DMMぱちタウン.
 # Each step runs independently — a failure in one step doesn't block the next.
 class MonthlyShopDetailsJob < ApplicationJob
@@ -9,6 +11,7 @@ class MonthlyShopDetailsJob < ApplicationJob
 
   def perform
     $stdout.sync = true
+    Rails.application.load_tasks if Rake::Task.tasks.empty?
 
     run_step("import_shops") do
       Rake::Task["ptown:import_shops"].invoke

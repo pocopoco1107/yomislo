@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "rake"
+
 # Daily job to sync machine master and shop machines from DMMぱちタウン.
 # Each step runs independently — a failure in one step doesn't block the next.
 class DailyMachineRefreshJob < ApplicationJob
@@ -11,6 +13,7 @@ class DailyMachineRefreshJob < ApplicationJob
     return if Date.current.day == 1
 
     $stdout.sync = true
+    Rails.application.load_tasks if Rake::Task.tasks.empty?
 
     run_step("import_machines") do
       Rake::Task["ptown:import_machines"].invoke
