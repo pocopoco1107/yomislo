@@ -2,8 +2,8 @@ ActiveAdmin.register_page "Dashboard" do
   menu priority: 1, label: proc { I18n.t("active_admin.dashboard") }
 
   content title: "ダッシュボード" do
-    columns do
-      column do
+    div class: "grid grid-cols-1 lg:grid-cols-2 gap-6" do
+      div do
         panel "サイト統計" do
           ul do
             li "ユーザー数: #{User.count}"
@@ -14,7 +14,7 @@ ActiveAdmin.register_page "Dashboard" do
           end
         end
       end
-      column do
+      div do
         panel "未解決通報 (#{Report.unresolved.count}件)" do
           table_for Report.unresolved.order(created_at: :desc).limit(10) do
             column("通報者") { |r| r.reporter.nickname }

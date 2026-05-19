@@ -101,7 +101,7 @@ ActiveAdmin.register MachineModel do
       f.input :payout_rate_min
       f.input :payout_rate_max
       f.input :slug
-      f.input :introduced_on, as: :datepicker
+      f.input :introduced_on, as: :date_picker
     end
     f.inputs "天井・期待値情報 (JSON)" do
       f.input :ceiling_info_json, as: :text,

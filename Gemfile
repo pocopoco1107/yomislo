@@ -40,7 +40,7 @@ gem "bootsnap", require: false
 gem "devise"
 
 # Admin panel
-gem "activeadmin"
+gem "activeadmin", "4.0.0.beta22"
 
 # Search
 gem "pg_search"

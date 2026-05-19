@@ -119,7 +119,7 @@ ActiveAdmin.register Shop do
       f.input :total_machines
       f.input :slot_machines
       f.input :business_hours, placeholder: "10:00〜22:45"
-      f.input :opened_on, as: :datepicker
+      f.input :opened_on, as: :date_picker
       f.input :parking_spaces
       f.input :phone_number
       f.input :morning_entry, placeholder: "09:40 抽選受付..."

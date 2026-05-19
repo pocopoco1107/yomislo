@@ -1,0 +1,20 @@
+{
+  "name": "yomislo",
+  "version": "1.0.0",
+  "description": "パチスロの設定・リセット情報を匿名ワンタップ投票で集め、集合知として蓄積するCGMサイト。",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build:css:admin": "tailwindcss -i app/assets/stylesheets/active_admin.css -o app/assets/builds/active_admin.css -c tailwind-active_admin.config.js --minify"
+  },
+  "dependencies": {
+    "@activeadmin/activeadmin": "4.0.0-beta22",
+    "tailwindcss": "^4"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0"
+  }
+}
