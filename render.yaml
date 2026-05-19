@@ -41,7 +41,7 @@ services:
     runtime: ruby
     plan: starter
     schedule: "0 18 * * *"
-    buildCommand: ./bin/render-build.sh
+    buildCommand: bundle install
     startCommand: bundle exec rails runner "DailyMachineRefreshJob.perform_now"
     envVars: &batch-env
       - key: DATABASE_URL
@@ -63,7 +63,7 @@ services:
     runtime: ruby
     plan: starter
     schedule: "0 19 * * *"
-    buildCommand: ./bin/render-build.sh
+    buildCommand: bundle install
     startCommand: >
       bundle exec rails runner "
         VoterRanking.refresh_weekly!;
@@ -82,6 +82,6 @@ services:
     runtime: ruby
     plan: starter
     schedule: "0 18 1 * *"
-    buildCommand: ./bin/render-build.sh
+    buildCommand: bundle install
     startCommand: bundle exec rails runner "MonthlyShopDetailsJob.perform_now"
     envVars: *batch-env
