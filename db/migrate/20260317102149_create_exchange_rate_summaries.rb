@@ -9,7 +9,7 @@ class CreateExchangeRateSummaries < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :exchange_rate_summaries, [:shop_id, :denomination],
+    add_index :exchange_rate_summaries, [ :shop_id, :denomination ],
               unique: true, name: "idx_exchange_rate_summaries_unique"
   end
 end

@@ -58,9 +58,9 @@ module PworldSupplement
               retry_after = response["Retry-After"]&.to_i
               wait = if retry_after && retry_after > 0
                        [ retry_after, max_wait ].min
-                     else
+              else
                        rate_limit_waits[retries - 1] || max_wait
-                     end
+              end
               puts "  429 Too Many Requests, waiting #{wait}s (retry #{retries}/#{MAX_RETRIES})..."
               sleep wait
               next
@@ -210,9 +210,9 @@ namespace :pworld_supplement do
     # Get target shops (0 machine links, with ptown_shop_id)
     prefectures = if pref_slug.present?
                     Prefecture.where(slug: pref_slug)
-                  else
+    else
                     Prefecture.order(:id)
-                  end
+    end
 
     target_shop_ids = Shop.where.not(ptown_shop_id: nil)
       .where.not(last_synced_at: nil)

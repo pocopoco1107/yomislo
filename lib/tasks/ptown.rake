@@ -68,9 +68,9 @@ module PtownScraper
               retry_after = response["Retry-After"]&.to_i
               wait = if retry_after && retry_after > 0
                        [ retry_after, max_wait ].min
-                     else
+              else
                        rate_limit_waits[retries - 1] || max_wait
-                     end
+              end
               puts "  429 Too Many Requests, waiting #{wait}s (retry #{retries}/#{MAX_RETRIES})..."
               sleep wait
               next
@@ -822,9 +822,9 @@ namespace :ptown do
 
     prefectures = if pref_slug.present?
                     Prefecture.where(slug: pref_slug)
-                  else
+    else
                     Prefecture.order(:id)
-                  end
+    end
 
     if prefectures.empty?
       puts "ERROR: Prefecture '#{pref_slug}' not found"
@@ -848,9 +848,9 @@ namespace :ptown do
 
       shops = if force
                 base_scope.order(:id)
-              else
+      else
                 base_scope.where(last_synced_at: nil).or(base_scope.where(last_synced_at: ...1.day.ago)).order(:last_synced_at)
-              end
+      end
 
       pref_total = shops.count
       pref_skipped = base_scope.count - pref_total
@@ -1128,7 +1128,6 @@ namespace :ptown do
     puts "画像なし: #{no_img} (#{(no_img * 100.0 / active).round(1)}%)"
     puts "ptown_id未マッチ: #{no_ptown} (#{(no_ptown * 100.0 / active).round(1)}%)"
   end
-
 end
 
 # Helper: build mapping of MachineModel -> ptown_id

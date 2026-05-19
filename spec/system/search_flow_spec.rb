@@ -34,6 +34,5 @@ RSpec.describe "Search flow", type: :system do
 
       expect(page).to have_content("条件に一致する店舗がありません")
     end
-
   end
 end

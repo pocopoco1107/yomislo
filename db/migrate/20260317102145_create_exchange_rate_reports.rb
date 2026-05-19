@@ -8,9 +8,9 @@ class CreateExchangeRateReports < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :exchange_rate_reports, [:voter_token, :shop_id, :denomination],
+    add_index :exchange_rate_reports, [ :voter_token, :shop_id, :denomination ],
               unique: true, name: "idx_exchange_rate_reports_unique"
-    add_index :exchange_rate_reports, [:shop_id, :denomination],
+    add_index :exchange_rate_reports, [ :shop_id, :denomination ],
               name: "idx_exchange_rate_reports_aggregation"
   end
 end

@@ -24,5 +24,4 @@ class Shop < ApplicationRecord
   def geocode_accurate?
     geocode_precision.to_i >= 2
   end
-
 end
