@@ -140,7 +140,9 @@
               </label>
             <% end %>
           </div>
-          <p class="mt-2 text-[10px] text-muted-foreground">※ DMMぱちタウン提供情報。設備データを取得中の店舗もあります</p>
+          <p class="mt-2 text-[10px] text-muted-foreground">
+            ※ DMMぱちタウン提供情報。<% if ENV["FACILITY_DATA_LOADING"] == "true" %>設備データを取得中の店舗もあります<% end %>
+          </p>
         </div>
 
         <%# 検索・クリアボタン %>
