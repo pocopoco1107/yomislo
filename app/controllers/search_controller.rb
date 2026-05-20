@@ -1,6 +1,8 @@
 class SearchController < ApplicationController
   def index
     @prefectures = Prefecture.order(:id)
+    @selected_prefecture = params[:prefecture].presence
+    @any_filter_active = filter_active?
     @shops = search_shops
 
     set_meta_tags title: "全国店舗検索",
@@ -10,34 +12,36 @@ class SearchController < ApplicationController
 
   private
 
+  def filter_active?
+    @selected_prefecture.present? ||
+      params[:opening_hours].present? ||
+      params[:morning_entry] == "yes" ||
+      params[:parking] == "yes"
+  end
+
   def search_shops
     scope = Shop.includes(:prefecture)
 
-    # 都道府県（複数選択 OR）
-    if params[:prefectures].present?
-      pref_ids = Prefecture.where(slug: Array(params[:prefectures])).pluck(:id)
-      scope = scope.where(prefecture_id: pref_ids) if pref_ids.any?
+    if @selected_prefecture
+      pref_id = Prefecture.where(slug: @selected_prefecture).pick(:id)
+      scope = scope.where(prefecture_id: pref_id) if pref_id
     end
 
-    # 駐車場フィルタ
-    if params[:facilities].present? && Array(params[:facilities]).include?("parking")
+    if params[:parking] == "yes"
       scope = scope.where("parking_spaces IS NOT NULL AND parking_spaces > 0")
     end
 
-    # 開店時間（OR） — sanitized via to_i
     if params[:opening_hours].present?
       hours = Array(params[:opening_hours]).map(&:to_i).uniq
-      conditions = hours.map { |h| "business_hours LIKE ?" }
+      conditions = hours.map { |_| "business_hours LIKE ?" }
       binds = hours.map { |h| "#{h}:%" }
       scope = scope.where(conditions.join(" OR "), *binds)
     end
 
-    # 朝入場ルール
     if params[:morning_entry] == "yes"
       scope = scope.where.not(morning_entry: [ nil, "" ])
     end
 
-    # フリーワード（店舗名部分一致）
     if params[:q].present?
       scope = scope.where("shops.name LIKE ?", "%#{Shop.sanitize_sql_like(params[:q])}%")
     end

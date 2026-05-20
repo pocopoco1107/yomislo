@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::Base
+  include AdminAuthentication
+
   allow_browser versions: :modern
 
   protected

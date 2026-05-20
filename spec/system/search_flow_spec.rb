@@ -11,12 +11,11 @@ RSpec.describe "Search flow", type: :system do
       visit search_path
 
       expect(page).to have_content("全国店舗検索")
-      expect(page).to have_select("prefectures[]")
       expect(page).to have_field(type: "text", name: "q")
     end
 
     it "filters shops by prefecture" do
-      visit search_path(prefectures: [ tokyo.slug ])
+      visit search_path(prefecture: tokyo.slug)
 
       expect(page).to have_content("新宿パチスロ館")
       expect(page).not_to have_content("梅田スロットセンター")

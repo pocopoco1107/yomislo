@@ -12,14 +12,12 @@ export default class extends Controller {
     this.active = "a"
     localStorage.setItem("home_active_tab", "a")
     this.apply()
-    this.scrollToTabs()
   }
 
   switchB() {
     this.active = "b"
     localStorage.setItem("home_active_tab", "b")
     this.apply()
-    this.scrollToTabs()
   }
 
   apply() {
@@ -35,9 +33,5 @@ export default class extends Controller {
     this.tabBTarget.classList.toggle("bg-primary", !isA)
     this.tabBTarget.classList.toggle("text-primary-foreground", !isA)
     this.tabBTarget.classList.toggle("text-muted-foreground", isA)
-  }
-
-  scrollToTabs() {
-    this.element.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 }

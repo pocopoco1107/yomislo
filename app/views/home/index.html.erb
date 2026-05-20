@@ -24,7 +24,7 @@
 <section class="relative pb-2 pt-3 md:pb-6 md:pt-10 noise-texture">
   <div class="flex items-center justify-between gap-4 max-w-6xl mx-auto px-4">
     <p class="text-sm text-foreground font-bold md:text-lg" style="font-family: 'Uzura', sans-serif;">
-      <span class="text-primary">みんなの記録</span>で設定が見えてくる
+      <%= hero_tagline_html %>
     </p>
     <div class="flex items-center gap-3 text-[10px] text-muted-foreground shrink-0 md:text-xs">
       <span><span class="stat-number text-slot-red"><%= number_with_delimiter(@today_votes_count) %></span> 今日</span>
@@ -68,9 +68,9 @@
          ============================================ -->
     <div data-home-tab-target="zoneA" class="sm:col-span-3 space-y-4">
 
-      <!-- Favorite Shops (fetch後にデータがあれば表示) -->
+      <!-- Favorite Shops (お気に入りがある場合のみJSが表示する) -->
       <div data-controller="favorites-list">
-        <div data-favorites-list-target="container">
+        <div data-favorites-list-target="container" style="display:none">
           <h2 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <svg class="h-4 w-4 text-slot-yellow" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>

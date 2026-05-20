@@ -5,7 +5,6 @@ export default class extends Controller {
 
   connect() {
     this.abortController = null
-    this.containerTarget.style.display = "none"
 
     const favorites = this.getFavorites()
     if (favorites.length === 0) return

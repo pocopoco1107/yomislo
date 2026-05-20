@@ -20,83 +20,114 @@
   </nav>
 
   <%# ページヘッダー %>
-  <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-foreground mb-6">全国店舗検索</h1>
+  <header class="mb-6">
+    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-foreground">店舗を条件で探す</h1>
+    <p class="mt-1.5 text-sm text-muted-foreground">
+      店舗名・朝整理券・開店時間などの条件で全国横断検索。
+      <span class="hidden sm:inline">地域から探したい場合は <%= link_to "ホームの都道府県一覧", root_path(anchor: "prefectures"), class: "text-primary hover:underline" %> が便利です。</span>
+    </p>
+  </header>
 
   <%# 検索フォーム %>
   <%= form_tag search_path, method: :get, class: "mb-8" do %>
-    <%# フリーワード検索 %>
-    <div class="relative mb-4">
-      <svg class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <%# フリーワード検索（主役） %>
+    <div class="relative mb-3">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
       </svg>
       <input type="text" name="q" value="<%= params[:q] %>"
-             placeholder="店舗名で検索..."
+             placeholder="店舗名で検索（例: マルハン）"
              aria-label="店舗名で検索"
-             class="w-full min-h-[44px] rounded-md border border-input bg-transparent pl-9 pr-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none transition-[color,box-shadow]"
-             autocomplete="off">
+             class="w-full min-h-[48px] rounded-md border border-input bg-transparent pl-11 pr-3 py-2 text-base shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none transition-[color,box-shadow]"
+             autocomplete="off"
+             autofocus>
     </div>
 
-    <%# フィルタパネル %>
-    <div class="bg-card border border-border rounded-lg p-5 shadow-sm">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <%# 詳細条件（折りたたみ可能） %>
+    <details class="bg-card border border-border rounded-lg shadow-sm" <%= "open" if @any_filter_active %>>
+      <summary class="cursor-pointer select-none px-4 py-3 text-sm font-medium text-foreground flex items-center gap-2">
+        <svg class="size-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+        詳細条件で絞り込む
+        <% if @any_filter_active %>
+          <span class="ml-auto text-[10px] font-semibold text-primary">適用中</span>
+        <% end %>
+      </summary>
+      <div class="px-4 pb-4 pt-1 border-t border-border">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 pt-4">
 
-        <%# 都道府県 %>
-        <div class="sm:col-span-2 lg:col-span-3">
-          <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">都道府県</h4>
-          <select name="prefectures[]" multiple
-                  class="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none transition-[color,box-shadow]"
-                  size="5">
-            <% @prefectures.each do |pref| %>
-              <option value="<%= pref.slug %>" <%= "selected" if Array(params[:prefectures]).include?(pref.slug) %>>
-                <%= pref.name %>
-              </option>
-            <% end %>
-          </select>
-          <p class="text-[10px] text-muted-foreground mt-1.5">Ctrl/Cmd + クリックで複数選択</p>
-        </div>
+          <%# 都道府県（単一選択） %>
+          <div>
+            <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">都道府県</h4>
+            <select name="prefecture"
+                    class="w-full min-h-[40px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none transition-[color,box-shadow]">
+              <option value="">すべて</option>
+              <% @prefectures.each do |pref| %>
+                <option value="<%= pref.slug %>" <%= "selected" if @selected_prefecture == pref.slug %>>
+                  <%= pref.name %>
+                </option>
+              <% end %>
+            </select>
+          </div>
 
-        <%# 開店時間 %>
-        <div>
-          <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">開店時間</h4>
-          <div class="space-y-2">
-            <% [["9", "9時台"], ["10", "10時台"]].each do |value, label| %>
+          <%# 開店時間 %>
+          <div>
+            <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">開店時間</h4>
+            <div class="space-y-2">
+              <% [["9", "9時台"], ["10", "10時台"]].each do |value, label| %>
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                  <input type="checkbox" name="opening_hours[]" value="<%= value %>"
+                         <%= "checked" if Array(params[:opening_hours]).include?(value) %>
+                         class="size-4 shrink-0 rounded-[4px] border border-input shadow-xs accent-primary">
+                  <span class="text-xs text-foreground group-hover:text-primary transition-colors"><%= label %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <%# 朝入場ルール・駐車場 %>
+          <div>
+            <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">設備・ルール</h4>
+            <div class="space-y-2">
               <label class="flex items-center gap-2.5 cursor-pointer group">
-                <input type="checkbox" name="opening_hours[]" value="<%= value %>"
-                       <%= "checked" if Array(params[:opening_hours]).include?(value) %>
+                <input type="checkbox" name="morning_entry" value="yes"
+                       <%= "checked" if params[:morning_entry] == "yes" %>
                        class="size-4 shrink-0 rounded-[4px] border border-input shadow-xs accent-primary">
-                <span class="text-xs text-foreground group-hover:text-primary transition-colors"><%= label %></span>
+                <span class="text-xs text-foreground group-hover:text-primary transition-colors">朝整理券ルールあり</span>
               </label>
-            <% end %>
+              <label class="flex items-center gap-2.5 cursor-pointer group">
+                <input type="checkbox" name="parking" value="yes"
+                       <%= "checked" if params[:parking] == "yes" %>
+                       class="size-4 shrink-0 rounded-[4px] border border-input shadow-xs accent-primary">
+                <span class="text-xs text-foreground group-hover:text-primary transition-colors">駐車場あり</span>
+              </label>
+            </div>
           </div>
+
         </div>
 
-        <%# 朝入場ルール %>
-        <div>
-          <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">朝入場ルール</h4>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2.5 cursor-pointer group">
-              <input type="checkbox" name="morning_entry" value="yes"
-                     <%= "checked" if params[:morning_entry] == "yes" %>
-                     class="size-4 shrink-0 rounded-[4px] border border-input shadow-xs accent-primary">
-              <span class="text-xs text-foreground group-hover:text-primary transition-colors">ルールあり</span>
-            </label>
-          </div>
+        <%# 検索・クリアボタン %>
+        <div class="mt-5 pt-4 border-t border-border flex items-center gap-3">
+          <button type="submit"
+                  class="inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground min-h-[44px] px-5 py-2 text-sm font-medium shadow-xs hover:bg-primary/90 transition-all">
+            <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            この条件で検索
+          </button>
+          <%= link_to "条件をクリア", search_path, class: "text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2 inline-flex items-center min-h-[44px] px-2" %>
         </div>
-
       </div>
+    </details>
 
-      <%# 検索・クリアボタン %>
-      <div class="mt-5 pt-4 border-t border-border flex items-center gap-3">
+    <%# フリーワードのみで検索する人向けの即時送信ボタン（モバイル考慮） %>
+    <% unless @any_filter_active %>
+      <div class="mt-3 sm:hidden">
         <button type="submit"
-                class="inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground min-h-[44px] px-5 py-2 text-sm font-medium shadow-xs hover:bg-primary/90 transition-all">
-          <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
+                class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground min-h-[44px] px-5 py-2 text-sm font-medium shadow-xs hover:bg-primary/90 transition-all">
           検索
         </button>
-        <%= link_to "条件をクリア", search_path, class: "text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2 inline-flex items-center min-h-[44px] px-2" %>
       </div>
-    </div>
+    <% end %>
   <% end %>
 
   <%# 結果ヘッダー %>

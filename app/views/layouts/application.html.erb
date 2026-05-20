@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja" class="dark">
+<html lang="ja">
   <head>
     <%= display_meta_tags site: "ヨミスロ", reverse: true, separator: "|" %>
     <link rel="canonical" href="<%= canonical_url %>">
@@ -25,14 +25,13 @@
     <link rel="apple-touch-icon" href="/icons/icon-192.svg">
 
     <script nonce="<%= content_security_policy_nonce %>">
-      // FOUC防止: ページ読み込み前にテーマ適用 (デフォルト: dark)
+      // FOUC防止: ページ読み込み前にテーマ適用 (デフォルト: system = OSの設定に追従)
       (function() {
-        var theme = localStorage.getItem("theme") || "dark";
-        if (theme === "light") {
-          document.documentElement.classList.remove("dark");
-        } else {
-          document.documentElement.classList.add("dark");
-        }
+        var saved = localStorage.getItem("theme");
+        var theme = (saved === "light" || saved === "dark") ? saved : "system";
+        var isDark = theme === "dark" ||
+          (theme === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", isDark);
       })();
     </script>
 

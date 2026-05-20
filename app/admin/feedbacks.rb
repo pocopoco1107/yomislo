@@ -4,9 +4,9 @@ ActiveAdmin.register Feedback do
   actions :index, :show, :destroy
 
   scope :all
-  scope :unread, default: true
-  scope :read
-  scope :resolved
+  scope("未読", :unread, default: true) { |s| s.feedback_unread }
+  scope("既読", :read) { |s| s.feedback_read }
+  scope("解決済", :resolved) { |s| s.feedback_resolved }
 
   index do
     selectable_column
@@ -32,7 +32,7 @@ ActiveAdmin.register Feedback do
   end
 
   action_item :mark_read, only: :show do
-    if resource.unread?
+    if resource.feedback_unread?
       link_to "既読にする", mark_read_admin_feedback_path(resource), method: :put
     end
   end
