@@ -214,3 +214,36 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 - 都道府県指定: `rake ptown:task_name[prefecture_slug]`
 - 全国一括: `rake ptown:task_name` (引数なし)
 - 進捗表示: `puts "#{index}/#{total} ..."` 形式
+
+---
+
+## Claude スキル / Hook 一覧
+
+プロジェクト固有の自動化が `.claude/` 配下に揃っている。Claudeは文脈に応じて自動で呼ぶこと。
+
+### スキル（`.claude/skills/`）
+
+| スキル | 自動呼び出しトリガー |
+|--------|-------------------|
+| `scraping-verify` | rake ptown:* の直前/直後（Hook で snapshot 自動化済み） |
+| `data-check` | 「データチェック」「件数確認」「DB状況」「機種何件？」等の質問 |
+| `design-check` | .erb / .css / .html 編集の直後（Hook で自動実行済み） |
+| `promotion-placement` | render_promotion を含むファイル、Promotion 関連の編集 |
+| `before-deploy-render` | git push 直前、render.yaml/migration 編集、「デプロイする」発言 |
+| `wrap-up` | 「振り返り」「まとめ」「終わり」 |
+
+### サブエージェント（`.claude/agents/`）
+
+| エージェント | 呼ぶタイミング |
+|-------------|-------------|
+| `scraping-reviewer` | lib/tasks/ptown.rake / pworld_supplement.rake / PtownScraper 編集後 |
+| `copy-reviewer` | app/views/*.erb / config/locales/*.yml の文言追加・変更 |
+
+### Hooks（`.claude/hooks/`）— 自動実行
+
+| Hook | 動作 |
+|------|------|
+| block-secrets | .env / config/master.key / credentials.yml.enc 編集をブロック |
+| rubocop-on-save | .rb 編集後に `bundle exec rubocop -a` 自動実行 |
+| auto-scraping-snapshot | `rake ptown:*` 実行前に scraping-verify snapshot を自動取得 |
+| auto-design-check | .erb / .html / .css 編集後に design-check を実行（違反時のみ通知） |
