@@ -58,16 +58,12 @@
           <span class="text-[11px] font-bold px-2 py-0.5 rounded-md <%= @machine_model.display_type_badge_class %>">
             <%= @machine_model.display_type_label %>
           </span>
-          <% if @machine_model.generation_label %>
+          <% if @machine_model.generation_label && !@machine_model.smart_slot? %>
             <span class="text-[11px] font-bold px-2 py-0.5 rounded-md <%= @machine_model.generation_badge_class %>">
               <%= @machine_model.generation_label %>
             </span>
           <% end %>
-          <% if @machine_model.smart_slot? %>
-            <span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-confirmed/10 text-confirmed border border-confirmed/20">
-              スマスロ
-            </span>
-          <% elsif @machine_model.display_type != :smart_slot %>
+          <% unless @machine_model.smart_slot? %>
             <span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-secondary text-secondary-foreground">
               メダル機
             </span>
