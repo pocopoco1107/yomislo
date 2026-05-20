@@ -37,6 +37,12 @@ class Promotion < ApplicationRecord
   scope :for_slot,    ->(key) { where("? = ANY(slot_keys)", key.to_s) }
   scope :prioritized, -> { order(priority: :desc, id: :asc) }
 
+  # ActiveAdmin の check_boxes UI は unchecked 表現用に空文字 "" を含めて送るため、
+  # セッター時点で blank を除去してバリデーション衝突を防ぐ。
+  def slot_keys=(value)
+    super(Array(value).map(&:to_s).reject(&:blank?))
+  end
+
   def category_label
     CATEGORY_LABELS[category] || category
   end

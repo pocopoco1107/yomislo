@@ -33,6 +33,12 @@ RSpec.describe Promotion, type: :model do
     it "accepts all defined slot keys" do
       expect(build(:promotion, slot_keys: Promotion::SLOT_KEYS)).to be_valid
     end
+
+    it "strips blank entries from slot_keys (ActiveAdmin check_boxes sends empty strings for unchecked)" do
+      promo = build(:promotion, slot_keys: [ "", "home_hero", "", "voter_status" ])
+      expect(promo).to be_valid
+      expect(promo.slot_keys).to eq(%w[home_hero voter_status])
+    end
   end
 
   describe "scopes" do
