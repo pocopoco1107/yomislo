@@ -51,6 +51,9 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
   config.include Devise::Test::ControllerHelpers, type: :controller
 
+  # Time travel helpers (travel_to, freeze_time, etc.)
+  config.include ActiveSupport::Testing::TimeHelpers
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
     Rails.root.join('spec/fixtures')

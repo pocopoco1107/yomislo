@@ -6,13 +6,15 @@ RSpec.describe "Home page", type: :system do
   let!(:shop) { create(:shop, name: "テスト店舗X", slug: "test-shop-x", prefecture: tokyo) }
 
   describe "hero section" do
-    it "displays the hero heading and stats" do
-      visit root_path
+    it "displays the time-based hero tagline and stats" do
+      travel_to Time.zone.local(2026, 5, 20, 12, 0) do
+        visit root_path
 
-      expect(page).to have_content("みんなの記録")
-      expect(page).to have_content("設定が見えてくる")
-      expect(page).to have_content("累計")
-      expect(page).to have_content("今日")
+        expect(page).to have_content("調子はどう？")
+        expect(page).to have_content("台の機嫌")
+        expect(page).to have_content("累計")
+        expect(page).to have_content("今日")
+      end
     end
   end
 
