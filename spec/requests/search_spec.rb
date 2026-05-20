@@ -100,5 +100,47 @@ RSpec.describe "Search", type: :request do
       get search_path, params: { page: 2 }
       expect(response).to have_http_status(:ok)
     end
+
+    describe "facility filters" do
+      it "filters by wifi_available=true only (nil and false are excluded)" do
+        create(:shop, name: "WiFi店", wifi_available: true)
+        create(:shop, name: "未確認店", wifi_available: nil)
+        create(:shop, name: "なし店", wifi_available: false)
+
+        get search_path, params: { wifi_available: "yes" }
+        expect(response.body).to include("WiFi店")
+        expect(response.body).not_to include("未確認店")
+        expect(response.body).not_to include("なし店")
+      end
+
+      it "filters by entry_method" do
+        create(:shop, name: "抽選店", entry_method: "lottery")
+        create(:shop, name: "並び店", entry_method: "queue")
+        create(:shop, name: "未確認店", entry_method: nil)
+
+        get search_path, params: { entry_method: "lottery" }
+        expect(response.body).to include("抽選店")
+        expect(response.body).not_to include("並び店")
+        expect(response.body).not_to include("未確認店")
+      end
+
+      it "combines facility filters with AND" do
+        create(:shop, name: "両方OK店", wifi_available: true, charging_available: true)
+        create(:shop, name: "Wi-Fiのみ", wifi_available: true, charging_available: nil)
+        create(:shop, name: "充電のみ", wifi_available: nil, charging_available: true)
+
+        get search_path, params: { wifi_available: "yes", charging_available: "yes" }
+        expect(response.body).to include("両方OK店")
+        expect(response.body).not_to include("Wi-Fiのみ")
+        expect(response.body).not_to include("充電のみ")
+      end
+
+      it "ignores invalid entry_method values" do
+        create(:shop, name: "店A")
+        get search_path, params: { entry_method: "invalid_value" }
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("店A")
+      end
+    end
   end
 end

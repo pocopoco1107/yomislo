@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_19_175740) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_20_145937) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -274,23 +274,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_19_175740) do
     t.string "access_info"
     t.string "address"
     t.string "business_hours"
+    t.boolean "charging_available"
     t.datetime "created_at", null: false
+    t.boolean "data_publishing"
+    t.string "entry_method"
+    t.datetime "facility_parsed_at"
     t.string "features"
     t.integer "geocode_precision", default: 0, null: false
+    t.boolean "heated_tobacco_ok"
     t.datetime "last_synced_at"
     t.decimal "lat", precision: 10, scale: 7
     t.decimal "lng", precision: 10, scale: 7
+    t.boolean "low_rate_slot"
     t.string "morning_entry"
     t.string "name", null: false
+    t.boolean "okislot"
+    t.boolean "open_year_round"
     t.date "opened_on"
     t.integer "parking_spaces"
     t.string "phone_number"
     t.bigint "prefecture_id", null: false
     t.integer "ptown_shop_id"
+    t.string "regular_holiday"
     t.integer "slot_machines"
+    t.boolean "slot_smoking_ok"
     t.string "slug", null: false
+    t.boolean "ticket_distribution"
     t.integer "total_machines"
     t.datetime "updated_at", null: false
+    t.boolean "wifi_available"
     t.index ["address"], name: "index_shops_on_address"
     t.index ["prefecture_id", "name"], name: "index_shops_on_prefecture_id_and_name"
     t.index ["prefecture_id"], name: "index_shops_on_prefecture_id"

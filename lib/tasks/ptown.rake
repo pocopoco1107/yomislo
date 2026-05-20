@@ -303,9 +303,18 @@ module PtownScraper
         end
       end
 
-      # アクセス・駐車場等のテキスト情報
-      doc.text.scan(/駐車場[：:]?\s*(\d+)台/).each do |m|
-        info[:parking_spaces] = m[0].to_i
+      # 基本情報テーブル (table.default-table) のパース
+      basic_info = parse_basic_info_table(doc)
+      info[:facility_attrs] = basic_info[:facility_attrs]
+      info[:facility_parsed_at] = basic_info[:facility_parsed_at]
+      info[:parking_spaces] = basic_info[:parking_spaces] if basic_info[:parking_spaces]
+      info[:regular_holiday] = basic_info[:regular_holiday] if basic_info[:regular_holiday]
+
+      # 駐車場フォールバック: テーブルから取れなかったら本文テキストから
+      if info[:parking_spaces].nil?
+        doc.text.scan(/駐車場[：:]?\s*(\d+)台/).each do |m|
+          info[:parking_spaces] = m[0].to_i
+        end
       end
 
       # スロット設置機種リスト (#anc-slot セクション)
@@ -352,6 +361,104 @@ module PtownScraper
 
       info[:machines] = machines
       info
+    end
+
+    # 基本情報テーブルのキーワード判定マップ
+    # サンプリング (lib/tasks/ptown.rake :dump_facility_text 141店) で確定した表記。
+    # 各値は { positive: [...], section: :symbol } 形式
+    FACILITY_KEYWORD_MAP = {
+      heated_tobacco_ok:   { positive: [ "加熱式たばこ喫煙遊技エリア" ],     section: "設備" },
+      slot_smoking_ok:     { positive: [ "20円スロット喫煙可", "5円スロット喫煙可" ], section: "設備" },
+      low_rate_slot:       { positive: [ "パチスロ低貸あり" ],              section: "特徴" },
+      wifi_available:      { positive: [ "Wi-Fi利用可" ],                   section: "サービス" },
+      charging_available:  { positive: [ "携帯電話充電可能" ],              section: "サービス" },
+      data_publishing:     { positive: [ "データ公開中" ],                  section: "特徴" },
+      okislot:             { positive: [ "沖スロ" ],                        section: "特徴" },
+      open_year_round:     { positive: [ "年中無休" ],                      section: "定休日" }
+    }.freeze
+
+    NEGATION_PATTERNS = %w[なし 不可 非対応 ありません NG].freeze
+
+    # 店舗基本情報テーブルをパース
+    # @return [Hash] {facility_attrs:, facility_parsed_at:, parking_spaces:, regular_holiday:}
+    def parse_basic_info_table(doc)
+      result = {
+        facility_attrs: {},
+        facility_parsed_at: nil,
+        parking_spaces: nil,
+        regular_holiday: nil
+      }
+
+      table = doc.at_css("table.default-table")
+      return result unless table
+
+      # tr.tr の th -> td を Hash 化
+      cells = {}
+      table.css("tr.tr").each do |tr|
+        th = tr.at_css("th.th")&.text&.strip&.gsub(/\s+/, " ")
+        td = tr.at_css("td.td")&.text&.strip&.gsub(/\s+/, " ")
+        next if th.blank?
+        cells[th] = td
+      end
+
+      relevant_sections = %w[設備 サービス 特徴 入場ルール ルール詳細 整理券 定休日]
+      result[:facility_parsed_at] = Time.current if (cells.keys & relevant_sections).any?
+
+      attrs = {}
+
+      # boolean フラグ判定
+      FACILITY_KEYWORD_MAP.each do |attr_name, config|
+        section_text = cells[config[:section]]
+        next if section_text.blank?
+        attrs[attr_name] = keyword_present?(section_text, config[:positive])
+      end
+
+      # 整理券 (専用セル: "あり"/"なし"/"--")
+      if (ticket = cells["整理券"])
+        case ticket.strip
+        when "あり" then attrs[:ticket_distribution] = true
+        when "なし" then attrs[:ticket_distribution] = false
+        end
+      end
+
+      # 入場方法
+      if (entry = cells["入場ルール"])
+        attrs[:entry_method] =
+          if entry.include?("抽選") || entry.include?("モバイル抽選") then "lottery"
+          elsif entry.include?("並び順") || entry.include?("並び") then "queue"
+          elsif entry.include?("その他") then "other"
+          end
+      end
+
+      # 定休日生テキスト (フリーテキスト保存、フィルタ用は open_year_round)
+      if (holiday = cells["定休日"]) && !holiday.match?(/\A-+\z/)
+        result[:regular_holiday] = holiday.truncate(200)
+      end
+
+      # 駐車場 (テーブル経由で台数抽出)
+      if (parking = cells["駐車場"]) && (m = parking.match(/(\d+)\s*台/))
+        result[:parking_spaces] = m[1].to_i
+      end
+
+      result[:facility_attrs] = attrs
+      result
+    end
+
+    # text の中にいずれかの positive キーワードが含まれ、
+    # かつ前後20文字以内に否定語がなければ true、否定語があれば false、
+    # キーワード自体がなければ nil を返す。
+    def keyword_present?(text, positives)
+      return nil if text.blank?
+      positives.each do |kw|
+        idx = text.index(kw)
+        next unless idx
+        window_start = [ idx - 20, 0 ].max
+        window_end = [ idx + kw.length + 20, text.length ].min
+        window = text[window_start...window_end]
+        return false if NEGATION_PATTERNS.any? { |neg| window.include?(neg) }
+        return true
+      end
+      nil
     end
 
     private
@@ -890,6 +997,16 @@ namespace :ptown do
           shop_attrs[:lat] = info[:lat] if info[:lat] && shop.lat.blank?
           shop_attrs[:lng] = info[:lng] if info[:lng] && shop.lng.blank?
 
+          # 設備情報の更新 (DMM取得値が nil なら既存値維持、true/false/string なら上書き)
+          if info[:facility_attrs].is_a?(Hash)
+            info[:facility_attrs].each do |key, value|
+              shop_attrs[key] = value unless value.nil?
+            end
+          end
+          shop_attrs[:regular_holiday] = info[:regular_holiday] if info[:regular_holiday].present?
+          # facility_parsed_at はパース成否（成功/部分成功）のメタ情報として常時更新
+          shop_attrs[:facility_parsed_at] = info[:facility_parsed_at] if info[:facility_parsed_at]
+
           # 設置機種の同期
           page_ptown_ids = info[:machines].map { |m| m[:ptown_id] }.to_set
           existing_smms = shop.shop_machine_models.includes(:machine_model).index_by { |smm| smm.machine_model&.ptown_id }
@@ -1127,6 +1244,123 @@ namespace :ptown do
     puts "アクティブ機種: #{active}"
     puts "画像なし: #{no_img} (#{(no_img * 100.0 / active).round(1)}%)"
     puts "ptown_id未マッチ: #{no_ptown} (#{(no_ptown * 100.0 / active).round(1)}%)"
+  end
+
+  desc "1店舗のみsync動作確認 (debug, ptown_shop_id指定)"
+  task :sync_one_shop, [ :ptown_shop_id ] => :environment do |_t, args|
+    $stdout.sync = true
+    ptown_id = args[:ptown_shop_id]&.to_i
+    abort "Usage: rake ptown:sync_one_shop[ptown_shop_id]" unless ptown_id && ptown_id > 0
+
+    shop = Shop.find_by(ptown_shop_id: ptown_id)
+    abort "Shop not found for ptown_shop_id=#{ptown_id}" unless shop
+    shop.reload
+
+    puts "=== Before: #{shop.name} (#{shop.prefecture.slug}/#{ptown_id}) ==="
+    %i[wifi_available charging_available heated_tobacco_ok slot_smoking_ok low_rate_slot
+       data_publishing okislot open_year_round ticket_distribution entry_method
+       regular_holiday facility_parsed_at parking_spaces].each do |attr|
+      puts "  #{attr}: #{shop.public_send(attr).inspect}"
+    end
+
+    url = "#{PtownScraper::BASE_URL}/shops/#{shop.prefecture.slug}/#{shop.ptown_shop_id}"
+    doc = PtownScraper.fetch_page(url)
+    abort "fetch failed" unless doc
+
+    info = PtownScraper.parse_shop_detail(doc)
+    attrs = {}
+    info[:facility_attrs].each { |k, v| attrs[k] = v unless v.nil? } if info[:facility_attrs].is_a?(Hash)
+    attrs[:regular_holiday] = info[:regular_holiday] if info[:regular_holiday].present?
+    attrs[:facility_parsed_at] = info[:facility_parsed_at] if info[:facility_parsed_at]
+    attrs[:parking_spaces] = info[:parking_spaces] if info[:parking_spaces] && shop.parking_spaces.blank?
+
+    puts "\n=== Would update with ==="
+    attrs.each { |k, v| puts "  #{k}: #{v.inspect}" }
+
+    shop.update_columns(attrs) if attrs.any?
+    shop.reload
+
+    puts "\n=== After ==="
+    %i[wifi_available charging_available heated_tobacco_ok slot_smoking_ok low_rate_slot
+       data_publishing okislot open_year_round ticket_distribution entry_method
+       regular_holiday facility_parsed_at].each do |attr|
+      puts "  #{attr}: #{shop.public_send(attr).inspect}"
+    end
+  end
+
+  desc "フィクスチャHTMLでparse_basic_info_tableの動作確認 (debug)"
+  task verify_parse_basic_info: :environment do
+    %w[shop_with_smoking_areas shop_marhan shop_minimal].each do |name|
+      path = Rails.root.join("spec/fixtures/ptown/#{name}.html")
+      unless File.exist?(path)
+        puts "skip: #{path} not found"
+        next
+      end
+      doc = Nokogiri::HTML(File.read(path))
+      result = PtownScraper.parse_basic_info_table(doc)
+      puts "===== #{name} ====="
+      puts "  facility_parsed_at: #{result[:facility_parsed_at].present? ? 'set' : 'nil'}"
+      puts "  parking_spaces: #{result[:parking_spaces].inspect}"
+      puts "  regular_holiday: #{result[:regular_holiday].inspect}"
+      puts "  facility_attrs:"
+      result[:facility_attrs].each { |k, v| puts "    #{k}: #{v.inspect}" }
+      puts
+    end
+  end
+
+  desc "店舗詳細の基本情報テーブル(設備/サービス/特徴/入場ルール/定休日)をCSVにダンプ"
+  task :dump_facility_text, [ :per_pref ] => :environment do |_t, args|
+    require "csv"
+    $stdout.sync = true
+    per_pref = (args[:per_pref] || 3).to_i
+
+    out_path = Rails.root.join("tmp/ptown_facility_dump.csv")
+    keys_of_interest = %w[設備 サービス 特徴 入場ルール ルール詳細 整理券 定休日]
+
+    total_sampled = 0
+    parsed_ok = 0
+
+    CSV.open(out_path, "w") do |csv|
+      csv << [ "prefecture", "shop_name", "ptown_shop_id", "url" ] + keys_of_interest
+
+      Prefecture.order(:id).each do |pref|
+        shops = pref.shops.where.not(ptown_shop_id: nil).order("RANDOM()").limit(per_pref)
+        next if shops.empty?
+        puts "--- #{pref.name} (#{shops.size}店) ---"
+
+        shops.each do |shop|
+          url = "#{PtownScraper::BASE_URL}/shops/#{pref.slug}/#{shop.ptown_shop_id}"
+          doc = PtownScraper.fetch_page(url)
+          total_sampled += 1
+
+          unless doc
+            csv << [ pref.name, shop.name, shop.ptown_shop_id, url ] + Array.new(keys_of_interest.size)
+            next
+          end
+
+          table = doc.at_css("table.default-table")
+          row = { "prefecture" => pref.name, "shop_name" => shop.name, "ptown_shop_id" => shop.ptown_shop_id, "url" => url }
+          if table
+            parsed_ok += 1
+            table.css("tr.tr").each do |tr|
+              th = tr.at_css("th.th")&.text&.strip&.gsub(/\s+/, " ")
+              td = tr.at_css("td.td")&.text&.strip&.gsub(/\s+/, " ")
+              next if th.blank?
+              row[th] = td if keys_of_interest.include?(th)
+            end
+          end
+
+          csv << [ row["prefecture"], row["shop_name"], row["ptown_shop_id"], row["url"] ] + keys_of_interest.map { |k| row[k] }
+          sleep PtownScraper::REQUEST_INTERVAL
+        end
+      end
+    end
+
+    puts ""
+    puts "=== サンプリング結果 ==="
+    puts "総サンプル: #{total_sampled} 店"
+    puts "table.default-table 取得成功: #{parsed_ok} 店 (#{(parsed_ok * 100.0 / total_sampled).round(1)}%)"
+    puts "CSV: #{out_path}"
   end
 end
 

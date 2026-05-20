@@ -106,19 +106,42 @@
           <span class="font-medium text-foreground"><%= @shop.opened_on.strftime("%Y年%m月%d日") %></span>
         </div>
       <% end %>
-      <% if @shop.morning_entry.present? %>
+      <% if @shop.entry_method.present? || @shop.morning_entry.present? %>
         <div class="col-span-2 sm:col-span-3">
           <span class="text-xs text-muted-foreground block">朝の入場</span>
-          <span class="font-medium text-primary"><%= @shop.morning_entry %></span>
+          <span class="font-medium text-primary">
+            <% case @shop.entry_method
+               when "lottery" %>抽選<%
+               when "queue" %>並び順<%
+               when "other" %>その他<%
+               end %>
+            <% if @shop.morning_entry.present? %>
+              <span class="text-xs text-muted-foreground"><%= @shop.morning_entry %></span>
+            <% end %>
+          </span>
         </div>
       <% end %>
-      <% if @shop.features.present? %>
+      <% if @shop.regular_holiday.present? %>
         <div class="col-span-2 sm:col-span-3">
-          <span class="text-xs text-muted-foreground block">特徴</span>
-          <span class="font-medium text-foreground"><%= @shop.features %></span>
+          <span class="text-xs text-muted-foreground block">定休日</span>
+          <span class="font-medium text-foreground"><%= @shop.regular_holiday %></span>
         </div>
       <% end %>
     </div>
+
+    <% facility_badges = shop_facility_badges(@shop) %>
+    <% if facility_badges.any? %>
+      <div class="mt-4 pt-3 border-t border-border/50">
+        <span class="text-xs text-muted-foreground block mb-2">設備・サービス</span>
+        <div class="flex flex-wrap gap-1.5">
+          <% facility_badges.each do |badge| %>
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium bg-secondary text-foreground border border-border/50">
+              <%= badge %>
+            </span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   </div>
 
   <%# === Exchange Rate Section === %>

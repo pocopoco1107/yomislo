@@ -1,4 +1,10 @@
 class SearchController < ApplicationController
+  # 検索フィルタに使う boolean カラム
+  FACILITY_FILTER_COLUMNS = %w[
+    wifi_available charging_available low_rate_slot data_publishing
+    okislot ticket_distribution open_year_round heated_tobacco_ok slot_smoking_ok
+  ].freeze
+
   def index
     @prefectures = Prefecture.order(:id)
     @selected_prefecture = params[:prefecture].presence
@@ -16,7 +22,9 @@ class SearchController < ApplicationController
     @selected_prefecture.present? ||
       params[:opening_hours].present? ||
       params[:morning_entry] == "yes" ||
-      params[:parking] == "yes"
+      params[:parking] == "yes" ||
+      params[:entry_method].present? ||
+      FACILITY_FILTER_COLUMNS.any? { |c| params[c] == "yes" }
   end
 
   def search_shops
@@ -40,6 +48,14 @@ class SearchController < ApplicationController
 
     if params[:morning_entry] == "yes"
       scope = scope.where.not(morning_entry: [ nil, "" ])
+    end
+
+    if params[:entry_method].present? && %w[lottery queue other].include?(params[:entry_method])
+      scope = scope.where(entry_method: params[:entry_method])
+    end
+
+    FACILITY_FILTER_COLUMNS.each do |col|
+      scope = scope.where(col => true) if params[col] == "yes"
     end
 
     if params[:q].present?

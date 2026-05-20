@@ -84,25 +84,63 @@
             </div>
           </div>
 
-          <%# 朝入場ルール・駐車場 %>
+          <%# 入場方法 %>
           <div>
-            <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">設備・ルール</h4>
+            <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">入場方法</h4>
             <div class="space-y-2">
-              <label class="flex items-center gap-2.5 cursor-pointer group">
-                <input type="checkbox" name="morning_entry" value="yes"
-                       <%= "checked" if params[:morning_entry] == "yes" %>
-                       class="size-4 shrink-0 rounded-[4px] border border-input shadow-xs accent-primary">
-                <span class="text-xs text-foreground group-hover:text-primary transition-colors">朝整理券ルールあり</span>
-              </label>
-              <label class="flex items-center gap-2.5 cursor-pointer group">
-                <input type="checkbox" name="parking" value="yes"
-                       <%= "checked" if params[:parking] == "yes" %>
-                       class="size-4 shrink-0 rounded-[4px] border border-input shadow-xs accent-primary">
-                <span class="text-xs text-foreground group-hover:text-primary transition-colors">駐車場あり</span>
-              </label>
+              <% [["", "指定なし"], ["lottery", "抽選"], ["queue", "並び順"]].each do |value, label| %>
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                  <input type="radio" name="entry_method" value="<%= value %>"
+                         <%= "checked" if params[:entry_method].to_s == value %>
+                         class="size-4 shrink-0 border border-input shadow-xs accent-primary">
+                  <span class="text-xs text-foreground group-hover:text-primary transition-colors"><%= label %></span>
+                </label>
+              <% end %>
             </div>
           </div>
 
+        </div>
+
+        <%# 駐車場・朝整理券（旧フィルタ） %>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
+          <label class="flex items-center gap-2 cursor-pointer group">
+            <input type="checkbox" name="parking" value="yes"
+                   <%= "checked" if params[:parking] == "yes" %>
+                   class="size-4 shrink-0 rounded-[4px] border border-input shadow-xs accent-primary">
+            <span class="text-xs text-foreground group-hover:text-primary transition-colors">駐車場あり</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer group">
+            <input type="checkbox" name="morning_entry" value="yes"
+                   <%= "checked" if params[:morning_entry] == "yes" %>
+                   class="size-4 shrink-0 rounded-[4px] border border-input shadow-xs accent-primary">
+            <span class="text-xs text-foreground group-hover:text-primary transition-colors">朝整理券ルール</span>
+          </label>
+        </div>
+
+        <%# 設備・サービス（DMM取得） %>
+        <div class="mt-5">
+          <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">設備・サービス（あるお店だけ表示）</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <% [
+              ["wifi_available", "Wi-Fi"],
+              ["charging_available", "充電OK"],
+              ["heated_tobacco_ok", "加熱式エリアあり"],
+              ["slot_smoking_ok", "スロ喫煙可"],
+              ["low_rate_slot", "低貸しあり"],
+              ["data_publishing", "データ公開"],
+              ["okislot", "沖スロあり"],
+              ["ticket_distribution", "整理券あり"],
+              ["open_year_round", "年中無休"]
+            ].each do |key, label| %>
+              <label class="flex items-center gap-2 cursor-pointer group">
+                <input type="checkbox" name="<%= key %>" value="yes"
+                       <%= "checked" if params[key] == "yes" %>
+                       class="size-4 shrink-0 rounded-[4px] border border-input shadow-xs accent-primary">
+                <span class="text-xs text-foreground group-hover:text-primary transition-colors"><%= label %></span>
+              </label>
+            <% end %>
+          </div>
+          <p class="mt-2 text-[10px] text-muted-foreground">※ DMMぱちタウン提供情報。設備データを取得中の店舗もあります</p>
         </div>
 
         <%# 検索・クリアボタン %>
