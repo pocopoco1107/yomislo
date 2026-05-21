@@ -117,7 +117,7 @@
           </label>
         </div>
 
-        <%# 設備・サービス（DMM取得） %>
+        <%# 設備・サービス %>
         <div class="mt-5">
           <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">設備・サービス（あるお店だけ表示）</h4>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -140,9 +140,9 @@
               </label>
             <% end %>
           </div>
-          <p class="mt-2 text-[10px] text-muted-foreground">
-            ※ DMMぱちタウン提供情報。<% if ENV["FACILITY_DATA_LOADING"] == "true" %>設備データを取得中の店舗もあります<% end %>
-          </p>
+          <% if ENV["FACILITY_DATA_LOADING"] == "true" %>
+            <p class="mt-2 text-[10px] text-muted-foreground">※ 設備データを取得中の店舗もあります</p>
+          <% end %>
         </div>
 
         <%# 検索・クリアボタン %>
