@@ -17,21 +17,12 @@
 - 新カラム追加マイグレーションが含まれる commit が main にマージ・deploy 完了している
 - `yomislo` web service が **Live** 状態であること
 
-### Step 1 — フロント表記の切替を有効化
-
-検索ページの「※ DMMぱちタウン提供情報。設備データを取得中の店舗もあります」を表示させるため、web service の env を設定する。
-
-1. Render Dashboard → `yomislo` (web service) → **Environment** タブ
-2. **Add Environment Variable** をクリック
-3. Key: `FACILITY_DATA_LOADING` / Value: `true`
-4. **Save Changes** — service が自動再起動する (約30秒)
-
-### Step 2 — 全店強制再 sync を実行
+### Step 1 — 全店強制再 sync を実行
 
 `yomislo-daily-refresh` cron は通常モードで 24h 以内同期済み店舗をスキップしてしまう。初回 backfill では `FORCE=1` を付けて全店再 sync が必要。
 
 1. Render Dashboard → `yomislo` (web service) → **Shell** タブ
-2. 以下を実行 (約10時間かかるので screen/tmux 相当の `nohup` ではなく Shell タブを開いたまま放置か、 Shell の `&` background 実行):
+2. 以下を実行 (約10時間かかるので Shell タブを開いたまま放置するか、 `&` 付きで background 実行):
 
 ```bash
 FORCE=1 bundle exec rake ptown:sync_shop_machines 2>&1 | tee tmp/backfill_$(date +%Y%m%d_%H%M).log
@@ -49,11 +40,13 @@ for slug in hokkaido aomori iwate miyagi akita yamagata fukushima; do
 done
 ```
 
-### Step 3 — 進捗確認
+別の選択肢として、急がないなら **毎月1日の `yomislo-monthly` cron (`MonthlyShopDetailsJob`) がフル sync を回す** ので待つだけでも自然と埋まる。
+
+### Step 2 — 進捗確認
 
 ActiveAdmin の店舗一覧 ([/admin/shops](https://your-host.onrender.com/admin/shops)) を開く:
 - **Filter** > `Facility parsed at` で「存在する」を選び、件数を確認
-- 全店舗数に対する割合が **95% 以上** ならStep 4 へ
+- 全店舗数に対する割合が **95% 以上** で完了とみなす
 
 または Rails console (`Shell` タブで):
 
@@ -64,16 +57,6 @@ puts "#{parsed}/#{total} (#{(parsed * 100.0 / total).round(1)}%)"
 ```
 
 `Shop.where(wifi_available: true).count` などで各フラグの分布も併せて確認。0 や全店になっていないことをチェック。
-
-### Step 4 — フロント表記の切替を無効化
-
-backfill 完了したら注釈を消す。
-
-1. Render Dashboard → `yomislo` → **Environment**
-2. `FACILITY_DATA_LOADING` の右の **…** → **Remove** (または Value を `false` に書き換え)
-3. **Save Changes** — service 再起動
-
-検索ページの注釈が「※ DMMぱちタウン提供情報。」のみに戻る。
 
 ---
 
