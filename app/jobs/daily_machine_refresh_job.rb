@@ -25,6 +25,14 @@ class DailyMachineRefreshJob < ApplicationJob
       Rake::Task["ptown:sync_shop_machines"].reenable
     end
 
+    # lat/lng が NULL の店舗を GSI (primary) + Nominatim (fallback) でジオコード。
+    # 「現在地から探す」検索ロジックは lat/lng NULL の店舗を完全除外するため、
+    # 新規店舗が DMM ぱちタウンで追加された日のうちに必ず座標を埋める必要がある。
+    run_step("geocode_shops") do
+      Rake::Task["geocode:shops"].invoke
+      Rake::Task["geocode:shops"].reenable
+    end
+
     run_step("cleanup") { deactivate_orphan_machines }
 
     log_summary

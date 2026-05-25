@@ -9,7 +9,7 @@
 - Devise (管理者認証のみ) / ActiveAdmin
 - pg_search / kaminari / rack-attack / meta-tags / sitemap_generator
 - RSpec + FactoryBot + Faker
-- デプロイ先: Render.com（未デプロイ）
+- デプロイ先: **Render.com（本番運用中: https://yomislo.onrender.com ）**
 
 ## 環境セットアップ
 ```bash
@@ -116,12 +116,34 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 - **parse_basic_info_table()**: 設備/サービス/特徴/入場ルール/定休日のセルから boolean/enum を判定。FACILITY_KEYWORD_MAP 定数でキーワード管理、`keyword_present?` で否定形を排除
 - **設備フラグの保持方針**: boolean は NULL 許容 (nil=未確認, true=あり, false=なし)。検索フィルタは `where(col: true)` で true のみ絞る。sync で nil を返した場合は既存値を維持（毎回上書きで消さない）
 
-## Render.com バッチスケジュール (render.yaml)
-| cronジョブ | スケジュール(UTC) | 内容 |
-|-----------|------------------|------|
-| `yomislo-daily-refresh` | 0 18 * * * | 機種マスタ + 全店設置機種同期 ~5h |
-| `yomislo-daily-aggregation` | 0 19 * * * | ランキング+収支+Profile (数秒) |
-| `yomislo-monthly` | 0 18 1 * * | 店舗マスタ + 機種詳細 + 設置機種フル同期 ~5h |
+## Render.com 本番環境
+
+### サービス構成
+| 種別 | サービス名 | ID | プラン | リージョン |
+|------|-----------|-----|--------|-----------|
+| Web | `yomislo` | srv-d863tqlckfvc73ec34fg | Starter | Singapore |
+| Cron | `yomislo-daily-refresh` | crn-d863tqlckfvc73ec34d0 | Starter | Singapore |
+| Cron | `yomislo-daily-aggregation` | crn-d863tqlckfvc73ec34e0 | Starter | Singapore |
+| Cron | `yomislo-monthly` | crn-d863tqlckfvc73ec34eg | Starter | Singapore |
+| Postgres | `yomislo-db` (v18) | dpg-d863th5ckfvc73ec2t3g-a | **Free ⚠️** | Singapore |
+
+- Web URL: https://yomislo.onrender.com
+- ヘルスチェック: `/up`
+- auto-deploy: `main` ブランチ commit トリガー
+- ビルド: `./bin/render-build.sh`、起動: `bundle exec puma -C config/puma.rb`
+- ダッシュボード: https://dashboard.render.com/web/srv-d863tqlckfvc73ec34fg
+
+### ⚠️ Postgres Free プラン期限
+- 作成: 2026-05-19 / 期限: **2026-06-18**（作成から30日）
+- 期限前に有料プラン（Basic $7/mo or Standard $19/mo）へアップグレード必須
+- 詳細運用は [project_render_deploy.md](/Users/kasedashouta/.claude/projects/-Users-kasedashouta-Desktop-develop-yomislo/memory/project_render_deploy.md) 参照
+
+### バッチスケジュール (render.yaml)
+| cronジョブ | スケジュール(UTC) | start command | 内容 |
+|-----------|------------------|---------------|------|
+| `yomislo-daily-refresh` | 0 18 * * * | `rails runner "DailyMachineRefreshJob.perform_now"` | 機種マスタ + 全店設置機種同期 + lat/lng未取得店のgeocode + 孤立機種非アクティブ化 ~5h |
+| `yomislo-daily-aggregation` | 0 19 * * * | `rails runner "VoterRanking.refresh_* + PlayRecordSummary.refresh_all! + VoterProfile.refresh_for"` | ランキング+収支+Profile (数秒) |
+| `yomislo-monthly` | 0 18 1 * * | `rails runner "MonthlyShopDetailsJob.perform_now"` | 店舗マスタ + 機種詳細 + 設置機種フル同期 + 新規店geocode + cleanup ~5h |
 
 - 毎月1日: daily-refresh はスキップ、monthly が代わりに実行
 - recurring.yml は Solid Queue 無効のため参照用のみ

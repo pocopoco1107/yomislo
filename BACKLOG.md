@@ -10,6 +10,7 @@
 - [機能追加・検討](#機能追加検討)
 - [バグ調査](#バグ調査)
 - [広告 / 収益化](#広告--収益化)
+- [インフラ / 運用](#インフラ--運用)
 - [このセッションでの残課題](#このセッションでの残課題)
 
 ---
@@ -47,11 +48,26 @@ SEO 観点。
 - 設備フィルタは「全て表示」か「絞り込み主軸の3-5項目」か
 - ユーザーテスト or 分析データで判断
 
-### 「現在地から探す」にて期待する全店舗が探しきれていない問題
-Geolocation での近隣店舗取得ロジック確認。
-- 検索半径（現在 nkm？）の妥当性
-- ptown_shop_id ありで last_synced_at NULL の店舗が抜けていないか
-- 距離計算の精度（Haversine vs PostGIS）
+### 「現在地から探す」にて期待する全店舗が探しきれていない問題【原因特定済 2026-05-22】
+
+**原因**: `lat`/`lng` が NULL の店舗が **347 件**（全6,053店の5.7%）存在し、`ShopsController#nearby_query` の `where.not(lat: nil).where.not(lng: nil)` で完全除外されている。さらに 1,030 件が `precision=0`（住所部分一致）で `@imprecise_shops` 側に落ちている。
+
+**根本原因**: `rake geocode:shops` (`lib/tasks/geocode.rake`, GSI primary + Nominatim fallback) が**どの cron にも組み込まれていない**。DMMぱちタウンの JSON-LD に `geo` 情報がある店舗だけ自動で座標が入り、それ以外は手動 rake 実行待ち。新店舗が DMM 側で増えるたび穴が拡大する。
+
+**修正方針（優先度順）**:
+1. **即時**: 本番 Web Shell から `bundle exec rake geocode:shops RAILS_ENV=production` を1回実行（347件 × 1.5秒 = 約9分）
+   - 熊本だけなら `rake geocode:shops[kumamoto]` で4件、6秒
+2. **恒久**: `render.yaml` の `yomislo-daily-refresh` start command 末尾に `geocode:shops` を連結、または `DailyMachineRefreshJob` 内で geocode 呼び出し
+3. **精度改善**: `precision=0` の 1,030 件に対し `rake geocode:fix_imprecise` を別途実行
+4. **UI改善**: 検索半径 10km 固定 → 20km/50km 切替、`@imprecise_shops` の見せ方再検討
+5. **長期**: PostGIS 化 + 空間インデックス（GIST）で距離計算高速化
+
+**再現例**: ベルエアマックス北部店（熊本県熊本市北区四方寄町1666）
+- 現状: id=8742, lat=NULL, lng=NULL, precision=0, last_synced_at=2026-05-21
+- GSI API 実測値: **lat=32.859932, lng=130.708618**（precision=3）
+- 修正SQL: `UPDATE shops SET lat=32.859932, lng=130.708618, geocode_precision=3 WHERE id=8742;`
+
+**熊本県内の同症状店舗（全4件）**: id=8742 ベルエアマックス北部店 / id=8384 テンガイ戸島店 / id=8394 パムズ 甲佐 / id=8383 パムズ県庁東
 
 ---
 
@@ -100,6 +116,46 @@ Geolocation での近隣店舗取得ロジック確認。
 
 ---
 
+## インフラ / 運用
+
+### 🔥 Postgres Free プラン → 有料プラン移行【期限 2026-06-18】
+作成から30日でDB自動削除されるため期限前に必ず移行。
+- 現状: `yomislo-db` (dpg-d863th5ckfvc73ec2t3g-a) Free / Singapore / v18
+- 候補プラン:
+  - Basic $7/mo（1GB RAM, HA無し） — 個人サイト初期はこれで十分
+  - Standard $19/mo（4GB RAM, HA有り） — トラフィック増えてから
+- 手順:
+  1. `mcp__render__create_postgres` で新インスタンス作成（同region Singapore、v18）
+  2. `pg_dump` で旧DB → `pg_restore` で新DBへ
+  3. `DATABASE_URL` env を新DBに切替
+  4. Web + Cron 全部の動作確認
+  5. 旧Free DB削除
+- 詳細手順: `project_render_deploy.md` 参照
+
+### Puma cluster mode 警告解消
+本番ログに `WARNING: Detected running cluster mode with 1 worker.` が出続けている。
+- `config/puma.rb` で `workers ENV.fetch("WEB_CONCURRENCY", 0).to_i` に変更（worker=0でsingle mode化）
+- もしくは `silence_single_worker_warning` フラグを追加して警告だけ抑制
+- Starter plan は 512MB なので workers増やすメリットは薄い → single mode 推奨
+
+### エラー監視の導入
+現状、本番でエラーが起きても気づく手段がない（Renderダッシュボードのログを能動的に見るだけ）。
+- 候補: Sentry（無料枠5k errors/月）, Honeybadger, Bugsnag
+- 通知先: Discord webhook or メール
+- Rails 8 / Ruby 4.0 互換性要確認
+
+### HTTP リクエスト計測の確認
+`mcp__render__get_metrics` で直近1時間のリクエスト数が全て0だった。
+- 本当にトラフィックゼロか、`/up` ヘルスチェックが除外されているだけか
+- Google Analytics or 軽量アクセス解析（Plausible, Umami）の導入検討
+
+### Render リージョンの再検討
+現在 Singapore region。日本ユーザー向けには Tokyo が理想だが Render はまだ未対応。
+- レイテンシ実測（Singapore → 日本: 70-100ms 程度）
+- 将来的に Render Tokyo 開設されたら移行、もしくは Lightsail Tokyo / Cloudflare Workers 等の検討
+
+---
+
 ## このセッションでの残課題
 
 ### ASP 本格登録 → 3 案件再アクティブ化
@@ -129,4 +185,5 @@ Geolocation での近隣店舗取得ロジック確認。
 ## メタ
 
 - 作成: 2026-05-21
+- 最終更新: 2026-05-22（Render本番状況調査 → インフラ/運用セクション追加、現在地検索バグの再現例追加）
 - 関連メモリ: `feedback_activeadmin_4_migration.md` §8、`project_render_deploy.md`、`project_promotions_runtime.md`、`project_asp_compliance.md`
