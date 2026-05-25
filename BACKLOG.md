@@ -69,6 +69,33 @@ SEO 観点。
 
 **熊本県内の同症状店舗（全4件）**: id=8742 ベルエアマックス北部店 / id=8384 テンガイ戸島店 / id=8394 パムズ 甲佐 / id=8383 パムズ県庁東
 
+**修正実績（2026-05-25 本番Shellで `rake geocode:shops` 実行）**:
+- 347件中 346件成功、1件失敗（ラカータ大宮駅前店）
+- lat/lng NULL の店舗: 347 → **1**
+- precision≥2 の高精度店舗: 4,302 → **4,622**（+320）
+- ベルエアマックス北部店 ✅ lat=32.8599320, lng=130.7086180, precision=3
+
+### 派生バグ: 住所末尾の `...` truncation（388件）【新規発見 2026-05-25】
+
+DMMぱちタウンのスクレイピング時、`shops.address` が末尾 `...` で切れて DB に保存されている店舗が **388件** 存在。
+例: ラカータ大宮駅前店 (id=7690) の address = `"埼玉県さいたま市大宮区桜木町1-4..."` (20文字で切れている)。
+
+**影響**:
+- GSI ジオコーディングで「unexpected end of input」エラーになる（GSIは `...` を含む末尾を正しくパースできない場合がある）
+- precision が下がる、もしくは座標取得失敗
+
+**修正方針**:
+1. **即時**: `lib/tasks/geocode.rake` の `geocode_with_gsi` / `geocode_with_nominatim` で、API呼び出し前に末尾 `...` を strip するワンライナー追加
+   ```ruby
+   address = address.to_s.gsub(/[.。…]+$/, '').strip
+   ```
+2. **根本**: `PtownScraper#parse_shop_detail` で住所を取得している箇所を確認し、なぜ truncate されているかを調査（JSON-LD の `address.streetAddress` を直接見ているなら、別セレクタを試す）
+
+**ラカータ大宮駅前店 個別修正用SQL**（本番Rails consoleから）:
+```ruby
+Shop.find(7690).update_columns(lat: 35.904591, lng: 139.623001, geocode_precision: 3)
+```
+
 ---
 
 ## 機能追加・検討
