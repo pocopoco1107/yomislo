@@ -27,6 +27,9 @@ services:
         value: "1"
       - key: RAILS_SERVE_STATIC_FILES
         value: "1"
+      # Starter plan has 512MB RAM — run Puma in single mode (threads only).
+      - key: WEB_CONCURRENCY
+        value: "0"
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD

@@ -33,13 +33,14 @@ port ENV.fetch("PORT", 3000)
 # Specifies the number of `workers` to boot in clustered mode.
 # Render Starter plan has 512MB RAM — default to 0 (single mode, threads only)
 # to avoid OOM. Set WEB_CONCURRENCY=2 if upgrading to a larger plan.
-workers ENV.fetch("WEB_CONCURRENCY", 0)
+workers_count = ENV.fetch("WEB_CONCURRENCY", 0).to_i
+workers workers_count
 
-# Use the `preload_app!` method when specifying a `workers` number.
-# This directive tells Puma to first boot the application and load code
-# before forking the application. This takes advantage of Copy On Write
-# process behavior so workers use less memory.
-preload_app!
+# preload_app! only matters in cluster mode (workers >= 1) for Copy-On-Write savings.
+preload_app! if workers_count >= 1
+
+# Suppress "Detected running cluster mode with 1 worker." when we intentionally run 1 worker.
+silence_single_worker_warning if workers_count == 1
 
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
