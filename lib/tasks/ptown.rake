@@ -104,6 +104,13 @@ module PtownScraper
         .truncate(100, omission: "")
     end
 
+    # 一覧ページから取った住所は末尾が "..." / "…" で truncate されることがある。
+    # JSON-LD から完全住所が取れたときに上書きするための判定。
+    def truncated_address?(addr)
+      return false if addr.blank?
+      addr.to_s.match?(/(\.{2,}|…)\s*\z/)
+    end
+
     # あいまいマッチ用: プレフィックス/サフィックス(型式記号)を除去したコア名
     def core_name(name)
       name
@@ -991,7 +998,9 @@ namespace :ptown do
           # 店舗基本情報の更新 (last_synced_atは成功時のみ)
           shop_attrs = {}
           shop_attrs[:phone_number] = info[:phone_number] if info[:phone_number].present? && shop.phone_number.blank?
-          shop_attrs[:address] = info[:address] if info[:address].present? && shop.address.blank?
+          if info[:address].present? && (shop.address.blank? || PtownScraper.truncated_address?(shop.address))
+            shop_attrs[:address] = info[:address]
+          end
           shop_attrs[:business_hours] = info[:business_hours] if info[:business_hours].present? && shop.business_hours.blank?
           shop_attrs[:parking_spaces] = info[:parking_spaces] if info[:parking_spaces] && shop.parking_spaces.blank?
           shop_attrs[:lat] = info[:lat] if info[:lat] && shop.lat.blank?

@@ -85,11 +85,10 @@ DMMぱちタウンのスクレイピング時、`shops.address` が末尾 `...` 
 - precision が下がる、もしくは座標取得失敗
 
 **修正方針**:
-1. **即時**: `lib/tasks/geocode.rake` の `geocode_with_gsi` / `geocode_with_nominatim` で、API呼び出し前に末尾 `...` を strip するワンライナー追加
-   ```ruby
-   address = address.to_s.gsub(/[.。…]+$/, '').strip
-   ```
-2. **根本**: `PtownScraper#parse_shop_detail` で住所を取得している箇所を確認し、なぜ truncate されているかを調査（JSON-LD の `address.streetAddress` を直接見ているなら、別セレクタを試す）
+1. **即時**: `lib/tasks/geocode.rake` の `geocode_with_gsi` / `geocode_with_nominatim` で、API呼び出し前に末尾 `...` を strip するワンライナー追加 ✅ 済 (44e890a)
+2. **根本**: `PtownScraper#parse_shop_detail` 自体は JSON-LD の `streetAddress` で完全住所が取れていたが、`sync_shop_machines` 側の更新ロジックが `shop.address.blank?` ガードで truncate された既存住所を上書きしていなかった。`PtownScraper.truncated_address?` ヘルパーを追加し、truncate 検知時は JSON-LD 住所で上書きするよう修正済（2026-05-25）。次回 daily-refresh で 388件は自動的に正しい住所に置き換わる。
+
+**原因の整理**: `parse_area_shops` (都道府県一覧ページ) は表示上の truncate 住所しか取れない。新規 Shop 作成時はそれが入り、後段の `sync_shop_machines` (詳細ページの JSON-LD) で上書きされる設計だが、ガード条件が誤っていた。
 
 **ラカータ大宮駅前店 個別修正用SQL**（本番Rails consoleから）:
 ```ruby
@@ -159,11 +158,11 @@ Shop.find(7690).update_columns(lat: 35.904591, lng: 139.623001, geocode_precisio
   5. 旧Free DB削除
 - 詳細手順: `project_render_deploy.md` 参照
 
-### Puma cluster mode 警告解消
-本番ログに `WARNING: Detected running cluster mode with 1 worker.` が出続けている。
-- `config/puma.rb` で `workers ENV.fetch("WEB_CONCURRENCY", 0).to_i` に変更（worker=0でsingle mode化）
-- もしくは `silence_single_worker_warning` フラグを追加して警告だけ抑制
-- Starter plan は 512MB なので workers増やすメリットは薄い → single mode 推奨
+### Puma cluster mode 警告解消 ✅ 済（2026-05-25）
+本番ログに `WARNING: Detected running cluster mode with 1 worker.` が出続けていた。
+- `config/puma.rb`: `workers_count = ENV.fetch("WEB_CONCURRENCY", 0).to_i` に整数化、`preload_app!` を `workers_count >= 1` に gate、`silence_single_worker_warning` を `workers_count == 1` のときに有効化
+- `render.yaml`: web service の envVars に `WEB_CONCURRENCY="0"` を明示し、Render 側の自動セットを上書き
+- 次回デプロイで反映
 
 ### エラー監視の導入
 現状、本番でエラーが起きても気づく手段がない（Renderダッシュボードのログを能動的に見るだけ）。
