@@ -161,7 +161,17 @@ def pct(count, total)
   "#{(count.to_f / total * 100).round(1)}%"
 end
 
+def sanitize_address(address)
+  # DMM ぱちタウンのスクレイピングで address が末尾 `...` `…` `。` で
+  # truncate されている店舗が約 388 件存在（id=7690 ラカータ大宮駅前店など）。
+  # GSI が「unexpected end of input」で空応答を返す原因になるので、API 呼び出し
+  # 前に末尾の省略記号・空白を除去する。
+  return nil if address.blank?
+  address.to_s.sub(/[.。…\s]+\z/, "").strip.presence
+end
+
 def geocode_with_gsi(address)
+  address = sanitize_address(address)
   return nil if address.blank?
 
   uri = URI("https://msearch.gsi.go.jp/address-search/AddressSearch")
@@ -205,6 +215,7 @@ def determine_gsi_precision(title)
 end
 
 def geocode_with_nominatim(address)
+  address = sanitize_address(address)
   return nil if address.blank?
 
   user_agent = "YomiSlo/1.0 (https://yomislo.example.com)"
