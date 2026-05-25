@@ -368,7 +368,7 @@
                     <p class="font-semibold text-sm text-foreground truncate flex-1"><%= favorite_mark(shop) %> <%= shop.name %></p>
                   </div>
                   <div class="flex flex-wrap items-center gap-1 mt-2">
-                    <% machine_count = shop.shop_machine_models.size %>
+                    <% machine_count = @machine_counts[shop.id] || 0 %>
                     <% if machine_count > 0 %>
                       <span class="bg-secondary text-muted-foreground text-[10px] px-1.5 py-0.5 rounded-md tabular-nums"><%= machine_count %>機種</span>
                     <% end %>

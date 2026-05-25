@@ -16,4 +16,10 @@ ActiveAdmin.register Vote do
   filter :voted_on
   filter :shop
   filter :machine_model
+
+  controller do
+    def scoped_collection
+      super.includes(:user, :shop, :machine_model)
+    end
+  end
 end

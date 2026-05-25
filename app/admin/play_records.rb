@@ -29,6 +29,12 @@ ActiveAdmin.register PlayRecord do
   filter :is_public
   filter :voter_token
 
+  controller do
+    def scoped_collection
+      super.includes(:shop, :machine_model)
+    end
+  end
+
   show do
     attributes_table do
       row :id

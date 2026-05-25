@@ -4,7 +4,6 @@ class PrefecturesController < ApplicationController
 
     # Single query: load all shops with columns needed for stats + display
     all_shops = @prefecture.shops
-                  .includes(:shop_machine_models)
                   .select(:id, :name, :slug, :address,
                           :business_hours, :parking_spaces, :morning_entry,
                           :prefecture_id, :slot_machines, :total_machines, :phone_number,
@@ -60,8 +59,11 @@ class PrefecturesController < ApplicationController
 
     @morning_entry_count = morning_entry_count
 
-    # レビュー平均評価マップ (shop_id => avg_rating)
+    # 関連集計を1クエリずつでまとめて取得 (shop_id => count / avg)
     shop_ids = all_shops.map(&:id)
+    @machine_counts = ShopMachineModel.where(shop_id: shop_ids)
+                                       .group(:shop_id)
+                                       .count
     @review_averages = ShopReview.where(shop_id: shop_ids)
                                   .group(:shop_id)
                                   .average(:rating)

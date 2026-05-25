@@ -164,6 +164,10 @@ ActiveAdmin.register Shop do
   end
 
   controller do
+    def scoped_collection
+      super.includes(:prefecture)
+    end
+
     def find_resource
       scoped_collection.find_by(slug: params[:id]) || super
     end

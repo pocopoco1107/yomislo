@@ -118,6 +118,10 @@ ActiveAdmin.register SnsReport do
   end
 
   controller do
+    def scoped_collection
+      super.includes(:machine_model)
+    end
+
     private
 
     # Helper available in views
