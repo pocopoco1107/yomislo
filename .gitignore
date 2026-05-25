@@ -45,3 +45,7 @@
 # Test coverage
 /coverage
 .claude/scheduled_tasks.lock
+
+# Claude Code local-only configs (machine-dependent absolute paths)
+.claude/launch.json
+.claude/settings.local.json

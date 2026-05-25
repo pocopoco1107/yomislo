@@ -72,7 +72,7 @@ puts "#{parsed}/#{total} (#{(parsed * 100.0 / total).round(1)}%)"
 
 ## 3. クロスリファレンス
 
-- 設備データの設計 → [memory: project_shop_facility_data](../../../.claude/projects/-Users-kasedashouta-Desktop-develop-yomislo/memory/project_shop_facility_data.md)
-- Render 構成の経緯 → [memory: project_render_deploy](../../../.claude/projects/-Users-kasedashouta-Desktop-develop-yomislo/memory/project_render_deploy.md)
-- スクレイピング全体 → [memory: project_scraping_architecture](../../../.claude/projects/-Users-kasedashouta-Desktop-develop-yomislo/memory/project_scraping_architecture.md)
-- 広告枠の本番有効化フロー → [memory: project_promotions_runtime](../../../.claude/projects/-Users-kasedashouta-Desktop-develop-yomislo/memory/project_promotions_runtime.md)
+- 設備データの設計 → [memory: project_shop_facility_data](../../../.claude/projects/-Users-kasedashouta-develop-yomislo/memory/project_shop_facility_data.md)
+- Render 構成の経緯 → [memory: project_render_deploy](../../../.claude/projects/-Users-kasedashouta-develop-yomislo/memory/project_render_deploy.md)
+- スクレイピング全体 → [memory: project_scraping_architecture](../../../.claude/projects/-Users-kasedashouta-develop-yomislo/memory/project_scraping_architecture.md)
+- 広告枠の本番有効化フロー → [memory: project_promotions_runtime](../../../.claude/projects/-Users-kasedashouta-develop-yomislo/memory/project_promotions_runtime.md)

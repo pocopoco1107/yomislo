@@ -21,7 +21,7 @@ except Exception:
 if printf '%s' "$cmd" | grep -qE 'rake[[:space:]]+ptown:(import_machines|sync_shop_machines|import_shops|import_details|import_all|merge_duplicates|cleanup|purge_pworld)'; then
   echo "🔍 [auto] scraping-verify snapshot を実行中..." >&2
 
-  root="${CLAUDE_PROJECT_DIR:-/Users/kasedashouta/Desktop/develop/yomislo}"
+  root="${CLAUDE_PROJECT_DIR:-/Users/kasedashouta/develop/yomislo}"
   if [[ -f "$root/.claude/skills/scraping-verify/snapshot.rb" ]]; then
     cd "$root" || exit 0
     export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"

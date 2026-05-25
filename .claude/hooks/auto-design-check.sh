@@ -21,7 +21,7 @@ case "$path" in
   *) exit 0 ;;
 esac
 
-root="${CLAUDE_PROJECT_DIR:-/Users/kasedashouta/Desktop/develop/yomislo}"
+root="${CLAUDE_PROJECT_DIR:-/Users/kasedashouta/develop/yomislo}"
 [[ ! -x "$root/.claude/skills/design-check/check.sh" ]] && exit 0
 
 cd "$root" || exit 0

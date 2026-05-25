@@ -23,7 +23,7 @@ scraping-verify は「前後の差分」、data-check は「いまの絶対値�
 ### 1. パチンコ混入チェック
 
 ```bash
-cd /Users/kasedashouta/Desktop/develop/yomislo && export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH" && bin/rails runner '
+cd /Users/kasedashouta/develop/yomislo && export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH" && bin/rails runner '
 pachinko_patterns = MachineModel.active.where(
   "name ~ E'"'"'^\u{FF30}'"'"' OR name ~ E'"'"'^\u{FF23}\u{FF32}'"'"' OR name ~ E'"'"'^\u{FF45}'"'"' OR name LIKE '"'"'%ぱちんこ%'"'"' OR name LIKE '"'"'%デジハネ%'"'"' OR name LIKE '"'"'%甘デジ%'"'"' OR name LIKE '"'"'%羽根モノ%'"'"'"
 )

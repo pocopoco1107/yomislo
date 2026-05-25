@@ -29,7 +29,7 @@ DMMぱちタウンスクレイピング（`rake ptown:*`）の品質ゲート。
 ### 1. `snapshot` — 実行前スナップショット保存
 
 ```bash
-cd /Users/kasedashouta/Desktop/develop/yomislo && export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH" && bin/rails runner .claude/skills/scraping-verify/snapshot.rb
+cd /Users/kasedashouta/develop/yomislo && export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH" && bin/rails runner .claude/skills/scraping-verify/snapshot.rb
 ```
 
 成功すると `tmp/scraping_snapshots/latest.json` と `snapshot_YYYYMMDD_HHMMSS.json` が生成される。
@@ -38,7 +38,7 @@ cd /Users/kasedashouta/Desktop/develop/yomislo && export PATH="/opt/homebrew/opt
 ### 2. `verify` — 実行後検証（スナップショット差分 + 品質チェック）
 
 ```bash
-cd /Users/kasedashouta/Desktop/develop/yomislo && export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH" && bin/rails runner .claude/skills/scraping-verify/verify.rb
+cd /Users/kasedashouta/develop/yomislo && export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH" && bin/rails runner .claude/skills/scraping-verify/verify.rb
 ```
 
 出力例:

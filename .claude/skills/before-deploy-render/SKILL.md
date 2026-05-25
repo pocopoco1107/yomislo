@@ -21,7 +21,7 @@ Render.com デプロイ前のプリフライトチェック。push する前に�
 ## 使い方
 
 ```bash
-cd /Users/kasedashouta/Desktop/develop/yomislo && .claude/skills/before-deploy-render/check.sh
+cd /Users/kasedashouta/develop/yomislo && .claude/skills/before-deploy-render/check.sh
 ```
 
 ユーザーが `/before-deploy-render` と打ったら上記コマンドを実行。

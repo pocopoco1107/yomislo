@@ -44,7 +44,7 @@ ASP案件のキュレーション運用で守るべきルールを自動検証�
 ## 使い方
 
 ```bash
-cd /Users/kasedashouta/Desktop/develop/yomislo && ruby .claude/skills/promotion-placement/check.rb
+cd /Users/kasedashouta/develop/yomislo && ruby .claude/skills/promotion-placement/check.rb
 ```
 
 ユーザーが `/promotion-placement` と打ったら上記コマンドを実行する。

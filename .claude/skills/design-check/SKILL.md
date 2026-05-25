@@ -23,7 +23,7 @@ DESIGN.md の規約に違反していないか自動検出するスキル。
 ユーザーが `/design-check` と打ったら、引数なしで diff モードで実行する。
 
 ```bash
-cd /Users/kasedashouta/Desktop/develop/yomislo && .claude/skills/design-check/check.sh
+cd /Users/kasedashouta/develop/yomislo && .claude/skills/design-check/check.sh
 ```
 
 ## 検出ルール

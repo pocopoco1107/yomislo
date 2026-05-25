@@ -136,7 +136,7 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 ### ⚠️ Postgres Free プラン期限
 - 作成: 2026-05-19 / 期限: **2026-06-18**（作成から30日）
 - 期限前に有料プラン（Basic $7/mo or Standard $19/mo）へアップグレード必須
-- 詳細運用は [project_render_deploy.md](/Users/kasedashouta/.claude/projects/-Users-kasedashouta-Desktop-develop-yomislo/memory/project_render_deploy.md) 参照
+- 詳細運用は [project_render_deploy.md](/Users/kasedashouta/.claude/projects/-Users-kasedashouta-develop-yomislo/memory/project_render_deploy.md) 参照
 
 ### バッチスケジュール (render.yaml)
 | cronジョブ | スケジュール(UTC) | start command | 内容 |
