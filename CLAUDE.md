@@ -125,7 +125,7 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 | Cron | `yomislo-daily-refresh` | crn-d863tqlckfvc73ec34d0 | Starter | Singapore |
 | Cron | `yomislo-daily-aggregation` | crn-d863tqlckfvc73ec34e0 | Starter | Singapore |
 | Cron | `yomislo-monthly` | crn-d863tqlckfvc73ec34eg | Starter | Singapore |
-| Postgres | `yomislo-db` (v18) | dpg-d863th5ckfvc73ec2t3g-a | **Free ⚠️** | Singapore |
+| Postgres | `yomislo-db` (v18) | dpg-d863th5ckfvc73ec2t3g-a | Basic ($6/mo) | Singapore |
 
 - Web URL: https://yomislo.onrender.com
 - ヘルスチェック: `/up`
@@ -133,9 +133,8 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 - ビルド: `./bin/render-build.sh`、起動: `bundle exec puma -C config/puma.rb`
 - ダッシュボード: https://dashboard.render.com/web/srv-d863tqlckfvc73ec34fg
 
-### ⚠️ Postgres Free プラン期限
-- 作成: 2026-05-19 / 期限: **2026-06-18**（作成から30日）
-- 期限前に有料プラン（Basic $7/mo or Standard $19/mo）へアップグレード必須
+### Postgres プラン
+- 2026-06-22 に Free → Basic ($6/mo) へアップグレード済み
 - 詳細運用は [project_render_deploy.md](/Users/kasedashouta/.claude/projects/-Users-kasedashouta-develop-yomislo/memory/project_render_deploy.md) 参照
 
 ### バッチスケジュール (render.yaml)
