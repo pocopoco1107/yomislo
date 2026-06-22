@@ -42,144 +42,14 @@
 
   <%# ページヘッダー %>
   <div class="flex items-baseline justify-between mb-6">
-    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-foreground"><%= @prefecture.name %></h1>
+    <h1 class="font-heading text-2xl md:text-3xl font-bold tracking-tight text-foreground"><%= @prefecture.name %></h1>
     <span class="text-sm text-muted-foreground tabular-nums"><%= @total_shops_count %> 店舗</span>
   </div>
-
-  <%# Wrap stats + filter + list in one controller scope for stat-to-filter linking %>
-  <div data-controller="shop-filter machine-filter">
-
-  <%# 統計セクション %>
-  <% if @total_shops_count > 0 %>
-    <%
-      top_opening = @opening_hours_stats.max_by { |_, v| v }
-      top_closing = @closing_hours_stats.max_by { |_, v| v }
-    %>
-    <div class="bg-card rounded-lg border-b border-border/50 p-5 mb-6 cursor-pointer hover:shadow-sm transition-all"
-         data-controller="accordion" data-action="click->accordion#toggle">
-      <%# サマリー行: 常に表示 %>
-      <div class="flex flex-wrap items-center gap-2 text-xs">
-        <% if top_opening %>
-          <%
-            opening_filter_value = top_opening[0].match(/\A(\d{1,2}):/)[1] rescue nil
-          %>
-          <% if opening_filter_value %>
-            <button type="button"
-                    data-action="click->shop-filter#applyPreset"
-                    data-preset-category="hours"
-                    data-preset-value="<%= opening_filter_value %>"
-                    class="inline-flex items-center rounded-md border border-transparent bg-slot-yellow/10 text-slot-yellow font-medium px-2.5 py-0.5 text-xs hover:bg-slot-yellow/20 transition-colors">
-              開店 <%= top_opening[0] %> <%= (top_opening[1] * 100.0 / @total_shops_count).round %>%
-            </button>
-          <% end %>
-        <% end %>
-        <% if top_closing %>
-          <span class="inline-flex items-center rounded-md border border-transparent bg-slot-red/10 text-slot-red font-medium px-2.5 py-0.5 text-xs">
-            閉店 <%= top_closing[0] %> <%= (top_closing[1] * 100.0 / @total_shops_count).round %>%
-          </span>
-        <% end %>
-        <svg data-accordion-target="icon" class="w-4 h-4 text-muted-foreground transition-transform duration-200 ml-auto shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-        </svg>
-      </div>
-
-      <%# 詳細: 展開時のみ表示 %>
-      <div data-accordion-target="content" class="hidden mt-5 pt-4 border-t border-border">
-        <p class="text-[10px] text-muted-foreground mb-4">各項目をクリックすると店舗を絞り込めます</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-
-          <% if @opening_hours_stats.any? %>
-            <div>
-              <h3 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">開店時間</h3>
-              <div class="space-y-2">
-                <% @opening_hours_stats.each do |hour, count| %>
-                  <% pct = (count * 100.0 / @total_shops_count).round(1) %>
-                  <%
-                    hour_filter_value = hour.match(/\A(\d{1,2}):/)[1] rescue nil
-                  %>
-                  <% if hour_filter_value && %w[9 10].include?(hour_filter_value) %>
-                    <button type="button"
-                            data-action="click->shop-filter#applyPreset"
-                            data-preset-category="hours"
-                            data-preset-value="<%= hour_filter_value %>"
-                            class="w-full flex items-center gap-2.5 rounded-md px-2 py-1 -mx-2 hover:bg-slot-yellow/10 transition-colors cursor-pointer group"
-                            data-stat-filter>
-                      <span class="text-xs text-foreground w-20 shrink-0 group-hover:text-slot-yellow group-hover:font-semibold transition-all"><%= hour %></span>
-                      <div class="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
-                        <div class="bg-slot-yellow h-full rounded-full transition-all" style="width: <%= pct %>%"></div>
-                      </div>
-                      <span class="text-[10px] text-muted-foreground w-16 text-right shrink-0 tabular-nums"><%= count %>店 (<%= pct %>%)</span>
-                    </button>
-                  <% else %>
-                    <div class="flex items-center gap-2.5 px-2 py-1 -mx-2">
-                      <span class="text-xs text-foreground w-20 shrink-0"><%= hour %></span>
-                      <div class="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
-                        <div class="bg-slot-yellow h-full rounded-full transition-all" style="width: <%= pct %>%"></div>
-                      </div>
-                      <span class="text-[10px] text-muted-foreground w-16 text-right shrink-0 tabular-nums"><%= count %>店 (<%= pct %>%)</span>
-                    </div>
-                  <% end %>
-                <% end %>
-              </div>
-            </div>
-          <% end %>
-
-          <% if @closing_hours_stats.any? %>
-            <div>
-              <h3 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">閉店時間</h3>
-              <div class="space-y-2">
-                <% @closing_hours_stats.each do |hour, count| %>
-                  <% pct = (count * 100.0 / @total_shops_count).round(1) %>
-                  <div class="flex items-center gap-2.5 px-2 py-1 -mx-2">
-                    <span class="text-xs text-foreground w-20 shrink-0"><%= hour %></span>
-                    <div class="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
-                      <div class="bg-slot-red h-full rounded-full transition-all" style="width: <%= pct %>%"></div>
-                    </div>
-                    <span class="text-[10px] text-muted-foreground w-16 text-right shrink-0 tabular-nums"><%= count %>店 (<%= pct %>%)</span>
-                  </div>
-                <% end %>
-              </div>
-            </div>
-          <% end %>
-
-          <%# 駐車場・朝入場 %>
-          <div>
-            <h3 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">その他</h3>
-            <div class="space-y-2">
-              <% if @parking_stats[:total] > 0 %>
-                <button type="button"
-                        data-action="click->shop-filter#applyPreset"
-                        data-preset-category="facilities"
-                        data-preset-value="parking"
-                        class="w-full flex items-center justify-between text-xs rounded-md px-2 py-1.5 -mx-2 hover:bg-slot-red/10 transition-colors cursor-pointer group"
-                        data-stat-filter>
-                  <span class="text-foreground group-hover:text-slot-red group-hover:font-semibold transition-all">駐車場あり</span>
-                  <span class="text-muted-foreground tabular-nums"><%= @parking_stats[:total] %>店 / 平均<%= @parking_stats[:avg] %>台 / 最大<%= @parking_stats[:max] %>台</span>
-                </button>
-              <% end %>
-              <% if @morning_entry_count > 0 %>
-                <button type="button"
-                        data-action="click->shop-filter#applyPreset"
-                        data-preset-category="morning"
-                        data-preset-value="yes"
-                        class="w-full flex items-center justify-between text-xs rounded-md px-2 py-1.5 -mx-2 hover:bg-slot-yellow/10 transition-colors cursor-pointer group"
-                        data-stat-filter>
-                  <span class="text-foreground group-hover:text-slot-yellow group-hover:font-semibold transition-all">朝の入場ルールあり</span>
-                  <span class="text-muted-foreground tabular-nums"><%= @morning_entry_count %>店</span>
-                </button>
-              <% end %>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  <% end %>
 
   <%# おすすめ店舗 %>
   <% if @recommendations.present? %>
     <div class="mb-6">
-      <h2 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+      <h2 class="text-sm font-heading font-bold text-foreground mb-3 flex items-center gap-2">
         <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
         </svg>
@@ -189,7 +59,7 @@
         <% @recommendations.each_with_index do |rec, i| %>
           <%= link_to shop_path(rec.shop.slug), class: "bg-card rounded-lg border-b border-border/50 p-3.5 hover:-translate-y-px hover:shadow-sm transition-all duration-150 block" do %>
             <div class="flex items-center gap-2.5">
-              <span class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold tabular-nums
+              <span class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold tabular-nums
                 <%= case i when 0 then 'bg-primary/15 text-primary' when 1 then 'bg-slot-blue/15 text-slot-blue' else 'bg-secondary text-muted-foreground' end %>">
                 <%= i + 1 %>
               </span>
@@ -207,7 +77,7 @@
                     else "bg-secondary text-muted-foreground"
                     end
                   %>
-                  <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-md <%= badge_class %>">
+                  <span class="text-[11px] font-medium px-1.5 py-0.5 rounded-md <%= badge_class %>">
                     <%= reason[:label] %>
                   </span>
                 <% end %>
@@ -219,14 +89,176 @@
     </div>
   <% end %>
 
+  <%# 営業時間の傾向（読み取り専用・折りたたみ） %>
+  <% if @total_shops_count > 0 && (@opening_hours_stats.any? || @closing_hours_stats.any?) %>
+    <%
+      top_opening = @opening_hours_stats.max_by { |_, v| v }
+      top_closing = @closing_hours_stats.max_by { |_, v| v }
+    %>
+    <details class="bg-card rounded-lg border-b border-border/50 mb-6 group">
+      <summary class="list-none cursor-pointer select-none px-4 py-3 flex items-center justify-between gap-2 min-h-[44px] hover:bg-secondary/30 transition-colors rounded-lg">
+        <%= section_heading "営業時間の傾向" %>
+        <div class="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+          <% if top_opening %>
+            <span class="text-slot-yellow font-medium">開店<%= top_opening[0] %> <%= (top_opening[1] * 100.0 / @total_shops_count).round %>%</span>
+          <% end %>
+          <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+      </summary>
+      <div class="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <% if @opening_hours_stats.any? %>
+          <div>
+            <h3 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">開店時間</h3>
+            <div class="space-y-2">
+              <% @opening_hours_stats.each do |hour, count| %>
+                <% pct = (count * 100.0 / @total_shops_count).round(1) %>
+                <div class="flex items-center gap-2.5">
+                  <span class="text-xs text-foreground w-20 shrink-0"><%= hour %></span>
+                  <div class="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <div class="bg-slot-yellow h-full rounded-full transition-all" style="width: <%= pct %>%"></div>
+                  </div>
+                  <span class="text-xs text-muted-foreground w-16 text-right shrink-0 tabular-nums"><%= count %>店 (<%= pct %>%)</span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @closing_hours_stats.any? %>
+          <div>
+            <h3 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">閉店時間</h3>
+            <div class="space-y-2">
+              <% @closing_hours_stats.each do |hour, count| %>
+                <% pct = (count * 100.0 / @total_shops_count).round(1) %>
+                <div class="flex items-center gap-2.5">
+                  <span class="text-xs text-foreground w-20 shrink-0"><%= hour %></span>
+                  <div class="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <div class="bg-slot-red h-full rounded-full transition-all" style="width: <%= pct %>%"></div>
+                  </div>
+                  <span class="text-xs text-muted-foreground w-16 text-right shrink-0 tabular-nums"><%= count %>店 (<%= pct %>%)</span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </details>
+  <% end %>
+
+  <%# 絞り込み + 店舗一覧 %>
+  <div data-controller="shop-filter machine-filter">
+
+    <%# 店舗名検索 %>
+    <div class="relative mb-2">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input type="text"
+             id="prefecture_shop_filter"
+             data-action="input->machine-filter#filter"
+             data-machine-filter-target="input"
+             placeholder="店舗名で絞り込み"
+             aria-label="店舗名で絞り込み"
+             class="w-full min-h-[44px] rounded-md border border-input bg-transparent pl-9 pr-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none transition-[color,box-shadow]">
+    </div>
+
+    <%# 絞り込みチップ（常時表示） %>
+    <div class="flex flex-wrap items-center gap-1.5 mb-5">
+      <% [["9", "9時台"], ["10", "10時台"]].each do |value, label| %>
+        <label class="cursor-pointer">
+          <input type="checkbox" value="<%= value %>"
+                 data-filter-category="hours"
+                 data-shop-filter-target="checkbox"
+                 data-action="change->shop-filter#apply"
+                 class="peer sr-only">
+          <span class="inline-flex items-center min-h-[36px] rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-primary/50 peer-checked:bg-primary peer-checked:text-primary-foreground peer-checked:border-primary transition-colors"><%= label %></span>
+        </label>
+      <% end %>
+      <label class="cursor-pointer">
+        <input type="checkbox" value="yes"
+               data-filter-category="morning"
+               data-shop-filter-target="checkbox"
+               data-action="change->shop-filter#apply"
+               class="peer sr-only">
+        <span class="inline-flex items-center min-h-[36px] rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-primary/50 peer-checked:bg-primary peer-checked:text-primary-foreground peer-checked:border-primary transition-colors">朝入場あり</span>
+      </label>
+      <span class="ml-auto text-xs text-muted-foreground tabular-nums" data-filter-counter>
+        <span data-shop-filter-target="count">0</span> / <span data-shop-filter-target="total">0</span>店
+      </span>
+    </div>
+
+    <%# 店舗一覧 %>
+    <% if @grouped_shops.any? %>
+      <div data-machine-filter-target="list" class="space-y-3">
+        <% @grouped_shops.each_with_index do |(city, shops), idx| %>
+          <div data-controller="accordion" data-city-group>
+            <button type="button" data-action="click->accordion#toggle"
+                    class="w-full flex items-center justify-between bg-card rounded-lg border-b border-border/50 px-4 py-3 hover:shadow-sm transition-all min-h-[44px]">
+              <div class="flex items-center gap-2.5">
+                <span class="text-sm font-semibold text-foreground"><%= city %></span>
+                <span data-city-count class="text-[11px] text-muted-foreground bg-secondary rounded-md px-2 py-0.5 tabular-nums"><%= shops.size %>店</span>
+              </div>
+              <svg data-accordion-target="icon" class="w-4 h-4 text-muted-foreground transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div data-accordion-target="content" class="hidden mt-2">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <% shops.each do |shop| %>
+                  <%
+                    opening_hour = ""
+                    if shop.business_hours.present?
+                      parts = shop.business_hours.split(/[〜～]/).map(&:strip)
+                      if (m = parts[0]&.match(/\A(\d{1,2}):\d{2}\z/))
+                        opening_hour = m[1]
+                      end
+                    end
+                  %>
+                  <%= link_to shop_path(shop.slug),
+                      class: "bg-card rounded-lg border-b border-border/50 p-3.5 hover:-translate-y-px hover:shadow-sm transition-all duration-150 block h-full",
+                      data: {
+                        filter_name: shop.name.downcase,
+                        shop_card: true,
+                        filter_hours: opening_hour,
+                        filter_morning: shop.morning_entry.present? ? "yes" : "no"
+                      } do %>
+                    <div class="flex items-start justify-between gap-2">
+                      <p class="font-semibold text-sm text-foreground truncate flex-1"><%= favorite_mark(shop) %> <%= shop.name %></p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1 mt-2">
+                      <% machine_count = @machine_counts[shop.id] || 0 %>
+                      <% if machine_count > 0 %>
+                        <span class="bg-secondary text-muted-foreground text-[11px] px-1.5 py-0.5 rounded-md tabular-nums"><%= machine_count %>機種</span>
+                      <% end %>
+                      <% if shop.parking_spaces.present? && shop.parking_spaces > 0 %>
+                        <span class="bg-secondary text-muted-foreground text-[11px] px-1.5 py-0.5 rounded-md tabular-nums">P<%= shop.parking_spaces %></span>
+                      <% end %>
+                      <% if shop.morning_entry.present? %>
+                        <span class="bg-slot-yellow/10 text-slot-yellow text-[11px] font-medium px-1.5 py-0.5 rounded-md">朝整理券</span>
+                      <% end %>
+                      <% if @review_averages[shop.id] %>
+                        <span class="text-slot-yellow text-[11px] font-medium tabular-nums">★ <%= @review_averages[shop.id] %></span>
+                      <% end %>
+                    </div>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="bg-card rounded-lg border-b border-border/50 p-8 text-center mt-4">
+        <p class="text-muted-foreground">この県の店舗はまだありません。</p>
+      </div>
+    <% end %>
+  </div>
+
   <%# 県の収支統計 %>
   <% pref_summary = PlayRecordSummary.find_by(scope_type: "prefecture", scope_id: @prefecture.id, period_type: :all_time, period_key: "all") %>
   <% if pref_summary && pref_summary.total_records >= 5 %>
-    <div class="bg-surface-inset rounded-lg p-4 mb-6">
-      <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-        <span class="w-1 h-4 bg-slot-yellow rounded-full"></span>
-        <%= @prefecture.name %>の収支統計
-      </h2>
+    <div class="bg-surface-inset rounded-lg p-4 mt-6">
+      <%= section_heading "#{@prefecture.name}の収支統計", accent: :yellow, extra: "mb-3" %>
       <div class="grid grid-cols-3 gap-3">
         <div class="text-center">
           <p class="text-lg font-bold tabular-nums <%= pref_summary.avg_result >= 0 ? 'text-primary' : 'text-destructive' %>">
@@ -245,154 +277,4 @@
       </div>
     </div>
   <% end %>
-
-  <%# 店舗名検索 %>
-  <div class="relative mb-3">
-    <svg class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-    </svg>
-    <input type="text"
-           id="prefecture_shop_filter"
-           data-action="input->machine-filter#filter"
-           data-machine-filter-target="input"
-           placeholder="店舗名で絞り込み..."
-           aria-label="店舗名で絞り込み"
-           class="w-full min-h-[44px] rounded-md border border-input bg-transparent pl-9 pr-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none transition-[color,box-shadow]">
-  </div>
-
-  <%# フィルタパネル %>
-  <div class="mb-5">
-    <div class="flex items-center justify-between">
-      <button type="button"
-              data-action="click->shop-filter#toggle"
-              class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors min-h-[44px]">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-        </svg>
-        <span data-shop-filter-target="toggleText">絞り込み</span>
-        <svg data-shop-filter-target="toggleIcon" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-        </svg>
-      </button>
-      <span data-filter-counter class="text-xs text-muted-foreground tabular-nums">
-        <span data-shop-filter-target="count">0</span>件 / 全<span data-shop-filter-target="total">0</span>件
-      </span>
-    </div>
-
-    <div data-shop-filter-target="panel" class="hidden mt-3 bg-card rounded-lg border-b border-border/50 p-5 shadow-sm">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-
-        <%# 開店時間 %>
-        <div>
-          <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">開店時間</h4>
-          <div class="space-y-2">
-            <% [["9", "9時台"], ["10", "10時台"]].each do |value, label| %>
-              <label class="flex items-center gap-2.5 cursor-pointer group">
-                <input type="checkbox" value="<%= value %>"
-                       name="filter_hours[]"
-                       data-filter-category="hours"
-                       data-shop-filter-target="checkbox"
-                       data-action="change->shop-filter#apply"
-                       class="size-4 shrink-0 rounded-[4px] border border-input shadow-xs accent-primary">
-                <span class="text-xs text-foreground group-hover:text-primary transition-colors"><%= label %></span>
-              </label>
-            <% end %>
-          </div>
-        </div>
-
-        <%# 朝入場ルール %>
-        <div>
-          <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">朝入場ルール</h4>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2.5 cursor-pointer group">
-              <input type="checkbox" value="yes"
-                     name="filter_morning"
-                     data-filter-category="morning"
-                     data-shop-filter-target="checkbox"
-                     data-action="change->shop-filter#apply"
-                     class="size-4 shrink-0 rounded-[4px] border border-input shadow-xs accent-primary">
-              <span class="text-xs text-foreground group-hover:text-primary transition-colors">ルールあり</span>
-            </label>
-          </div>
-        </div>
-
-      </div>
-
-      <%# クリアボタン %>
-      <div class="mt-4 pt-3 border-t border-border">
-        <button type="button"
-                data-action="click->shop-filter#clear"
-                class="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2 min-h-[44px] px-2">
-          フィルタをクリア
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <%# 店舗一覧 %>
-  <% if @grouped_shops.any? %>
-    <div data-machine-filter-target="list" class="space-y-3">
-      <% @grouped_shops.each_with_index do |(city, shops), idx| %>
-        <div data-controller="accordion" data-city-group>
-          <button type="button" data-action="click->accordion#toggle"
-                  class="w-full flex items-center justify-between bg-card rounded-lg border-b border-border/50 px-4 py-3 hover:shadow-sm transition-all min-h-[44px]">
-            <div class="flex items-center gap-2.5">
-              <span class="text-sm font-semibold text-foreground"><%= city %></span>
-              <span data-city-count class="text-[11px] text-muted-foreground bg-secondary rounded-md px-2 py-0.5 tabular-nums"><%= shops.size %>店</span>
-            </div>
-            <svg data-accordion-target="icon" class="w-4 h-4 text-muted-foreground transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
-          </button>
-          <div data-accordion-target="content" class="hidden mt-2">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              <% shops.each do |shop| %>
-                <%
-                  opening_hour = ""
-                  if shop.business_hours.present?
-                    parts = shop.business_hours.split(/[〜～]/).map(&:strip)
-                    if (m = parts[0]&.match(/\A(\d{1,2}):\d{2}\z/))
-                      opening_hour = m[1]
-                    end
-                  end
-                %>
-                <%= link_to shop_path(shop.slug),
-                    class: "bg-card rounded-lg border-b border-border/50 p-3.5 hover:-translate-y-px hover:shadow-sm transition-all duration-150 block h-full",
-                    data: {
-                      filter_name: shop.name.downcase,
-                      shop_card: true,
-                      filter_hours: opening_hour,
-                      filter_morning: shop.morning_entry.present? ? "yes" : "no"
-                    } do %>
-                  <div class="flex items-start justify-between gap-2">
-                    <p class="font-semibold text-sm text-foreground truncate flex-1"><%= favorite_mark(shop) %> <%= shop.name %></p>
-                  </div>
-                  <div class="flex flex-wrap items-center gap-1 mt-2">
-                    <% machine_count = @machine_counts[shop.id] || 0 %>
-                    <% if machine_count > 0 %>
-                      <span class="bg-secondary text-muted-foreground text-[10px] px-1.5 py-0.5 rounded-md tabular-nums"><%= machine_count %>機種</span>
-                    <% end %>
-                    <% if shop.parking_spaces.present? && shop.parking_spaces > 0 %>
-                      <span class="bg-secondary text-muted-foreground text-[10px] px-1.5 py-0.5 rounded-md tabular-nums">P<%= shop.parking_spaces %></span>
-                    <% end %>
-                    <% if shop.morning_entry.present? %>
-                      <span class="bg-slot-yellow/10 text-slot-yellow text-[10px] font-medium px-1.5 py-0.5 rounded-md">朝整理券</span>
-                    <% end %>
-                    <% if @review_averages[shop.id] %>
-                      <span class="text-slot-yellow text-[10px] font-medium tabular-nums">★ <%= @review_averages[shop.id] %></span>
-                    <% end %>
-                  </div>
-                <% end %>
-              <% end %>
-            </div>
-          </div>
-        </div>
-      <% end %>
-    </div>
-  <% else %>
-    <div class="bg-card rounded-lg border-b border-border/50 p-8 text-center mt-4">
-      <p class="text-muted-foreground">この都道府県にはまだ店舗が登録されていません。</p>
-    </div>
-  <% end %>
-  </div>
 </section>

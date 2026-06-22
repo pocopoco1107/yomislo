@@ -10,7 +10,7 @@ class ShopRequestsController < ApplicationController
     @shop_request.voter_token = voter_token
 
     if @shop_request.save
-      redirect_to new_shop_request_path, notice: "店舗追加リクエストを受け付けました。審査までしばらくお待ちください。"
+      redirect_to new_shop_request_path, notice: "店舗リクエストを受け取った。審査までちょっと待ってね。"
     else
       @prefectures = Prefecture.order(:id)
       render :new, status: :unprocessable_entity

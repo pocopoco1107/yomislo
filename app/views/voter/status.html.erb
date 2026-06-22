@@ -13,8 +13,8 @@
         <div class="flex items-start gap-2">
           <span class="text-lg leading-none mt-0.5">⚠️</span>
           <div class="flex-1 min-w-0">
-            <p class="text-xs font-semibold text-foreground">トークンを控えておこう</p>
-            <p class="text-[11px] text-muted-foreground mt-0.5">Cookieが消えるとデータにアクセスできなくなります。</p>
+            <p class="text-xs font-semibold text-foreground">トークンをコピーしておこう</p>
+            <p class="text-xs text-muted-foreground mt-0.5">ブラウザのデータが消えると、記録に戻れなくなる。</p>
             <div class="flex items-center gap-2 mt-2" data-controller="clipboard">
               <code class="flex-1 bg-secondary text-foreground text-[11px] px-2 py-1.5 rounded font-mono select-all overflow-x-auto" data-clipboard-target="source"><%= cookies[:voter_token] %></code>
               <button type="button" data-clipboard-target="button" data-action="click->clipboard#copy"

@@ -71,11 +71,19 @@
 
 ### タイポグラフィルール
 - **個性は見出しで出す**: 量産デザイン（AI臭）から脱する最速の手段はフォント。汎用デフォルト（Inter/Noto単独）に頼らず、ブランド見出し・ヒーロー・主要セクション見出しには `font-heading`（手書き風 Uzura）を当てる
+- **セクション見出しは `section_heading` ヘルパーで統一** ([app/helpers/ui_helper.rb](app/helpers/ui_helper.rb))。`<h2>` を手書きするのではなく `section_heading "店舗情報", accent: :yellow, extra: "mb-3"` を使う。`font-heading` 適用とアクセントバー色の意味統一を同時に担保する
+  - accent: `:primary` `:yellow` `:red` `:blue` `:green` `:confirmed`（色＝意味。乱用しない）／ size: `:sm`(14px) `:base`(16px) `:lg`(18px)
 - **データはシャープに、見出しは手描きで**: 数値・表・機種名・ラベルなどデータ部分には絶対に手書きフォントを使わない（可読性最優先）。`font-heading` は装飾的な見出しに限定
 - インラインの `style="font-family: 'Uzura'..."` は使わず、必ず `font-heading` ユーティリティを使う
 - 見出し: `font-bold`, `letter-spacing: -0.025em`
 - 数値: `.stat-number` (Inter/Geist Mono, tabular-nums, -0.04em, bold)
 - テキスト階層: `--text-primary` → `--text-secondary` → `--text-tertiary`
+
+### フォントサイズスケール
+量産感は「サイズの細切れ」からも出る。任意値の乱用を避け、下記スケールに寄せる。
+- 本文・ラベルの**最小は `text-xs`(12px)**。`text-[10px]` / `text-[9px]` を本文・説明・小見出しに使わない
+- 極小バッジ（display_type 等、1行記録UIのみ）に限り `text-[11px]` を許容
+- 階層: `text-[11px]`(極小バッジ) → `text-xs`(12px 補助/メタ) → `text-sm`(14px 本文/小見出し) → `text-base`(16px セクション見出し) → `text-lg`+(主要見出し)
 
 ## Elevation (サーフェス3段階)
 
@@ -137,6 +145,19 @@
 - ホーム: 2ゾーンタブ (店舗・設定 / マイデータ)
 - 店舗ページ: 機種一覧 → 記録UI (Turbo Frame)
 - 県ページ: 市区町村グループ → 店舗一覧
+
+## Spacing（余白）
+
+余白の不統一もゴチャつきの原因。下記に寄せてリズムを揃える。
+
+| 用途 | カードpadding | 要素間gap |
+|------|--------------|-----------|
+| コンパクト（記録行・リスト行） | `p-3` | `gap-2` |
+| 標準（情報カード・統計） | `p-4` | `gap-3` |
+| 開放的（主要セクション） | `p-5` | `gap-4` |
+
+- セクション間マージンは `mb-4`（標準）/ `mb-6`（区切り）に統一
+- モバイル/デスクトップで段差を作る場合のみ `md:` を足す（`p-4 md:p-5` 等）
 
 ## 脱・量産デザイン（Anti-AIっぽさ）
 

@@ -102,7 +102,7 @@ RSpec.describe "Play Records calendar page", type: :system do
       past_month = (Date.current - 3.months).strftime("%Y-%m")
       visit play_records_path(month: past_month)
 
-      expect(page).to have_content("収支記録をはじめよう")
+      expect(page).to have_content("収支を記録してみよう")
     end
   end
 end

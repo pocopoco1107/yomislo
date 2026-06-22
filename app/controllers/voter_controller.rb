@@ -41,7 +41,7 @@ class VoterController < ApplicationController
     profile = VoterProfile.find_or_initialize_by(voter_token: token)
     name = params[:display_name].to_s.strip
     if name.length > 20
-      redirect_to voter_status_path, alert: "ユーザー名は20文字以内にしてください"
+      redirect_to voter_status_path, alert: "ユーザー名は20文字までです"
       return
     end
 
@@ -60,7 +60,7 @@ class VoterController < ApplicationController
       cookies.permanent[:voter_token] = token
       redirect_to voter_status_path, notice: "トークンを復元しました"
     else
-      redirect_to voter_status_path, alert: "該当するトークンが見つかりませんでした"
+      redirect_to voter_status_path, alert: "トークンが見つかりません"
     end
   end
 

@@ -1,16 +1,16 @@
-<turbo-frame id="machine_vote_<%= machine_model.id %>">
+<turbo-frame id="machine_vote_<%= machine_model.id %>" data-filter-name="<%= machine_model.name.to_s.downcase %>">
   <%
     has_reset_yes = user_vote&.reset_vote == 1
     has_reset_no  = user_vote&.reset_vote == 0
     user_confirmed = user_vote&.confirmed_setting || []
 
     selected_classes = {
-      1 => 'bg-setting-1 text-white ring-2 ring-setting-1/40 shadow-[0_0_8px_rgba(96,165,250,0.3)]',
-      2 => 'bg-setting-2 text-white ring-2 ring-setting-2/40 shadow-[0_0_8px_rgba(34,211,238,0.3)]',
-      3 => 'bg-setting-3 text-white ring-2 ring-setting-3/40 shadow-[0_0_8px_rgba(74,222,128,0.3)]',
-      4 => 'bg-setting-4 text-white ring-2 ring-setting-4/40 shadow-[0_0_8px_rgba(250,204,21,0.3)]',
-      5 => 'bg-setting-5 text-white ring-2 ring-setting-5/40 shadow-[0_0_8px_rgba(251,146,60,0.3)]',
-      6 => 'bg-setting-6 text-white ring-2 ring-setting-6/40 shadow-[0_0_8px_rgba(248,113,113,0.3)]'
+      1 => 'bg-setting-1 text-white ring-2 ring-setting-1/40',
+      2 => 'bg-setting-2 text-white ring-2 ring-setting-2/40',
+      3 => 'bg-setting-3 text-white ring-2 ring-setting-3/40',
+      4 => 'bg-setting-4 text-white ring-2 ring-setting-4/40',
+      5 => 'bg-setting-5 text-white ring-2 ring-setting-5/40',
+      6 => 'bg-setting-6 text-white ring-2 ring-setting-6/40'
     }
     unselected_classes = {
       1 => 'bg-setting-1/10 text-setting-1 hover:bg-setting-1/20',

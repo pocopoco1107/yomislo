@@ -11,22 +11,23 @@ RSpec.describe "Prefectures", type: :request do
       expect(response.body).to include("店舗")
     end
 
-    it "shows filter panel toggle button" do
+    it "shows filter controller and name filter input" do
       get prefecture_path("tokyo")
-      expect(response.body).to include("絞り込み")
+      expect(response.body).to include("店舗名で絞り込み")
       expect(response.body).to include('data-controller="shop-filter machine-filter"')
     end
 
-    it "renders filter checkboxes for opening hours" do
+    it "renders filter chips for opening hours" do
       get prefecture_path("tokyo")
-      expect(response.body).to include("開店時間")
+      expect(response.body).to include("9時台")
+      expect(response.body).to include("10時台")
       expect(response.body).to include('value="9"')
       expect(response.body).to include('value="10"')
     end
 
-    it "renders filter checkbox for morning entry" do
+    it "renders filter chip for morning entry" do
       get prefecture_path("tokyo")
-      expect(response.body).to include("朝入場ルール")
+      expect(response.body).to include("朝入場あり")
     end
 
     it "renders shop cards with filter data attributes" do
@@ -60,12 +61,7 @@ RSpec.describe "Prefectures", type: :request do
       expect(response.body).to include('data-shop-filter-target="total"')
     end
 
-    it "shows clear filter button" do
-      get prefecture_path("tokyo")
-      expect(response.body).to include("フィルタをクリア")
-    end
-
-    context "statistics reverse lookup" do
+    context "opening hours stats (read-only)" do
       before do
         create(:shop, prefecture: prefecture, name: "店舗A",
                business_hours: "9:00〜23:00",
@@ -74,26 +70,10 @@ RSpec.describe "Prefectures", type: :request do
                business_hours: "10:00〜22:45")
       end
 
-      it "renders clickable opening hours stats with preset data" do
+      it "renders the opening hours trend section" do
         get prefecture_path("tokyo")
-        expect(response.body).to include('data-preset-category="hours"')
-        expect(response.body).to include('data-preset-value="9"')
-      end
-
-      it "renders clickable parking stat with preset data" do
-        get prefecture_path("tokyo")
-        expect(response.body).to include('data-preset-value="parking"')
-      end
-
-      it "renders clickable morning entry stat with preset data" do
-        get prefecture_path("tokyo")
-        expect(response.body).to include('data-preset-category="morning"')
-        expect(response.body).to include('data-preset-value="yes"')
-      end
-
-      it "shows hint text about clicking stats to filter" do
-        get prefecture_path("tokyo")
-        expect(response.body).to include("各項目をクリックすると店舗を絞り込めます")
+        expect(response.body).to include("営業時間の傾向")
+        expect(response.body).to include("開店時間")
       end
     end
 

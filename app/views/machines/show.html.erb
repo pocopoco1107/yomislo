@@ -53,7 +53,7 @@
 
       <div class="flex-1 min-w-0">
         <%# 機種名 + バッジ群 %>
-        <h1 class="text-xl md:text-2xl font-bold text-foreground leading-tight"><%= @machine_model.name %></h1>
+        <h1 class="font-heading text-xl md:text-2xl font-bold text-foreground leading-tight"><%= @machine_model.name %></h1>
         <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
           <span class="text-[11px] font-bold px-2 py-0.5 rounded-md <%= @machine_model.display_type_badge_class %>">
             <%= @machine_model.display_type_label %>
@@ -112,11 +112,8 @@
 
   <%# === All-time Stats === %>
   <% if @all_time_votes && @all_time_votes > 0 %>
-    <div class="bg-card border border-border rounded-lg p-4 mb-6">
-      <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-        <span class="w-1 h-4 bg-chart-1 rounded-full"></span>
-        全期間の統計
-      </h2>
+    <div class="bg-surface-inset rounded-lg p-4 mb-6">
+      <%= section_heading "全期間の統計", accent: :blue, extra: "mb-3" %>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="bg-secondary rounded-lg p-3 text-center">
           <p class="text-xl font-bold text-foreground tabular-nums"><%= @all_time_votes %></p>
@@ -152,11 +149,8 @@
   <%# === Play Record Stats === %>
   <% machine_summary = PlayRecordSummary.find_by(scope_type: "machine_model", scope_id: @machine_model.id, period_type: :all_time, period_key: "all") %>
   <% if machine_summary && machine_summary.total_records >= 5 %>
-    <div class="bg-card border border-border rounded-lg p-4 mb-6">
-      <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-        <span class="w-1 h-4 bg-slot-yellow rounded-full"></span>
-        全国収支統計
-      </h2>
+    <div class="bg-surface-inset rounded-lg p-4 mb-6">
+      <%= section_heading "全国収支統計", accent: :yellow, extra: "mb-3" %>
       <div class="grid grid-cols-3 gap-3">
         <div class="text-center">
           <p class="text-lg font-bold tabular-nums <%= machine_summary.avg_result >= 0 ? 'text-primary' : 'text-destructive' %>">
@@ -186,7 +180,7 @@
   <%# === Ceiling Info (天井・期待値) === %>
   <details class="bg-card border border-border rounded-lg mb-6 group">
     <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 rounded-lg transition-colors">
-      <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+      <h2 class="text-sm font-heading font-bold text-foreground flex items-center gap-2">
         <span class="w-1 h-4 bg-chart-5 rounded-full"></span>
         天井・期待値
       </h2>
@@ -208,7 +202,7 @@
         </div>
       <% else %>
         <div class="bg-secondary rounded-lg p-4 text-center">
-          <p class="text-sm text-muted-foreground mb-2">天井・期待値の情報はまだ登録されていません。</p>
+          <p class="text-sm text-muted-foreground mb-2">天井・期待値の情報はまだありません。</p>
           <% ceiling_links = @guide_links.select { |gl| gl.ceiling? } %>
           <% if ceiling_links.any? %>
             <p class="text-xs text-muted-foreground mb-2">攻略サイトで確認:</p>
@@ -232,7 +226,7 @@
   <%# === Reset Info (リセット・据え置き) === %>
   <details class="bg-card border border-border rounded-lg mb-6 group">
     <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 rounded-lg transition-colors">
-      <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+      <h2 class="text-sm font-heading font-bold text-foreground flex items-center gap-2">
         <span class="w-1 h-4 bg-vote-yes rounded-full"></span>
         リセット・据え置き情報
         <% if @all_time_reset_rate %>
@@ -257,7 +251,7 @@
         </div>
       <% else %>
         <div class="bg-secondary rounded-lg p-4 text-center">
-          <p class="text-sm text-muted-foreground">リセット・据え置きの詳細情報はまだ登録されていません。</p>
+          <p class="text-sm text-muted-foreground">リセット・据え置きの詳細情報はまだありません。</p>
         </div>
       <% end %>
 
@@ -281,10 +275,10 @@
   <% if @sns_reports.any? %>
     <details class="bg-card border border-border rounded-lg mb-6 group">
       <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 rounded-lg transition-colors">
-        <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+        <h2 class="text-sm font-heading font-bold text-foreground flex items-center gap-2">
           <span class="w-1 h-4 bg-chart-1 rounded-full"></span>
           SNS情報 (自動収集)
-          <span class="text-[10px] font-normal text-muted-foreground">(<%= @sns_reports.size %>件)</span>
+          <span class="text-xs font-normal text-muted-foreground">(<%= @sns_reports.size %>件)</span>
         </h2>
         <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
       </summary>
@@ -314,10 +308,10 @@
   <% if @guide_links.any? %>
     <details class="bg-card border border-border rounded-lg mb-6 group">
       <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 rounded-lg transition-colors">
-        <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+        <h2 class="text-sm font-heading font-bold text-foreground flex items-center gap-2">
           <span class="w-1 h-4 bg-primary rounded-full"></span>
           攻略情報リンク
-          <span class="text-[10px] font-normal text-muted-foreground">(<%= @guide_links.size %>件)</span>
+          <span class="text-xs font-normal text-muted-foreground">(<%= @guide_links.size %>件)</span>
         </h2>
         <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
       </summary>
@@ -356,7 +350,7 @@
   <% end %>
 
   <%# === Today's Votes === %>
-  <h2 class="text-lg font-bold text-foreground mb-3">本日の記録状況 (<%= Date.current.strftime("%-m/%-d") %>)</h2>
+  <h2 class="font-heading text-lg font-bold text-foreground mb-3">本日の記録状況 (<%= Date.current.strftime("%-m/%-d") %>)</h2>
 
   <% if @vote_summaries.any? %>
     <div class="space-y-2 mb-6">
@@ -411,7 +405,7 @@
 
   <%# === Installed Shops === %>
   <div class="mb-6">
-    <h2 class="text-lg font-bold text-foreground mb-3">設置店舗を探す (<%= @installed_shop_count %>店)</h2>
+    <h2 class="font-heading text-lg font-bold text-foreground mb-3">設置店舗を探す (<%= @installed_shop_count %>店)</h2>
 
     <!-- Prefecture Filter -->
     <div class="bg-card border border-border rounded-lg p-3 mb-4">

@@ -30,7 +30,7 @@ RSpec.describe "Home page", type: :system do
     it "displays the prefecture section with region groups" do
       visit root_path
 
-      expect(page).to have_content("都道府県から探す")
+      expect(page).to have_content("都道府県からさがす")
       expect(page).to have_content("北海道・東北")
       expect(page).to have_content("関東")
       expect(page).to have_content("中部")
@@ -45,7 +45,7 @@ RSpec.describe "Home page", type: :system do
     it "displays prefecture grid" do
       visit root_path
 
-      expect(page).to have_content("都道府県から探す")
+      expect(page).to have_content("都道府県からさがす")
     end
   end
 

@@ -78,71 +78,161 @@
 
   <%= render_promotion :shop_detail_top, variant: :banner %>
 
-  <%# === Shop Info Card === %>
-  <div class="bg-card rounded-lg p-4 mb-6 border-b border-border/50">
-    <h2 class="text-sm font-semibold text-foreground mb-3 border-b border-border/50 pb-2">店舗情報</h2>
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
-      <div>
-        <span class="text-xs text-muted-foreground block">スロット台数</span>
-        <span class="font-medium text-foreground"><%= @shop.slot_machines || "未設定" %><%= "台" if @shop.slot_machines %></span>
-      </div>
-      <div>
-        <span class="text-xs text-muted-foreground block">総台数</span>
-        <span class="font-medium text-foreground"><%= @shop.total_machines || "未設定" %><%= "台" if @shop.total_machines %></span>
-      </div>
-      <div>
-        <span class="text-xs text-muted-foreground block">営業時間</span>
-        <span class="font-medium text-foreground"><%= @shop.business_hours || "未設定" %></span>
-      </div>
-      <% if @shop.parking_spaces.present? %>
+  <%# === Shop Info（折りたたみ・来店前情報） === %>
+  <details class="bg-card rounded-lg mb-4 border-b border-border/50 group">
+    <summary class="list-none cursor-pointer select-none px-4 py-3 flex items-center justify-between min-h-[44px] hover:bg-secondary/30 transition-colors rounded-lg">
+      <%= section_heading "店舗情報・設備" %>
+      <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </summary>
+    <div class="px-4 pb-4">
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
         <div>
-          <span class="text-xs text-muted-foreground block">駐車場</span>
-          <span class="font-medium text-foreground"><%= @shop.parking_spaces %>台</span>
+          <span class="text-xs text-muted-foreground block">スロット台数</span>
+          <span class="font-medium text-foreground"><%= @shop.slot_machines || "未設定" %><%= "台" if @shop.slot_machines %></span>
         </div>
-      <% end %>
-      <% if @shop.opened_on.present? %>
         <div>
-          <span class="text-xs text-muted-foreground block">オープン日</span>
-          <span class="font-medium text-foreground"><%= @shop.opened_on.strftime("%Y年%m月%d日") %></span>
+          <span class="text-xs text-muted-foreground block">総台数</span>
+          <span class="font-medium text-foreground"><%= @shop.total_machines || "未設定" %><%= "台" if @shop.total_machines %></span>
         </div>
-      <% end %>
-      <% if @shop.entry_method.present? || @shop.morning_entry.present? %>
-        <div class="col-span-2 sm:col-span-3">
-          <span class="text-xs text-muted-foreground block">朝の入場</span>
-          <span class="font-medium text-primary">
-            <% case @shop.entry_method
-               when "lottery" %>抽選<%
-               when "queue" %>並び順<%
-               when "other" %>その他<%
-               end %>
-            <% if @shop.morning_entry.present? %>
-              <span class="text-xs text-muted-foreground"><%= @shop.morning_entry %></span>
+        <div>
+          <span class="text-xs text-muted-foreground block">営業時間</span>
+          <span class="font-medium text-foreground"><%= @shop.business_hours || "未設定" %></span>
+        </div>
+        <% if @shop.parking_spaces.present? %>
+          <div>
+            <span class="text-xs text-muted-foreground block">駐車場</span>
+            <span class="font-medium text-foreground"><%= @shop.parking_spaces %>台</span>
+          </div>
+        <% end %>
+        <% if @shop.opened_on.present? %>
+          <div>
+            <span class="text-xs text-muted-foreground block">オープン日</span>
+            <span class="font-medium text-foreground"><%= @shop.opened_on.strftime("%Y年%m月%d日") %></span>
+          </div>
+        <% end %>
+        <% if @shop.entry_method.present? || @shop.morning_entry.present? %>
+          <div class="col-span-2 sm:col-span-3">
+            <span class="text-xs text-muted-foreground block">朝の入場</span>
+            <span class="font-medium text-primary">
+              <% case @shop.entry_method
+                 when "lottery" %>抽選<%
+                 when "queue" %>並び順<%
+                 when "other" %>その他<%
+                 end %>
+              <% if @shop.morning_entry.present? %>
+                <span class="text-xs text-muted-foreground"><%= @shop.morning_entry %></span>
+              <% end %>
+            </span>
+          </div>
+        <% end %>
+        <% if @shop.regular_holiday.present? %>
+          <div class="col-span-2 sm:col-span-3">
+            <span class="text-xs text-muted-foreground block">定休日</span>
+            <span class="font-medium text-foreground"><%= @shop.regular_holiday %></span>
+          </div>
+        <% end %>
+      </div>
+
+      <% facility_badges = shop_facility_badges(@shop) %>
+      <% if facility_badges.any? %>
+        <div class="mt-4 pt-3 border-t border-border/50">
+          <span class="text-xs text-muted-foreground block mb-2">設備・サービス</span>
+          <div class="flex flex-wrap gap-1.5">
+            <% facility_badges.each do |badge| %>
+              <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium bg-secondary text-foreground border border-border/50">
+                <%= badge %>
+              </span>
             <% end %>
-          </span>
-        </div>
-      <% end %>
-      <% if @shop.regular_holiday.present? %>
-        <div class="col-span-2 sm:col-span-3">
-          <span class="text-xs text-muted-foreground block">定休日</span>
-          <span class="font-medium text-foreground"><%= @shop.regular_holiday %></span>
+          </div>
         </div>
       <% end %>
     </div>
+  </details>
 
-    <% facility_badges = shop_facility_badges(@shop) %>
-    <% if facility_badges.any? %>
-      <div class="mt-4 pt-3 border-t border-border/50">
-        <span class="text-xs text-muted-foreground block mb-2">設備・サービス</span>
-        <div class="flex flex-wrap gap-1.5">
-          <% facility_badges.each do |badge| %>
-            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium bg-secondary text-foreground border border-border/50">
-              <%= badge %>
-            </span>
-          <% end %>
-        </div>
-      </div>
-    <% end %>
+  <%# ============================================================
+      記録ブロック（最優先）— エラー表示 → 機種検索 → 絞り込み → 記録グリッド
+      ============================================================ %>
+
+  <%# === Vote Errors === %>
+  <div id="vote_errors"></div>
+
+  <%# === Machine Search (add new vote) === %>
+  <div data-controller="machine-search"
+       data-machine-search-shop-id-value="<%= @shop.id %>"
+       data-machine-search-date-value="<%= @date %>"
+       class="mb-3">
+    <div class="relative">
+      <input type="text"
+             id="shop_machine_search"
+             data-machine-search-target="input"
+             data-action="input->machine-search#search"
+             placeholder="機種を検索して記録"
+             aria-label="機種を検索して記録"
+             class="w-full border border-input bg-background text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent shadow-xs placeholder:text-muted-foreground"
+             autocomplete="off">
+    </div>
+    <div data-machine-search-target="results"
+         class="mt-2 bg-card border border-border rounded-lg shadow-sm empty:hidden p-3"></div>
   </div>
+
+  <%# === Machine Filter === %>
+  <div class="mb-3" data-controller="machine-filter">
+    <div class="flex items-center gap-2 flex-wrap">
+      <input type="text" placeholder="設置機種を絞り込み"
+             id="shop_machine_filter"
+             data-machine-filter-target="input"
+             data-action="input->machine-filter#filter"
+             aria-label="機種名で絞り込み"
+             class="flex-1 min-w-[160px] border border-input bg-background text-foreground rounded-md px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground">
+    </div>
+
+    <%# === Voted Machines (Grid) === %>
+    <div class="mt-3 mb-6" data-machine-filter-target="list">
+      <% if @machine_models.any? %>
+        <%
+          grouped = @machine_models.chunk { |m| m.display_type }
+        %>
+        <% grouped.each do |type, machines| %>
+          <div class="flex items-center gap-2 mt-4 mb-2" data-type-header>
+            <span class="text-[11px] font-bold px-2 py-0.5 rounded-md <%= machines.first.display_type_badge_class %>">
+              <%= machines.first.display_type_label %>
+            </span>
+            <span class="text-xs text-muted-foreground"><%= machines.size %>機種</span>
+            <div class="flex-1 h-px bg-border"></div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <% machines.each do |machine_model| %>
+              <%= render "shops/machine_vote_row",
+                  machine_model: machine_model,
+                  vote_summary: @vote_summaries[machine_model.id],
+                  user_vote: @user_votes[machine_model.id],
+                  user_play_record: @user_play_records[machine_model.id],
+                  shop: @shop,
+                  date: @date,
+                  unit_count: @unit_counts[machine_model.id] %>
+            <% end %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="bg-card rounded-lg border-b border-border/50 p-8 text-center">
+          <p class="text-muted-foreground text-sm">まだ設置機種の記録がありません。上の検索から機種を探して記録しよう。</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# === Daily Summary（今日の記録一覧） === %>
+  <%= render "shops/daily_summary",
+      vote_summaries: @vote_summaries,
+      machine_names: @machine_names,
+      machine_slugs: @machine_slugs,
+      date: @date %>
+
+  <%= render_promotion :shop_detail_bottom, variant: :card %>
+
+  <%# ============================================================
+      店舗のデータ（記録の下）— 交換率 / 収支統計 / カレンダー
+      ============================================================ %>
 
   <%# === Exchange Rate Section === %>
   <%= render "shops/exchange_rate_section",
@@ -154,10 +244,7 @@
   <% shop_summary = PlayRecordSummary.find_by(scope_type: "shop", scope_id: @shop.id, period_type: :all_time, period_key: "all") %>
   <% if shop_summary && shop_summary.total_records >= 3 %>
     <div class="bg-surface-inset rounded-lg p-4 mb-6">
-      <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-        <span class="w-1 h-4 bg-slot-yellow rounded-full"></span>
-        収支統計
-      </h2>
+      <%= section_heading "収支統計", accent: :yellow, extra: "mb-3" %>
       <div class="grid grid-cols-3 gap-3">
         <div class="text-center">
           <p class="text-lg font-bold tabular-nums <%= shop_summary.avg_result >= 0 ? 'text-primary' : 'text-destructive' %>">
@@ -201,83 +288,6 @@
                  calendar_data: @calendar_data, current_date: @date %>
     </turbo-frame>
   </div>
-
-  <%# === Daily Summary === %>
-  <%= render "shops/daily_summary",
-      vote_summaries: @vote_summaries,
-      machine_names: @machine_names,
-      machine_slugs: @machine_slugs,
-      date: @date %>
-
-  <%# === Vote Errors === %>
-  <div id="vote_errors"></div>
-
-  <%# === Machine Search (add new vote) === %>
-  <div data-controller="machine-search"
-       data-machine-search-shop-id-value="<%= @shop.id %>"
-       data-machine-search-date-value="<%= @date %>"
-       class="mb-4">
-    <div class="relative">
-      <input type="text"
-             id="shop_machine_search"
-             data-machine-search-target="input"
-             data-action="input->machine-search#search"
-             placeholder="機種名を検索して記録..."
-             aria-label="機種名を検索して記録"
-             class="w-full border border-input bg-background text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent shadow-xs placeholder:text-muted-foreground"
-             autocomplete="off">
-    </div>
-    <div data-machine-search-target="results"
-         class="mt-2 bg-card border border-border rounded-lg shadow-sm empty:hidden p-3"></div>
-  </div>
-
-  <%# === Machine Filter === %>
-  <div class="mb-3" data-controller="machine-filter">
-    <div class="flex items-center gap-2 flex-wrap">
-      <input type="text" placeholder="機種名で絞り込み..."
-             id="shop_machine_filter"
-             data-machine-filter-target="input"
-             data-action="input->machine-filter#filter"
-             aria-label="機種名で絞り込み"
-             class="flex-1 min-w-[160px] border border-input bg-background text-foreground rounded-md px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground">
-    </div>
-  </div>
-
-  <%# === Voted Machines (Grid) === %>
-  <div class="mb-8" data-machine-filter-target="list">
-    <% if @machine_models.any? %>
-      <%
-        grouped = @machine_models.chunk { |m| m.display_type }
-      %>
-      <% grouped.each do |type, machines| %>
-        <div class="flex items-center gap-2 mt-4 mb-2" data-type-header>
-          <span class="text-[11px] font-bold px-2 py-0.5 rounded-md <%= machines.first.display_type_badge_class %>">
-            <%= machines.first.display_type_label %>
-          </span>
-          <span class="text-[10px] text-muted-foreground"><%= machines.size %>機種</span>
-          <div class="flex-1 h-px bg-border"></div>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-          <% machines.each do |machine_model| %>
-            <%= render "shops/machine_vote_row",
-                machine_model: machine_model,
-                vote_summary: @vote_summaries[machine_model.id],
-                user_vote: @user_votes[machine_model.id],
-                user_play_record: @user_play_records[machine_model.id],
-                shop: @shop,
-                date: @date,
-                unit_count: @unit_counts[machine_model.id] %>
-          <% end %>
-        </div>
-      <% end %>
-    <% else %>
-      <div class="bg-card rounded-lg border-b border-border/50 p-8 text-center">
-        <p class="text-muted-foreground text-sm">まだ記録がありません。上の検索から機種を探して記録しましょう。</p>
-      </div>
-    <% end %>
-  </div>
-
-  <%= render_promotion :shop_detail_bottom, variant: :card %>
 
   <%# === Events === %>
   <%= render "shops/events", shop: @shop, upcoming_events: @upcoming_events, past_events: @past_events %>
