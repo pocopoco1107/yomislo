@@ -72,7 +72,7 @@ RSpec.describe "Machines", type: :request do
     it "renders empty state when no shops are installed" do
       get machine_path(machine.slug)
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("設置店舗情報がありません")
+      expect(response.body).to include("設置店舗の情報がない")
     end
 
     it "paginates installed shops" do

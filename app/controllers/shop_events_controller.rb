@@ -8,7 +8,7 @@ class ShopEventsController < ApplicationController
     if @event.save
       respond_to do |format|
         format.turbo_stream
-        format.html { redirect_to shop_path(@shop), notice: "イベント情報を送ったよ。審査が通れば表示される。" }
+        format.html { redirect_to shop_path(@shop), notice: "イベント情報ありがとう！審査後に表示するね" }
       end
     else
       redirect_to shop_path(@shop), alert: @event.errors.full_messages.join(", ")

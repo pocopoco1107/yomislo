@@ -202,7 +202,7 @@
         </div>
       <% else %>
         <div class="bg-secondary rounded-lg p-4 text-center">
-          <p class="text-sm text-muted-foreground mb-2">天井・期待値の情報はまだありません。</p>
+          <p class="text-sm text-muted-foreground mb-2">天井・期待値の情報はまだない</p>
           <% ceiling_links = @guide_links.select { |gl| gl.ceiling? } %>
           <% if ceiling_links.any? %>
             <p class="text-xs text-muted-foreground mb-2">攻略サイトで確認:</p>
@@ -216,7 +216,7 @@
               <% end %>
             </div>
           <% else %>
-            <p class="text-xs text-muted-foreground">攻略サイトで天井情報をご確認ください。</p>
+            <p class="text-xs text-muted-foreground">攻略サイトで天井をチェック</p>
           <% end %>
         </div>
       <% end %>
@@ -251,7 +251,7 @@
         </div>
       <% else %>
         <div class="bg-secondary rounded-lg p-4 text-center">
-          <p class="text-sm text-muted-foreground">リセット・据え置きの詳細情報はまだありません。</p>
+          <p class="text-sm text-muted-foreground">リセット・据え置きの詳細はまだない</p>
         </div>
       <% end %>
 
@@ -397,7 +397,7 @@
       <div class="w-16 h-16 mx-auto mb-2">
         <%= image_tag "empty_search.svg", alt: "記録なし", class: "w-full h-full opacity-50" %>
       </div>
-      <p class="text-muted-foreground text-sm">本日の記録データはまだありません。</p>
+      <p class="text-muted-foreground text-sm">本日の記録はまだない</p>
     </div>
   <% end %>
 
@@ -453,10 +453,10 @@
           <%= image_tag "empty_search.svg", alt: "店舗なし", class: "w-full h-full opacity-50" %>
         </div>
         <% if params[:prefecture].present? %>
-          <p class="text-muted-foreground text-sm">この都道府県に設置店舗はありません。</p>
+          <p class="text-muted-foreground text-sm">この県に設置店舗はない</p>
           <%= link_to "全国で表示", machine_path(@machine_model.slug), class: "text-sm text-primary hover:underline mt-2 inline-block" %>
         <% else %>
-          <p class="text-muted-foreground text-sm">設置店舗情報がありません。</p>
+          <p class="text-muted-foreground text-sm">設置店舗の情報がない</p>
         <% end %>
       </div>
     <% end %>
