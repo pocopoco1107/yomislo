@@ -1,7 +1,7 @@
 databases:
   - name: yomislo-db
     region: singapore
-    plan: free
+    plan: basic
     databaseName: yomislo_production
     user: yomislo
 
