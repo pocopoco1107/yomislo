@@ -45,7 +45,7 @@
   <%# === Shop Header === %>
   <div class="bg-card rounded-lg p-4 mb-4 shadow-sm border-l-2 border-l-primary/20">
     <div class="flex items-center gap-2">
-      <h1 class="text-2xl md:text-3xl font-bold text-foreground flex-1"><%= @shop.name %></h1>
+      <h1 class="font-heading text-2xl md:text-3xl font-bold text-foreground flex-1"><%= @shop.name %></h1>
       <div data-controller="favorite" data-favorite-shop-slug-value="<%= @shop.slug %>">
         <button data-action="click->favorite#toggle"
                 class="text-2xl leading-none p-1 hover:scale-110 transition-transform min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
