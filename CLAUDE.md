@@ -202,6 +202,13 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 - Net::HTTP + Nokogiri
 - **機種名正規化**: NFKC正規化必須。`core_name()` で接頭辞/末尾型式コード除去
 
+## 動作確認・UI検証
+- 実装や修正の後は **Claude Preview モード** (`preview_start` → `preview_snapshot` / `preview_screenshot` 等) で動作・UIを確認する
+- ブラウザ操作ツール (Claude in Chrome) ではなく、必ず Preview ツール群を使うこと
+- dev サーバー起動: `bin/dev`（ポート 3000）
+- 確認手順: preview_start でサーバー起動 → preview_snapshot / preview_console_logs でエラー確認 → preview_screenshot で視覚確認 → 問題あればソース修正して再確認
+- テスト (`bundle exec rspec`) は正確性の検証、Preview は実際のUI/UXの検証。両方やる
+
 ## UI/フロントエンド規約
 → **`DESIGN.md`** を参照（カラートークン、サーフェス、タイポグラフィ、コンポーネント、Do's/Don'ts）
 

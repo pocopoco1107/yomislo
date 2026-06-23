@@ -46,6 +46,19 @@ RSpec.describe Pet, type: :model do
     end
   end
 
+  describe ".for" do
+    it "creates an egg when no pet exists for the token" do
+      expect { Pet.for("new_visitor") }.to change { Pet.count }.by(1)
+      expect(Pet.find_by(voter_token: "new_visitor")).to be_egg
+    end
+
+    it "returns the existing pet without creating a new one" do
+      existing = create(:pet, voter_token: "existing_visitor", stage: :child)
+      expect { @pet = Pet.for("existing_visitor") }.not_to change { Pet.count }
+      expect(@pet.id).to eq(existing.id)
+    end
+  end
+
   describe ".register!" do
     let(:base) { Date.new(2026, 6, 1) }
 

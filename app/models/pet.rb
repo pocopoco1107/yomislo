@@ -85,8 +85,12 @@ class Pet < ApplicationRecord
     }
   end
 
-  # Voter モデルは存在せず、匿名識別子 voter_token(cookie) で 1人1体に紐づく。
-  # 関連の代わりにこのトークンで find する (VoterProfile と同じ方式)。
+  def self.for(voter_token)
+    find_or_create_by!(voter_token: voter_token)
+  rescue ActiveRecord::RecordNotUnique
+    retry
+  end
+
   validates :voter_token, presence: true, uniqueness: true
   validates :exp, :streak_days, :branch_axis,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 }

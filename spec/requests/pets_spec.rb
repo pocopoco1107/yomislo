@@ -92,6 +92,16 @@ RSpec.describe "Pet growth via record flows", type: :request do
       expect(response.body).to include("ごきげん")                   # mood (今日記録 = genki)
       expect(response.body).to include("次の進化（成熟期）")          # 次段階
     end
+
+    it "auto-creates an egg for a user with no records" do
+      cookies[:voter_token] = token
+
+      expect { get voter_status_path }.to change { Pet.count }.by(1)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("companions/egg")
+      expect(response.body).to include("相棒・卵")
+    end
   end
 
   describe "GET / (home, small pet)" do
@@ -103,6 +113,18 @@ RSpec.describe "Pet growth via record flows", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("companions/baby")
+    end
+
+    it "auto-creates an egg on home when cookie exists" do
+      cookies[:voter_token] = token
+
+      expect { get root_path }.to change { Pet.count }.by(1)
+
+      expect(response.body).to include("companions/egg")
+    end
+
+    it "does not create a pet for visitors without a cookie" do
+      expect { get root_path }.not_to change { Pet.count }
     end
   end
 end

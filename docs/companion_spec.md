@@ -1,8 +1,10 @@
-# 相棒モンスター「ヨミ」キャラクター仕様書（発注用・叩き台 v0.3）
+# 相棒モンスター「ヨミ」キャラクター仕様書（発注用・叩き台 v0.6）
 
-> このドキュメントは、ヨミスロの育成キャラ「ヨミ」のドット絵を **外部の画像生成AI / ドット絵職人に発注するための仕様書** です。
+> このドキュメントは、ヨミスロの育成キャラのドット絵を **外部の画像生成AI / ドット絵職人に発注するための仕様書** です。
 > 誰に・どのツールに投げても出力がブレないことを目的に、世界観・一貫性ルール・カラーパレット・サイズ・命名規則・プロンプト雛形までを固定します。
 > ステータスは **叩き台（未確定）**。`要決定` タグの項目は発注前に確定させること。
+>
+> ※ 本書内の「ヨミ」は **仮称（コードネーム）**。公式の表示名は「ヨミ」に固定せず、**各進化形に固有名を付ける方式**でコレクション性を出す（具体ネーミングは別途／§13）。`reader` 等の英語キーは内部識別子。
 
 ---
 
@@ -187,7 +189,7 @@
 
 | 項目 | 仕様 |
 |------|------|
-| 原画解像度 | **48×48px**（キャラが収まる範囲。余白含む。要決定で 32 or 64 も検討） |
+| 原画解像度 | **64×64px**（確定。描き込み重視。整数倍スケールで表示） |
 | 表示 | 整数倍スケール（×2 / ×3）、`image-rendering: pixelated` |
 | 背景 | **透過（アルファPNG）** |
 | アンチエイリアス | **なし**（crisp pixel。ぼかし禁止） |
@@ -203,7 +205,7 @@
 
 | 種別 | 内容 | フレーム数 | 備考 |
 |------|------|-----------|------|
-| idle | 上下にプニッと伸縮＋まばたき | 2〜4コマ | 全段階に付ける。ループ |
+| idle | 上下にプニッと伸縮＋まばたき | **2コマ**（確定。表示間隔は実装時に調整） | 全段階に付ける。ループ |
 | タマゴ揺れ | 卵が左右にコトッ、たまにヒビ | 2〜3コマ | 孵化前の"気配" |
 | 進化演出 | 白フラッシュ → 新フォーム登場 | 共通エフェクトで可 | コマ別に持たず汎用化 |
 | 究極体オーラ | 金色オーラのゆらぎ | 2コマ or CSS opacity | |
@@ -232,7 +234,7 @@
 
 ### 9-3. ご当地ヨミ（地域コレクション）
 - その県／地方で記録すると **地域変種** が出現。ヨミスロの `Prefecture` / `Shop` データに直結
-- **コスト現実解：まず8地方ブロック**（北海道 / 東北 / 関東 / 中部 / 近畿 / 中国四国 / 九州沖縄）から。人気地域を優先。47県化は段階的に（§13）
+- **8地方ブロックで開始（確定）**：北海道 / 東北 / 関東 / 中部 / 近畿 / 中国 / 四国 / 九州・沖縄。人気地方を優先。47県化は反応を見て段階的に
 - 地域色のパレット＋ご当地モチーフの小物（装飾差分）で表現。**究極体に適用**（全段階には付けない＝コスト抑制）
 - 地元愛＋遠征記録のコンプ動機。「全地方のヌシを集める」など
 - 命名：素体名 + `_{region}`（§10）
@@ -294,7 +296,7 @@ companions/
 **共通の前置き（毎回つける）**
 ```
 16-bit pixel art creature sprite, single character centered, transparent background,
-48x48, crisp pixels, NO anti-aliasing, retro JRPG monster style.
+64x64, crisp pixels, NO anti-aliasing, retro JRPG monster style.
 Recurring character "Yomi": rounded egg-shaped body, two large round eyes,
 a small diamond mark on the forehead, emerald body palette
 (#34d399 light / #10b981 mid / #047857 shadow) with #064e3b outline.
@@ -341,20 +343,157 @@ Dark background friendly (bright emerald, clear silhouette).
 
 ## 13. 要決定リスト（発注前に埋める）
 
-- [ ] `要決定` 原画解像度：48×48 で確定か（32 / 64 も検討）
-- [ ] `要決定` 完成期Bの下位分岐軸（読み師以外＝ヌシ/朝駆け/行脚）の最終定義
+### 決定済み（v0.4）
+- [x] 原画解像度：**64×64px**
+- [x] idleコマ数：**2コマ**（表示間隔は実装時調整）
+- [x] ご当地の開始粒度：**8地方ブロック**（47県化は反応を見て段階的に）
+- [x] キャラ名方針：**「ヨミ」に固定せず、各進化形に固有名を付ける方式**（具体ネーミングは未確定＝下記）
+- [x] 完成期Bの下位分岐軸：仕様書 §4 の叩き台でいったん確定（読み師=高設定/的中、ヌシ=据え置き継続/全台網羅、朝駆け=純リセット/早朝広域、行脚=店制覇/県制覇）
+
+### 未決定
+- [ ] `要決定` **ネーミング一覧**：読み師系は §14 に叩き台あり（総称は保留）。残り3系統＋総称（種族名）は未確定
 - [ ] `要決定` 究極体のレア条件一覧（神読・化けヨミ以外、各系統に何を足すか）
-- [ ] `要決定` ご当地：8地方ブロックで開始でよいか／47県化の時期
 - [ ] `要決定` 色違いの出現率
 - [ ] `要決定` 機種図鑑の実装時期（キャラv1の後でよいか）
-- [ ] `要決定` idleのコマ数（2 / 4）と1コマあたりの表示時間
 - [ ] `要決定` 進化演出をどこまでリッチにするか（白フラッシュのみ / 専用カットイン）
-- [ ] `要決定` キャラの公式名称（「ヨミ」で確定か、系統別の固有名を付けるか）
 - [ ] `要決定` 発注先（AI / 職人）と予算
 
 ---
 
-*v0.3 叩き台 / ヨミスロ companion 構想*
+## 14. 付録：読み師系1ライン プロンプト（試作版 / 生成用）
+
+> 状態：**生成前の試作版**。まず4〜5体を生成してトーン・一貫性を確認 → 問題なければ「確定版」に格上げし、残り3系統へ同形式で横展開する。
+> 固有名はすべて叩き台（語感は自由に差し替え可）。総称（種族名）はトーン確定後に当てる。
+
+### 14-1. 固有名案（図鑑表示用）
+
+モチーフは読み師系の魅力＝**美しい・知的**に合わせ「読み／眼／看破」で統一。
+
+| # | 内部キー | 段階 / variant | 固有名（案） | キャラ |
+|---|----------|----------------|--------------|--------|
+| 1 | `common_egg` | タマゴ | ヨミのタマゴ | 系統未確定。模様入りの卵 |
+| 2 | `common_baby` | 幼年期 | コヨミ | 無防備に可愛い幼体 |
+| 3 | `common_growth` | 成長期 | ヨミワラベ | 角と乳歯が生え始めた童 |
+| 4 | `reader_mature` | 成熟期 | メアキ | 鋭い目が開く。読み師に確定 |
+| 5 | `reader_perfect_a` | 完成期A・高設定特化 | 六眼（ロクガン） | 設定6まで見抜く複眼 |
+| 6 | `reader_perfect_b` | 完成期B・的中特化 | 心眼（シンガン） | 額の第三の目で読み当てる |
+| 7 | `reader_ultimate_a` | 究極体A・通常 | 天眼（テンガン） | 頭上に輝く大いなる眼 |
+| 8 | `reader_ultimate_a_rare` | 究極体A・レア | 煌眼（コウガン） | 眩い光をまとう美の極致（色違い相当） |
+| 9 | `reader_ultimate_b` | 究極体B・通常 | 千里（センリ） | 遠くまで見通す千里眼 |
+| 10 | `reader_ultimate_b_rare` | 究極体B・レア | 神読（カミヨミ） | 的中率80%超で到達。神域の読み手（§9-5） |
+
+### 14-2. ツール & ワークフロー（Nano Banana Pro 採用）
+
+最難所「進化ライン10体を"同じ生き物"に保つ」に強い **Nano Banana Pro（Gemini 3 Pro Image）** を採用。ただし汎用画像AIなので出力はそのままでは"本物のドット絵"にならず（グリッド不揃い・色数過多）、**ピクセル整えの工程が必須**。
+
+| 工程 | ツール | 役割 |
+|------|--------|------|
+| ① デザイン＆一貫性 | Nano Banana Pro | アンカー1体 → 対話で進化させ、同じDNAで全段階を生成 |
+| ② ピクセル整え | Pixel Snapper（Sprite Fusion 等） | グリッドにスナップ＋色数制限。AIドット絵のガタつき・色バブり除去 |
+| ③ 仕上げ | Aseprite | 64×64確定・透過・2コマidleを打つ・最終手直し |
+
+### 14-3. Nano Banana 生成フロー（① デザイン＆一貫性）
+
+段落を10本バラ投げするのではなく、**アンカー1体を作り込み → それを参照に対話で進化**させる（Nano Bananaの本領）。
+
+**ステップ0：毎回末尾に付けるクリーン化キーワード**
+```
+pixel art, 2d game sprite, clean pixel edges, limited 8-color palette, transparent background, front view, single character
+```
+
+**ステップ1：アンカー生成（コヨミ＝幼年期。種族DNAを確定）**
+```
+ドット絵風の小さなモンスターのキャラクターをデザインして。
+丸い卵型の体、左右に離れた大きな丸い目、額に小さな菱形（◇）の印。
+体色はエメラルド（明 #34d399 / 中 #10b981 / 影 #047857）、輪郭は濃い緑 #064e3b。
+無防備で可愛い幼体、ほっぺがほんのり赤い。
+（＋ ステップ0のキーワード）
+```
+
+**ステップ2：アンカーを参照に各段階へ進化**（直前の出力に続けて対話 or アンカー画像を添付）
+各指示の頭に「**いまの子を"同じ生き物"のまま**（卵型ボディ・離れた目・額の◇・エメラルド体色を維持）」を付ける。
+```
+[タマゴ]    この子が産まれる前の、同じ模様の卵にして。手足なし、少し揺れる感じ。
+[ヨミワラベ] 少し成長させて。小さな角と乳歯みたいな牙、短い手足を追加。やんちゃな雰囲気。
+[メアキ]    成熟させて。二本足で立ち、目が鋭く、流麗な角。紫アクセント #a78bfa を少し。美しく知的な賢者。
+[六眼]      完成期A。額〜眉に小さな光る複眼が並ぶ（多眼）。設定6まで見抜く雰囲気。紫アクセント。
+[心眼]      完成期B。額に大きく光る第三の目、まわりに照準のような光。読み当てる静かな雰囲気。
+[天眼]      究極体A。頭上に巨大な輝く眼と薄い光輪、長く優雅な角、ローブ状の体。気高く強い。
+[煌眼]      天眼のレア色違い。きらめく光と宝石のような装飾、金＋紫の輝き #facc15 + #7c3aed。最も美しく。
+[千里]      究極体B。望遠鏡のような片眼、星空のモチーフ、流線型の体。静かで鋭い。
+[神読]      究極体Bのレア。金色のオーラ #facc15、星座と神託のモチーフ、複数の穏やかな眼。神域の美と力。
+```
+
+### 14-4. 後処理（② ピクセル整え → ③ 仕上げ）
+
+1. Nano Banana の出力（高解像度）をダウンロード
+2. **Pixel Snapper** でグリッド検出 → **64×64相当にスナップ＋色数を8〜10色に制限**（ガタつき・色バブり除去）
+3. **Aseprite** で：64×64に確定／背景を透過に抜く／縁取り・はみ出しを整える／**2コマidle**（上下1pxバウンス＋まばたき）を打つ
+4. §10 の命名で書き出し（`common_baby.png` / `reader_mature.png` …＋ `_idle` スプライトシート）
+
+> **Tip**：Nano Bananaは正確な64×64や完全透過を直接は出しにくい。**大きめ＋単色背景で生成 → ②③で64×64・透過に整える**のが安定。一貫性が崩れたら、その箇所だけ「アンカー画像を参照に描き直して」と対話で修正。
+
+### 14-5. 汎用プロンプト（他ツール・単発生成用）
+
+Nano Banana以外（PixelLab / Retro Diffusion 等）や単発生成用に、段落プロンプトも残す。【共通前置き】＋各体の【追記】を連結して投げる。
+
+#### 共通前置き（毎回先頭に付ける）
+```
+16-bit pixel art creature sprite, single character centered, transparent background,
+64x64, crisp pixels, NO anti-aliasing, retro JRPG monster style.
+Recurring character: rounded egg-shaped body, two large round eyes,
+a small diamond mark on the forehead, emerald body palette
+(#34d399 light / #10b981 mid / #047857 shadow) with #064e3b outline.
+Dark background friendly (bright emerald, clear silhouette).
+Deliver: the static sprite PLUS a 2-frame idle sheet (subtle vertical bounce + a blink), same palette.
+```
+
+#### 追記（各体）
+```
+# 1 ヨミのタマゴ (common_egg)
+a speckled emerald egg, no limbs, slightly wobbling, cute and calm, faint diamond mark on the shell.
+
+# 2 コヨミ (common_baby)
+a round baby blob, oversized adorable eyes, no limbs, soft and innocent, tiny rosy cheeks.
+
+# 3 ヨミワラベ (common_growth)
+small budding horns, tiny baby fangs, stubby short limbs, curious and a bit mischievous.
+
+# 4 メアキ (reader_mature)
+BEAUTIFUL mystical sage stage, slender elegant silhouette standing on two legs,
+sharp narrow opening eyes, graceful flowing horns, violet accents (#a78bfa / #7c3aed), calm and intellectual.
+
+# 5 六眼 / Rokugan (reader_perfect_a, 高設定特化)
+BEAUTIFUL sage, slender elegant body, extra small glowing eyes opening across the brow (multi-eye motif),
+a subtle glowing "6" rune, sees through high settings, violet accents (#a78bfa / #7c3aed), refined.
+
+# 6 心眼 / Shingan (reader_perfect_b, 的中特化)
+BEAUTIFUL sage, slender elegant body, a prominent glowing third eye on the forehead,
+faint crosshair / target glints around it, predictive and serene, violet accents (#a78bfa / #7c3aed).
+
+# 7 天眼 / Tengan (reader_ultimate_a, 究極体A通常)
+BEAUTIFUL majestic final form, a large radiant single eye floating above the head, a thin halo,
+elegant long horns, flowing robe-like body, violet accents (#a78bfa / #7c3aed), graceful and powerful.
+
+# 8 煌眼 / Kougan (reader_ultimate_a_rare, 究極体Aレア = 色違い相当)
+RARE dazzling variant of the majestic eye form, shimmering light, ornate decorations,
+golden + violet glow (#facc15 + #7c3aed), the most beautiful, jewel-like highlights.
+
+# 9 千里 / Senri (reader_ultimate_b, 究極体B通常)
+BEAUTIFUL far-seeing final form, a sleek telescopic glowing eye, cosmic / starfield motifs,
+streamlined elegant body, violet accents (#a78bfa / #7c3aed), serene and sharp.
+
+# 10 神読 / Kamiyomi (reader_ultimate_b_rare, 究極体Bレア)
+DIVINE rare final form, glowing golden aura (#facc15), constellation and oracle motifs,
+multiple serene eyes in harmony, the most beautiful and powerful, sacred atmosphere.
+```
+
+---
+
+*v0.6 叩き台 / ヨミスロ companion 構想*
 *変更履歴:*
+*- v0.6 — §14を Nano Banana Pro 採用ワークフローに刷新（アンカー→対話進化＋Pixel Snapper→Aseprite後処理→64×64整え）。段落プロンプトは14-5に汎用として残置*
+*- v0.5 — 付録§14として読み師系1ライン（共通3＋読み師7＝10体）の固有名案＋コピペ用プロンプトを追加*
+*- v0.4 — 要決定を確定：解像度64×64 / idle2コマ / ご当地8地方ブロック / キャラ名は「ヨミ」固定せず固有名方式（§7・§8・§9・§13・冒頭注記）*
 *- v0.3 — コンプ欲強化。進化ツリーを深化（完成期2分岐・究極体分岐＝素体31体）＋色違い・ご当地ヨミ・機種図鑑のコレクション軸を追加（§4・§5・§9・§10・§13）*
 *- v0.2 — 成長期まで共通の一本道、成熟期から「魅力ベクトル（美/かっこいい/爽快/おもしろい）」で分岐する方針を明確化（§2・§4・§11）*
