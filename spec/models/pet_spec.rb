@@ -45,4 +45,91 @@ RSpec.describe Pet, type: :model do
       expect(pet.reload.stage).to eq("baby")
     end
   end
+
+  describe ".register!" do
+    let(:base) { Date.new(2026, 6, 1) }
+
+    it "creates the pet on the first register! for a token" do
+      expect { Pet.register!(voter_token: "new_token", recorded_on: base) }
+        .to change { Pet.count }.by(1)
+    end
+
+    it "hatches egg→baby on the first record" do
+      res = Pet.register!(voter_token: "t_hatch", recorded_on: base)
+      expect(res).to be_evolved
+      expect(res.from_stage).to eq("egg")
+      expect(res.to_stage).to eq("baby")
+      expect(res.pet.exp).to eq(1)
+      expect(res.pet.streak_days).to eq(1)
+    end
+
+    it "evolves to child by cumulative count (exp >= 7)" do
+      res = Pet.register!(voter_token: "t_count", recorded_on: base, count: 7)
+      expect(res.pet.exp).to eq(7)
+      expect(res.pet.streak_days).to eq(1)
+      expect(res.pet.stage).to eq("child")
+    end
+
+    it "evolves to child by streak (3 consecutive days) with low exp" do
+      Pet.register!(voter_token: "t_streak", recorded_on: base)
+      Pet.register!(voter_token: "t_streak", recorded_on: base + 1)
+      res = Pet.register!(voter_token: "t_streak", recorded_on: base + 2)
+      expect(res.pet.exp).to eq(3)
+      expect(res.pet.streak_days).to eq(3)
+      expect(res.pet.stage).to eq("child")
+    end
+
+    it "skips stages to the highest qualified (egg→adult)" do
+      res = Pet.register!(voter_token: "t_skip", recorded_on: base, count: 30)
+      expect(res).to be_evolved
+      expect(res.from_stage).to eq("egg")
+      expect(res.to_stage).to eq("adult")
+    end
+
+    it "does not grow streak for same-day records but still adds exp" do
+      Pet.register!(voter_token: "t_same", recorded_on: base)
+      res = Pet.register!(voter_token: "t_same", recorded_on: base)
+      expect(res.pet.exp).to eq(2)
+      expect(res.pet.streak_days).to eq(1)
+      expect(res).not_to be_evolved
+      expect(res.from_stage).to be_nil
+    end
+
+    it "resets streak to 1 after a gap of 2+ days" do
+      Pet.register!(voter_token: "t_gap", recorded_on: base)
+      Pet.register!(voter_token: "t_gap", recorded_on: base + 1)
+      res = Pet.register!(voter_token: "t_gap", recorded_on: base + 3)
+      expect(res.pet.streak_days).to eq(1)
+      expect(res.pet.exp).to eq(3)
+    end
+
+    it "ignores streak for back-dated records (recorded_on < last_recorded_on)" do
+      Pet.register!(voter_token: "t_back", recorded_on: base + 9)
+      res = Pet.register!(voter_token: "t_back", recorded_on: base)
+      expect(res.pet.streak_days).to eq(1)
+      expect(res.pet.last_recorded_on).to eq(base + 9)
+      expect(res.pet.exp).to eq(2)
+    end
+
+    it "never downgrades stage when the streak later resets" do
+      Pet.register!(voter_token: "t_keep", recorded_on: base, count: 30)
+      res = Pet.register!(voter_token: "t_keep", recorded_on: base + 10)
+      expect(res.pet.stage).to eq("adult")
+      expect(res).not_to be_evolved
+    end
+  end
+
+  describe "#apply_record" do
+    it "is a no-op for count < 1" do
+      pet = create(:pet)
+      expect(pet.apply_record(recorded_on: Date.current, count: 0)).to be_nil
+      expect(pet.exp).to eq(0)
+    end
+
+    it "accepts a string date" do
+      pet = create(:pet)
+      pet.apply_record(recorded_on: "2026-06-01")
+      expect(pet.last_recorded_on).to eq(Date.new(2026, 6, 1))
+    end
+  end
 end
