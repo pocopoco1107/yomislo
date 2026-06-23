@@ -5,11 +5,10 @@
 
 ## Overview
 
-ダークモードデフォルトの情報密度高めなUI。
-パチスロ店のホール感（暗い空間に光る情報）を意識しつつ、読みやすさとタップしやすさを最優先。
-手書き風フォントで遊び心を出しつつ、データ部分はシャープに。
+ダークモードデフォルトの情報密度高めなUI。**フルドラクエ/ファミコン調**（漆黒背景＋白枠コマンドウィンドウ＋ドット絵フォント＋▶メニューカーソル＋ドット絵アイコン＋四角ばった角）。
+パチスロ店のホール感（暗い空間に光る情報）を意識しつつ、読みやすさとタップしやすさを最優先。相棒ペット（ドット絵）と世界観を統一する。
 
-**トーン:** カジュアル・実用的。企業サイトではなく、打ち手の仲間が作ったツール感。
+**トーン:** レトロRPG（ドラクエのコマンドウィンドウ画面）。企業サイトではなく、打ち手の仲間が作ったツール感。ファミコン演出は全体に効かせるが、**記録UI（投票ボタン・機種リスト・フォーム）・本文・桁数値の可読性とタップ性は絶対に犠牲にしない**（記録UIにはコマンドウィンドウ枠を被せない）。
 
 ## Colors
 
@@ -28,6 +27,12 @@
 | `--destructive` | `#ef4444` | `#f87171` | 削除、エラー |
 | `--surface-inset` | `#f0f1f3` | `#0a0c12` | 凹みサーフェス（統計エリア） |
 | `--accent-muted` | `rgba(34,197,94,0.12)` | `rgba(74,222,128,0.12)` | アクセント背景（薄） |
+| `--rpg-frame` | `#1f2937` | `#e8eaf2` | コマンドウィンドウ枠（外縁。`.rpg-window`） |
+| `--rpg-frame-inner` | `#ffffff` | `#11131c` | コマンドウィンドウ枠（内側の明線） |
+| `--rpg-window-bg` | `#ffffff` | `#0a0c14` | コマンドウィンドウ内側の地色（`.rpg-window` が自前で適用） |
+
+> **角丸（`--radius`）はファミコン調で `0.2rem`（≈3px）に四角ばらせている**。`rounded-lg`≈3px / `rounded-md`≈1px。`.rpg-window` は 4px。`rounded-full`（ピル）は別系統で従来どおり。
+> **ダークパレットは漆黒寄り**（`--background: #06070e` / `--card: #0f1118` / `--surface-inset: #04050b`）。コマンドウィンドウは白枠で浮かせて読ませる。
 
 ### 設定ヒートマップ (setting-1 ~ setting-6)
 
@@ -64,19 +69,23 @@
 | 用途 | フォント | クラス / トークン | 備考 |
 |------|---------|------|------|
 | 本文・UI | `Inter` + `M PLUS 1` | `--font-sans` (デフォルト) | Latin/数値はInter、日本語はM PLUS 1。汎用Noto脱却。本文ベースは `font-weight: 500`（暗背景で痩せ防止） |
-| 数値表示 | `Inter` / `Geist Mono` | `.stat-number` | tabular-nums、データはシャープに |
-| ブランド/見出し装飾 | `Uzura` | `font-heading` (`--font-heading`) | 手書き風、丸みのある親しみやすさ |
-| ヒーロー装飾 | `ShigotoMemogaki` | inline 指定 | 手書きメモ風 |
-| 特殊装飾 | `Anzumoji` | inline 指定 | 等幅手書き |
+| 数値表示（一般） | `Inter` / `Geist Mono` | `.stat-number` | tabular-nums、データはシャープに。桁の多い金額・表内の数値はこれ |
+| 大きなスコア数値 | `DotGothic16` → `Inter` | `.score-num` | ポイント/順位/件数/ストリーク等「大きく見せる数字」**だけ**ドット絵に。小さい数字・桁の多い金額には使わない |
+| ブランド/見出し装飾 | `DotGothic16` | `font-heading` (`--font-heading`) | ドット絵でレトロRPG感。単一ウェイト(400)だと本文より細く見劣りするため**擬似ボールド(700)で太らせる**（下記ルール参照） |
+| ヒーロー装飾 | `ShigotoMemogaki` | inline 指定 | 手書きメモ風（補助） |
+| 特殊装飾 | `Anzumoji` | inline 指定 | 等幅手書き（補助） |
 
 ### タイポグラフィルール
-- **個性は見出しで出す**: 量産デザイン（AI臭）から脱する最速の手段はフォント。汎用デフォルト（Inter/Noto単独）に頼らず、ブランド見出し・ヒーロー・主要セクション見出しには `font-heading`（手書き風 Uzura）を当てる
-- **セクション見出しは `section_heading` ヘルパーで統一** ([app/helpers/ui_helper.rb](app/helpers/ui_helper.rb))。`<h2>` を手書きするのではなく `section_heading "店舗情報", accent: :yellow, extra: "mb-3"` を使う。`font-heading` 適用とアクセントバー色の意味統一を同時に担保する
-  - accent: `:primary` `:yellow` `:red` `:blue` `:green` `:confirmed`（色＝意味。乱用しない）／ size: `:sm`(14px) `:base`(16px) `:lg`(18px)
-- **データはシャープに、見出しは手描きで**: 数値・表・機種名・ラベルなどデータ部分には絶対に手書きフォントを使わない（可読性最優先）。`font-heading` は装飾的な見出しに限定
-- インラインの `style="font-family: 'Uzura'..."` は使わず、必ず `font-heading` ユーティリティを使う
-- 見出し: `font-bold`, `letter-spacing: -0.025em`
-- 数値: `.stat-number` (Inter/Geist Mono, tabular-nums, -0.04em, bold)
+- **個性は見出しで出す**: 量産デザイン（AI臭）から脱する最速の手段はフォント。汎用デフォルト（Inter/Noto単独）に頼らず、ブランド見出し・ヒーロー・主要セクション見出しには `font-heading`（ドット絵 DotGothic16）を当てる
+- **セクション見出しは `section_heading` ヘルパーで統一** ([app/helpers/ui_helper.rb](app/helpers/ui_helper.rb))。`<h2>` を手書きするのではなく `section_heading "店舗情報", accent: :yellow, extra: "mb-3"` を使う。`font-heading` 適用と**ドラクエ風 ▶ メニューカーソル**（accent色）を同時に担保する
+  - accent: `:primary` `:yellow` `:red` `:blue` `:green` `:confirmed`（▶カーソルの色＝意味。乱用しない）／ size: `:sm`(14px) `:base`(16px) `:lg`(18px)
+  - ▶カーソルを手書きする場合は `<span class="text-[0.7em] text-{accent}" aria-hidden="true">▶</span>`（右側に別要素を置く見出し等、ヘルパーに収まらない時のみ）
+- **ドット絵フォントは擬似ボールド(700)で太らせる**: DotGothic16 は単一ウェイト(400)で、そのままだと周囲の本文(500)より細く見劣りする。DotGothic16 はアウトライン系なので擬似ボールドでもドットが極端には潰れない。`.font-heading` 側で `font-weight: 700 !important`、`.score-num` も `font-weight: 700`。字間 `0.04em` で隣接ドットの結合を防ぐ（light/darkともに検証済）
+- **データはシャープに、見出しはドット絵で**: 数値・表・機種名・ラベルなどデータ部分・本文・桁の多い金額には絶対にドット絵フォントを使わない（可読性最優先）。`font-heading` は装飾的な見出しに、`.score-num` は「大きく見せるスコア数値」に限定
+- **小さい数字にドット絵を使わない**: DotGothic16 は `text-xs`(12px) 以下だと数字が潰れて読みにくい。`.score-num` は `text-sm`(14px) 以上の数値にだけ付ける。位/件 等の小さい単位サフィックスは `font-sans` でInterに戻す
+- インラインの `style="font-family: ..."` は使わず、必ず `font-heading` ユーティリティを使う
+- 見出し: `letter-spacing: -0.025em`（ただし `.font-heading` は weight 700・`0.04em` でドットの太さと可読性を両立）
+- 数値: 一般は `.stat-number` (Inter/Geist Mono, tabular-nums, -0.04em, bold)、大きなスコアは `.score-num` (DotGothic16, tabular-nums, weight 700)
 - テキスト階層: `--text-primary` → `--text-secondary` → `--text-tertiary`
 
 ### フォントサイズスケール
@@ -103,7 +112,7 @@
 ## Components
 
 ### ボタン
-- 角丸: `rounded-lg` (10px)
+- 角丸: `rounded-lg`（`--radius` により ≈3px の四角ばり。ファミコン調）
 - プライマリ: `bg-primary text-primary-foreground`
 - 記録ボタン（設定1~6）: 対応する `setting-*` カラー、選択時 `ring-2`
 - リセットボタン: `vote-yes` / `vote-no` カラー
@@ -113,10 +122,26 @@
 - placeholder: `text-muted-foreground`
 - フォーカス: `outline: 2px solid var(--ring)`, `outline-offset: 2px`
 
+### コマンドウィンドウ枠 (`.rpg-window`)
+- ドラクエ風の白い二重縁取り（box-shadowの多重リングで表現、追加DOMなし）。`--rpg-frame` / `--rpg-frame-inner` トークン使用、ライト/ダーク自動対応（暗背景で白枠が光る）
+- **`.rpg-window` 自身が地色 (`--rpg-window-bg`) と角丸4pxを持つ**。`bg-card` や `rounded-*` / `border-*` は **付けない**（背景・角丸・枠が競合するため、`.rpg-window` だけにする）
+- **読み取り系の主要面に広く使う**: プレイヤー/称号/相棒ペット/「あなたの順位」/進化トースト、ホームのランキング・収支サマリー、ランキングリスト、店舗ヘッダー 等
+- **記録UI・機種リスト・検索/フォーム・都道府県グリッド・vote行には使わない**（情報密度を圧迫し操作性を損なう）
+- お祝い用に枠＋グロウをまとめた `.rpg-window--glow` あり（box-shadowは単一プロパティのため `glow-primary` と二枚重ねできない。単独で使う）
+
+### ▶ メニューカーソル (`.dq-cursor` / `section_heading`)
+- ドラクエのコマンド選択カーソル。見出しには `section_heading`（accent色の静的▶）。「選択中」を示す要素（アクティブな下部ナビ等）には `.dq-cursor.dq-cursor--blink`（点滅、`reduced-motion`で停止）
+- 色は `currentColor` 継承（`.dq-cursor`）か accent 色（見出し）
+
+### ドット絵アイコン（下部ナビ等）
+- 8bitシルエット。`<svg viewBox="0 0 12 12" fill="currentColor" shape-rendering="crispEdges">` ＋ `<rect>` でピクセル感を出す。色は親の `text-*`（アクティブ=primary）を継承
+- 下部ナビ（[app/views/shared/_bottom_tab_bar.html.erb](app/views/shared/_bottom_tab_bar.html.erb)）: home=家 / search=虫眼鏡 / wallet=巾着 / user=人。アクティブはラベルに点滅▶
+
 ### 記録行 (machine_vote_row)
 - Turbo Frame で部分更新
 - コンパクトさ重視（縦幅を抑える）
 - 機種名 + 設定ボタン6個 + リセットボタン を1行に収める
+- **RPG装飾（ドット絵フォント・ウィンドウ枠）を持ち込まない**（記録動線の可読性・操作性が最優先）
 
 ### アコーディオン
 - アニメーション: `accordion-down` / `accordion-up` (0.2s ease-out)
@@ -172,7 +197,7 @@ AIコード生成は「ネット上の最頻出パターン＝中央値の見た
 ### AI臭チェックリスト（design-check と併用）
 - [ ] 見出しが汎用デフォルトフォントのまま放置されていないか（`font-heading` の検討）
 - [ ] 青〜紫グラデーション、レインボーを使っていないか（→ Don'ts）
-- [ ] 角丸が全要素 `rounded-xl`(16px) で機械的に統一されていないか（ヨミスロは10pxベース＋用途で使い分け）
+- [ ] 角丸が丸すぎないか（ヨミスロはファミコン調で `--radius`≈3px の四角ばり。`rounded-xl` 等の大きな丸みは使わない）
 - [ ] 「最適化」「集約」「ソリューション」等の空疎・硬いコピーが無いか（→ copy-reviewer）
 - [ ] カードが全部同一スタイルの単調グリッドになっていないか
 
@@ -181,7 +206,8 @@ AIコード生成は「ネット上の最頻出パターン＝中央値の見た
 ### Do's
 - セマンティックトークン (`--primary`, `--card` 等) を使う。ハードコードHEX値は避ける
 - 3段階サーフェスを用途で使い分ける
-- 数値は `.stat-number` クラスで統一
+- 一般の数値は `.stat-number`、大きなスコア数値は `.score-num`（ドット絵）で統一
+- RPGウィンドウ枠 (`.rpg-window`) は主役級のフィーチャーカードに限定して使う
 - コピー文は打ち手の口調 — 「ポチるだけ」「アテになる」「勝手にまとまる」
 - 設定カラーは必ず1=blue→6=redのヒートマップ順
 - ダークモードを常に考慮（CSS変数で自動切替）
@@ -197,3 +223,6 @@ AIコード生成は「ネット上の最頻出パターン＝中央値の見た
 - 企業サイト風の説明文を書かない — 友達に説明する感覚
 - AIっぽいテンプレートデザインにしない
 - Tailwind v4 で `hidden` と `flex`/`grid` を同じ要素に併用しない (表示切替は `style.display` で制御)
+- ドット絵フォント（DotGothic16）を本文・機種名・表・桁の多い金額・`text-xs`以下の小さい数字に使わない（可読性が落ちる）
+- ドット絵フォントを weight 400 のまま使わない（細く見劣りする → `.font-heading`/`.score-num` は 700 で太らせる）
+- RPGウィンドウ枠を記録UI・一覧行・フォームに使わない（操作性・情報密度を損なう）

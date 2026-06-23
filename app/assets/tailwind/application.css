@@ -14,13 +14,6 @@
   font-display: swap;
 }
 
-/* うずらフォント — ヒーロー見出し用 (丸みのある手書き風) */
-@font-face {
-  font-family: "Uzura";
-  src: url("/uzura.ttf") format("truetype");
-  font-display: swap;
-}
-
 /* ダークモード: .dark クラスベース (Stimulus theme コントローラで制御) */
 @custom-variant dark (&:is(.dark *));
 
@@ -53,7 +46,8 @@
   --chart-4: #eab308;
   --chart-5: #f97316;
   --chart-6: #ef4444;
-  --radius: 0.625rem;
+  /* ファミコン/ドラクエ調: 角を四角ばらせる (旧 0.625rem=10px → 3px) */
+  --radius: 0.2rem;
 
   /* パチスロ演出カラー (ロゴ準拠) */
   --slot-blue: #3b82f6;
@@ -79,23 +73,29 @@
   --setting-4: #eab308;
   --setting-5: #f97316;
   --setting-6: #ef4444;
+
+  /* RPGウィンドウ枠 (ドラクエ風二重縁取り)。ライト = 濃い外枠＋白い内側 */
+  --rpg-frame: #1f2937;
+  --rpg-frame-inner: #ffffff;
+  --rpg-window-bg: #ffffff;   /* コマンドウィンドウ内側の地色 (ライト) */
 }
 
 /* ============================================
    Dark mode (デフォルト)
    ============================================ */
 .dark {
-  --background: #0c0e14;
+  /* ファミコン/ドラクエ調: 背景を漆黒寄りに深める */
+  --background: #06070e;
   --foreground: #f4f4f5;
-  --card: #14161e;
+  --card: #0f1118;
   --card-foreground: #f4f4f5;
-  --popover: #1a1c24;
+  --popover: #14161f;
   --popover-foreground: #f4f4f5;
   --primary: #34d399;
-  --primary-foreground: #0c0e14;
-  --secondary: #1c1e28;
+  --primary-foreground: #06070e;
+  --secondary: #181b26;
   --secondary-foreground: #f4f4f5;
-  --muted: #1c1e28;
+  --muted: #181b26;
   --muted-foreground: #8b8d98;
   --accent: #34d399;
   --accent-foreground: #0c0e14;
@@ -123,7 +123,7 @@
   --text-tertiary: #6b6e7b;
   --accent-muted: rgba(74, 222, 128, 0.12);
   --accent-text: #6ee7b7;
-  --surface-inset: #0a0c12;
+  --surface-inset: #04050b;
   --glow-primary: rgba(52, 211, 153, 0.08);
   --vote-yes: #4ade80;
   --vote-no: #f87171;
@@ -136,6 +136,11 @@
   --setting-5: #fb923c;
   --setting-6: #f87171;
 
+  /* RPGウィンドウ枠。ダーク = 明るい外枠＋暗い内側 */
+  --rpg-frame: #e8eaf2;
+  --rpg-frame-inner: #11131c;
+  --rpg-window-bg: #0a0c14;   /* コマンドウィンドウ内側の地色 (ダーク=漆黒寄り) */
+
   color-scheme: dark;
 }
 
@@ -145,10 +150,11 @@
 @theme inline {
   --font-sans: 'Inter', 'M PLUS 1', sans-serif;
   --font-mono: 'Geist Mono', monospace;
-  /* 見出し装飾フォント — 手書き風 Uzura で「仲間が作ったツール感」を出す。
-     ブランド見出し/ヒーロー/主要セクション見出しにのみ使う（データ・数値には使わない）。
+  /* 見出し装飾フォント — ドット絵 DotGothic16 でレトロRPG/ゲーミング感を出す（相棒ペットのドット絵と世界観を統一）。
+     ブランド見出し/ヒーロー/主要セクション見出しにのみ使う（本文・機種名・表・桁数値には使わない＝可読性優先）。
+     単一ウェイト(400)のみ。font-bold を当てると擬似ボールドでドットがにじむため weight 400 で使う（下記 .font-heading 参照）。
      `font-heading` ユーティリティとして利用可能 (Tailwind v4 が --font-* を font-* に変換)。 */
-  --font-heading: 'Uzura', 'M PLUS 1', sans-serif;
+  --font-heading: 'DotGothic16', 'M PLUS 1', sans-serif;
 
   /* Semantic color tokens (CSS変数を参照) */
   --color-background: var(--background);
@@ -326,6 +332,14 @@
     letter-spacing: -0.025em;
   }
 
+  /* ドット絵見出しフォント (DotGothic16) は単一ウェイト(400)。そのままだと周囲の本文(500)より
+     細く見えて見劣りするため、擬似ボールド(700)で太らせる。DotGothic16 はアウトライン系なので
+     擬似ボールドでもドットが極端には潰れない。字間を少し空けて隣接ドットの結合を防ぐ。 */
+  .font-heading {
+    font-weight: 700 !important;
+    letter-spacing: 0.04em;
+  }
+
   /* Typography: 数値 tabular-nums */
   .tabular-nums {
     font-variant-numeric: tabular-nums;
@@ -370,6 +384,64 @@
   .glow-primary {
     box-shadow: 0 0 20px var(--glow-primary), 0 0 40px var(--glow-primary);
   }
+
+  /* スコア的な「大きな数値」用ドット絵フォント (RPGのスコア感)。
+     ポイント/順位/件数/ストリーク日数など大きく見せる数字にだけ付ける。
+     桁の多い収支金額・小さい補足数字・表内の数値には付けない (可読性優先 → .stat-number / Inter を使う)。 */
+  .score-num {
+    font-family: 'DotGothic16', 'Inter', monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  /* RPGウィンドウ枠 (ドラクエ風二重縁取り)。フィーチャーカード限定で使う。
+     追加DOMなしで box-shadow の多重リングで二重縁を表現。記録UI・リスト・フォームには付けない。 */
+  .rpg-window {
+    position: relative;
+    background: var(--rpg-window-bg);
+    border-radius: 4px;
+    box-shadow:
+      0 0 0 2px var(--rpg-frame),
+      0 0 0 4px var(--rpg-frame-inner),
+      0 0 0 6px var(--rpg-frame);
+  }
+  /* 進化/レベルアップ等のお祝い用: 枠＋プライマリグロウを 1 declaration にまとめる
+     (box-shadow は単一プロパティのため glow-primary と二枚重ねできない)。単独で使う。 */
+  .rpg-window--glow {
+    position: relative;
+    background: var(--rpg-window-bg);
+    border-radius: 4px;
+    box-shadow:
+      0 0 0 2px var(--rpg-frame),
+      0 0 0 4px var(--rpg-frame-inner),
+      0 0 0 6px var(--rpg-frame),
+      0 0 20px var(--glow-primary),
+      0 0 40px var(--glow-primary);
+  }
+
+  /* ドラクエ風の▶選択カーソル。点滅は「選択中」を示す要素(アクティブなナビ等)に。
+     見出しでは点滅させず静的に置く (section_heading 側で制御)。 */
+  .dq-cursor::before {
+    content: "▶";
+    display: inline-block;
+    margin-right: 0.4em;
+    font-size: 0.72em;
+    line-height: 1;
+    transform: translateY(-0.05em);
+    color: currentColor;
+  }
+  .dq-cursor--blink::before {
+    animation: dq-blink 1.1s steps(1, end) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dq-cursor--blink::before { animation: none; }
+  }
+}
+
+@keyframes dq-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
 }
 
 /* ============================================

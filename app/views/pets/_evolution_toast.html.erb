@@ -1,5 +1,5 @@
 <%# 進化お祝いトースト。dismissable で自動フェードアウト、pet で一度跳ねる %>
-<div class="pointer-events-auto bg-card border border-primary/30 shadow-lg rounded-lg px-4 py-3 flex items-center gap-3 animate-fade-in glow-primary"
+<div class="pointer-events-auto rpg-window--glow px-4 py-3 flex items-center gap-3 animate-fade-in"
      data-controller="dismissable pet" data-pet-evolved-value="true" data-dismissable-delay-value="4000">
   <span class="pet pet--idle shrink-0" data-pet-target="sprite">
     <%= image_tag pet.image_name, alt: pet.alt_text, width: 40, height: 40, draggable: false, class: "select-none" %>

@@ -1,12 +1,12 @@
 module UiHelper
-  # アクセントバーの色トークン (意味を固定して色の乱用を防ぐ)
-  SECTION_HEADING_ACCENTS = {
-    primary: "bg-primary",
-    yellow: "bg-slot-yellow",
-    red: "bg-slot-red",
-    blue: "bg-slot-blue",
-    green: "bg-slot-green",
-    confirmed: "bg-confirmed"
+  # ドラクエ風 ▶ メニューカーソルの色トークン (意味を固定して色の乱用を防ぐ)
+  SECTION_HEADING_CURSORS = {
+    primary: "text-primary",
+    yellow: "text-slot-yellow",
+    red: "text-slot-red",
+    blue: "text-slot-blue",
+    green: "text-slot-green",
+    confirmed: "text-confirmed"
   }.freeze
 
   SECTION_HEADING_SIZES = {
@@ -15,8 +15,8 @@ module UiHelper
     lg: "text-lg"
   }.freeze
 
-  # 手書き風 font-heading を当てたセクション見出し。
-  # 「打ち手の仲間が作ったツール感」を出すため、装飾的な見出しに限定して使う。
+  # ドット絵 font-heading + ドラクエ風 ▶ カーソルを当てたセクション見出し。
+  # RPG/ファミコンの世界観を出すため、装飾的な見出しに限定して使う。
   # 機種名・数値・表データには絶対に使わない (可読性優先)。
   #
   #   section_heading "店舗情報"
@@ -24,18 +24,16 @@ module UiHelper
   #   section_heading "天井・期待値", accent: :primary, size: :base
   def section_heading(text, accent: nil, size: :sm, tag: :h2, extra: nil, **options)
     size_class = SECTION_HEADING_SIZES.fetch(size, SECTION_HEADING_SIZES[:sm])
+    # font-bold は付けない: ウェイト正規化(700)は CSS の .font-heading 側で行う。
     classes = [
-      "font-heading font-bold tracking-tight text-foreground flex items-center gap-2",
+      "font-heading tracking-tight text-foreground flex items-center gap-1.5",
       size_class,
       extra
     ].compact.join(" ")
 
-    bar =
-      if accent
-        accent_class = SECTION_HEADING_ACCENTS.fetch(accent, SECTION_HEADING_ACCENTS[:primary])
-        content_tag(:span, "", class: "w-1 h-4 rounded-full shrink-0 #{accent_class}")
-      end
+    cursor_color = SECTION_HEADING_CURSORS.fetch(accent || :primary, SECTION_HEADING_CURSORS[:primary])
+    cursor = content_tag(:span, "▶", class: "shrink-0 text-[0.7em] #{cursor_color}", "aria-hidden": "true")
 
-    content_tag(tag, safe_join([ bar, text ].compact), class: classes, **options)
+    content_tag(tag, safe_join([ cursor, text ]), class: classes, **options)
   end
 end

@@ -27,8 +27,8 @@
       <%= hero_tagline_html %>
     </p>
     <div class="flex items-center gap-3 text-xs text-muted-foreground shrink-0 md:text-xs">
-      <span><span class="stat-number text-slot-red"><%= number_with_delimiter(@today_votes_count) %></span> 今日</span>
-      <span><span class="stat-number text-slot-blue"><%= number_with_delimiter(@total_votes_count) %></span> 累計</span>
+      <span><span class="score-num text-sm text-slot-red"><%= number_with_delimiter(@today_votes_count) %></span> 今日</span>
+      <span><span class="score-num text-sm text-slot-blue"><%= number_with_delimiter(@total_votes_count) %></span> 累計</span>
       <% if @pet %><%= render "pets/pet", pet: @pet, variant: :inline %><% end %>
     </div>
   </div>
@@ -210,9 +210,9 @@
       </div>
 
       <!-- Weekly High Setting Machines -->
-      <div class="rounded-lg bg-card border-b border-border/50 p-3">
-        <h2 class="text-sm font-heading font-bold text-foreground mb-2 flex items-center gap-1.5">
-          <div class="h-1.5 w-1.5 rounded-full bg-slot-red"></div>
+      <div class="rpg-window p-3">
+        <h2 class="text-sm font-heading text-foreground mb-2 flex items-center gap-1.5">
+          <span class="text-[0.7em] text-slot-red" aria-hidden="true">▶</span>
           今週の高設定ランキング
         </h2>
         <% if @weekly_high_setting_machines.any? %>
@@ -240,9 +240,9 @@
 
       <!-- Trending Shops -->
       <% if @recommendations.present? %>
-        <div class="rounded-lg bg-card border-b border-border/50 p-3">
-          <h2 class="text-sm font-heading font-bold text-foreground mb-2 flex items-center gap-1.5">
-            <div class="h-1.5 w-1.5 rounded-full bg-slot-red"></div>
+        <div class="rpg-window p-3">
+          <h2 class="text-sm font-heading text-foreground mb-2 flex items-center gap-1.5">
+            <span class="text-[0.7em] text-slot-red" aria-hidden="true">▶</span>
             トレンド店舗
           </h2>
           <ol class="space-y-1.5">
@@ -271,9 +271,9 @@
     <div data-home-tab-target="zoneB" class="zone-hidden sm:col-span-2">
       <div class="sm:sticky sm:top-20 space-y-4">
 
-        <!-- User Card -->
+        <!-- User Card (RPGのプレイヤーカード風) -->
         <% if @voter_label %>
-          <%= link_to voter_status_path, class: "block rounded-lg bg-card border border-border/50 p-3 hover:border-primary/50 transition-all" do %>
+          <%= link_to voter_status_path, class: "block rpg-window p-3 transition-all hover:brightness-110 active:scale-[0.99]" do %>
             <div class="flex items-center justify-between">
               <div class="min-w-0">
                 <p class="text-sm font-semibold text-foreground truncate"><%= @voter_label %></p>
@@ -315,8 +315,11 @@
 
         <!-- Play Summary + CTA -->
         <% if @my_play_summary %>
-          <div class="rounded-lg bg-card border-l-2 border-l-primary p-4">
-            <h2 class="text-sm font-heading font-bold text-foreground mb-2">今月の収支</h2>
+          <div class="rpg-window p-4">
+            <h2 class="text-sm font-heading text-foreground mb-2 flex items-center gap-1.5">
+              <span class="text-[0.7em] text-primary" aria-hidden="true">▶</span>
+              今月の収支
+            </h2>
             <div class="flex items-center gap-6 mb-3">
               <span class="text-xl font-bold tabular-nums <%= @my_play_summary[:total] >= 0 ? 'text-primary' : 'text-destructive' %>">
                 <%= @my_play_summary[:total] >= 0 ? '+' : '' %><%= number_with_delimiter(@my_play_summary[:total]) %>円
@@ -333,8 +336,11 @@
             <% end %>
           </div>
         <% else %>
-          <div class="rounded-lg bg-card border-l-2 border-l-slot-yellow p-4">
-            <h2 class="text-sm font-heading font-bold text-foreground mb-3">収支カレンダー</h2>
+          <div class="rpg-window p-4">
+            <h2 class="text-sm font-heading text-foreground mb-3 flex items-center gap-1.5">
+              <span class="text-[0.7em] text-slot-yellow" aria-hidden="true">▶</span>
+              収支カレンダー
+            </h2>
             <%= link_to play_records_path, class: "inline-flex items-center justify-center gap-1.5 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all duration-150 min-h-[44px] w-full" do %>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 4v16m8-8H4" stroke-linecap="round"/></svg>
               収支を記録する
@@ -343,9 +349,9 @@
         <% end %>
 
         <!-- Points Ranking -->
-        <div class="rounded-lg bg-card border-b border-border/50 p-3">
-          <h2 class="text-sm font-heading font-bold text-foreground mb-2 flex items-center gap-1.5">
-            <div class="h-1.5 w-1.5 rounded-full bg-slot-yellow"></div>
+        <div class="rpg-window p-3">
+          <h2 class="text-sm font-heading text-foreground mb-2 flex items-center gap-1.5">
+            <span class="text-[0.7em] text-slot-yellow" aria-hidden="true">▶</span>
             ポイントランキング
           </h2>
           <% if @points_ranking.any? %>

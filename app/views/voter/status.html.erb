@@ -1,10 +1,7 @@
 <% content_for(:title) { "マイステータス | ヨミスロ" } %>
 
 <section class="max-w-2xl mx-auto">
-  <h1 class="font-heading text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-    <span class="w-1 h-5 bg-primary rounded-full"></span>
-    マイステータス
-  </h1>
+  <%= section_heading "マイステータス", size: :lg, tag: :h1, extra: "mb-4" %>
 
   <% if @has_votes %>
     <!-- トークンバックアップ (目立つ位置に) -->
@@ -28,14 +25,14 @@
     <% end %>
 
     <!-- Voter Identity + Display Name -->
-    <div class="bg-card rounded-lg border-b border-border/50 p-4 mb-4">
+    <div class="rpg-window p-4 mb-4">
       <div class="flex items-center justify-between gap-3">
         <div class="min-w-0">
           <p class="text-xl font-bold text-primary truncate"><%= @voter_label %></p>
           <p class="text-[11px] text-muted-foreground mt-0.5">ID: <%= cookies[:voter_token]&.last(4) %></p>
         </div>
         <div class="flex items-center gap-2">
-          <span class="stat-number text-lg text-slot-yellow"><%= @profile.points %></span>
+          <span class="score-num text-lg text-slot-yellow"><%= @profile.points %></span>
           <span class="text-xs text-muted-foreground">pt</span>
         </div>
       </div>
@@ -59,8 +56,8 @@
       <%= render "pets/pet", pet: @pet, variant: :card %>
     <% end %>
 
-    <!-- 称号 + ポイント進捗 -->
-    <div class="bg-card rounded-lg border-l-2 border-l-slot-yellow p-4 mb-4">
+    <!-- 称号 + ポイント進捗 (RPGの Lv / EXP ゲージ風) -->
+    <div class="rpg-window p-4 mb-4">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-[10px] text-muted-foreground uppercase tracking-wider">称号</p>
@@ -71,7 +68,7 @@
       <% if next_rank %>
         <div class="mt-3">
           <div class="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-            <span>次: <%= next_rank[:title] %></span>
+            <span>NEXT: <%= next_rank[:title] %></span>
             <span>あと<%= next_rank[:points_needed] %>pt<%= " / 的中率#{next_rank[:accuracy_needed]}%以上" if next_rank[:accuracy_needed] %></span>
           </div>
           <%
@@ -81,8 +78,9 @@
             range = [next_min - current_min, 1].max
             progress = [(@profile.points - current_min).to_f / range * 100, 100].min
           %>
-          <div class="h-1.5 bg-secondary rounded-full overflow-hidden">
-            <div class="h-full bg-primary rounded-full transition-all" style="width: <%= progress %>%"></div>
+          <%# EXPゲージ: 角ばった HUD 風 + プライマリのグロウ %>
+          <div class="h-2 bg-surface-inset rounded-sm overflow-hidden border border-border/60">
+            <div class="h-full bg-primary glow-primary transition-all duration-500" style="width: <%= progress %>%"></div>
           </div>
         </div>
       <% end %>
@@ -91,29 +89,26 @@
     <!-- Stats -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
       <div class="bg-surface-inset rounded-lg p-3 text-center">
-        <p class="stat-number text-xl text-primary"><%= @total_votes_count %></p>
+        <p class="score-num text-xl text-primary"><%= @total_votes_count %></p>
         <p class="text-[10px] text-muted-foreground mt-0.5">設定記録</p>
       </div>
       <div class="bg-surface-inset rounded-lg p-3 text-center">
-        <p class="stat-number text-xl text-primary"><%= @play_records_count %></p>
+        <p class="score-num text-xl text-primary"><%= @play_records_count %></p>
         <p class="text-[10px] text-muted-foreground mt-0.5">収支記録</p>
       </div>
       <div class="bg-surface-inset rounded-lg p-3 text-center">
-        <p class="stat-number text-xl text-primary"><%= @shops_count %></p>
+        <p class="score-num text-xl text-primary"><%= @shops_count %></p>
         <p class="text-[10px] text-muted-foreground mt-0.5">記録店舗</p>
       </div>
       <div class="bg-surface-inset rounded-lg p-3 text-center">
-        <p class="stat-number text-xl text-primary"><%= @prefectures_count %></p>
+        <p class="score-num text-xl text-primary"><%= @prefectures_count %></p>
         <p class="text-[10px] text-muted-foreground mt-0.5">記録都道府県</p>
       </div>
     </div>
 
     <!-- ポイントの貯め方 -->
     <div class="bg-card rounded-lg border-b border-border/50 p-4 mb-4">
-      <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-        <span class="w-1 h-4 bg-slot-yellow rounded-full"></span>
-        ポイントの貯め方
-      </h2>
+      <%= section_heading "ポイントの貯め方", accent: :yellow, extra: "mb-3" %>
       <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
         <div class="flex items-center justify-between">
           <span class="text-muted-foreground">設定/リセット記録</span>
@@ -149,13 +144,13 @@
     <!-- ストリーク -->
     <div class="bg-card rounded-lg border-b border-border/50 p-4 mb-4">
       <div class="flex items-center justify-between mb-3">
-        <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
-          <span class="w-1 h-4 bg-slot-red rounded-full"></span>
+        <h2 class="font-heading text-sm tracking-tight text-foreground flex items-center gap-1.5">
+          <span class="text-[0.7em] text-slot-red" aria-hidden="true">▶</span>
           連続記録ストリーク
         </h2>
         <div class="flex items-center gap-1.5">
           <span class="text-2xl">🔥</span>
-          <span class="text-xl font-bold tabular-nums text-foreground"><%= @profile.current_streak %></span>
+          <span class="score-num text-2xl text-foreground"><%= @profile.current_streak %></span>
           <span class="text-xs text-muted-foreground">日連続</span>
         </div>
       </div>
@@ -204,10 +199,7 @@
 
     <!-- Badges -->
     <div class="mb-4">
-      <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-        <span class="w-1 h-4 bg-setting-4 rounded-full"></span>
-        実績バッジ
-      </h2>
+      <%= section_heading "実績バッジ", accent: :yellow, extra: "mb-3" %>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <% @badges.each do |badge| %>
           <div class="flex items-center gap-3 bg-card rounded-lg border-b border-border/50 p-3 <%= 'opacity-40' unless badge[:earned] %>">
@@ -232,10 +224,7 @@
 
     <!-- Recent Votes -->
     <div class="mb-4">
-      <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-        <span class="w-1 h-4 bg-vote-yes rounded-full"></span>
-        最近の記録履歴
-      </h2>
+      <%= section_heading "最近の記録履歴", accent: :green, extra: "mb-3" %>
       <% if @recent_votes.any? %>
         <div class="bg-card rounded-lg divide-y divide-border/50 border-b border-border/50">
           <% @recent_votes.each do |vote| %>
@@ -271,8 +260,8 @@
     <% if @profile.display_name.present? %>
       <details class="bg-card rounded-lg border-b border-border/50 mb-4">
         <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 transition-colors min-h-[44px]">
-          <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
-            <span class="w-1 h-4 bg-slot-blue rounded-full"></span>
+          <h2 class="font-heading text-sm tracking-tight text-foreground flex items-center gap-1.5">
+            <span class="text-[0.7em] text-slot-blue" aria-hidden="true">▶</span>
             トークンバックアップ
           </h2>
           <svg class="w-4 h-4 text-muted-foreground transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -291,6 +280,11 @@
     <% end %>
 
   <% else %>
+    <!-- 相棒ペット (未記録でも卵を表示) -->
+    <% if @pet %>
+      <%= render "pets/pet", pet: @pet, variant: :card %>
+    <% end %>
+
     <!-- No votes yet -->
     <div class="bg-card rounded-lg border-b border-border/50 p-8 text-center">
       <p class="text-4xl mb-3">🎰</p>

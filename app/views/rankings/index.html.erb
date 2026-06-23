@@ -1,10 +1,7 @@
 <% content_for(:title) { "記録ランキング | ヨミスロ" } %>
 
 <section class="max-w-2xl mx-auto" data-controller="ranking-tab">
-  <h1 class="font-heading text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-    <span class="w-1 h-5 bg-slot-yellow rounded-full"></span>
-    記録ランキング
-  </h1>
+  <%= section_heading "記録ランキング", accent: :yellow, size: :lg, tag: :h1, extra: "mb-4" %>
 
   <%# === Period Tabs === %>
   <div class="flex gap-1 bg-secondary rounded-lg p-1 mb-4">
@@ -64,18 +61,18 @@
 
   <%# === My Rank Card === %>
   <% if @my_rank %>
-    <div class="bg-card rounded-lg p-4 mb-4 border-l-2 border-l-primary/30">
+    <div class="rpg-window p-4 mb-4">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-xs text-muted-foreground">あなたの順位</p>
-          <p class="text-2xl font-bold text-primary tabular-nums mt-0.5">
-            <%= @my_rank.rank_position %><span class="text-sm font-normal text-muted-foreground ml-0.5">位</span>
+          <p class="score-num text-2xl text-primary mt-0.5">
+            <%= @my_rank.rank_position %><span class="text-sm font-normal font-sans text-muted-foreground ml-0.5">位</span>
           </p>
         </div>
         <div class="text-right">
           <p class="text-xs text-muted-foreground">記録数</p>
-          <p class="text-2xl font-bold text-foreground tabular-nums mt-0.5">
-            <%= @my_rank.vote_count %><span class="text-sm font-normal text-muted-foreground ml-0.5">件</span>
+          <p class="score-num text-2xl text-foreground mt-0.5">
+            <%= @my_rank.vote_count %><span class="text-sm font-normal font-sans text-muted-foreground ml-0.5">件</span>
           </p>
         </div>
       </div>
@@ -92,7 +89,7 @@
 
   <%# === Rankings List === %>
   <% if @rankings.any? %>
-    <div class="bg-card rounded-lg divide-y divide-border/50 border-b border-border/50">
+    <div class="rpg-window divide-y divide-border/50 overflow-hidden">
       <% @rankings.each do |entry| %>
         <%
           is_me = cookies[:voter_token].present? && entry.voter_token == cookies[:voter_token]

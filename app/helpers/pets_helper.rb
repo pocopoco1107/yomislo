@@ -1,21 +1,10 @@
 module PetsHelper
-  # mood ごとの枠線色 (DESIGN.md トークン。色=意味)
-  MOOD_RING = {
-    genki:  "border-l-primary",
-    normal: "border-l-border",
-    lonely: "border-l-slot-blue"
-  }.freeze
-
   # mood ごとの文言テキスト色
   MOOD_TEXT = {
     genki:  "text-primary",
     normal: "text-muted-foreground",
     lonely: "text-slot-blue"
   }.freeze
-
-  def pet_mood_ring(mood)
-    MOOD_RING.fetch(mood, MOOD_RING[:normal])
-  end
 
   def pet_mood_text(mood)
     MOOD_TEXT.fetch(mood, MOOD_TEXT[:normal])
