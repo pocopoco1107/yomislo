@@ -84,10 +84,10 @@
    Dark mode (デフォルト)
    ============================================ */
 .dark {
-  /* ファミコン/ドラクエ調: 背景を漆黒寄りに深める */
-  --background: #06070e;
+  /* 8bitレトロ: 背景は漆黒寄り。カードは少し持ち上げて境界（＝クリック対象）を見やすく */
+  --background: #07080f;
   --foreground: #f4f4f5;
-  --card: #0f1118;
+  --card: #14161f;
   --card-foreground: #f4f4f5;
   --popover: #14161f;
   --popover-foreground: #f4f4f5;
@@ -123,7 +123,7 @@
   --text-tertiary: #6b6e7b;
   --accent-muted: rgba(74, 222, 128, 0.12);
   --accent-text: #6ee7b7;
-  --surface-inset: #04050b;
+  --surface-inset: #0c0e16;
   --glow-primary: rgba(52, 211, 153, 0.08);
   --vote-yes: #4ade80;
   --vote-no: #f87171;

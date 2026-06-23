@@ -15,8 +15,8 @@
     <%= image_tag pet.image_name, alt: pet.alt_text, width: 28, height: 28, draggable: false, class: "select-none" %>
   <% end %>
 <% else %>
-  <%# マイステータス: 大きめカード。RPGのメッセージウィンドウに相棒がいる感。クリックで跳ねる + 進化演出 %>
-  <div class="rpg-window p-4 mb-4"
+  <%# マイステータス: 大きめカード。クリックで跳ねる + 進化演出 %>
+  <div class="bg-card rounded-lg border border-border/60 p-4 mb-4"
        data-controller="pet" data-pet-evolved-value="<%= evolved %>">
     <div class="flex items-center gap-4">
       <%# クリックで跳ねる装飾的インタラクション。ラベルは内側 img の alt に集約 %>

@@ -210,7 +210,7 @@
       </div>
 
       <!-- Weekly High Setting Machines -->
-      <div class="rpg-window p-3">
+      <div class="bg-card rounded-lg border border-border/60 p-3">
         <h2 class="text-sm font-heading text-foreground mb-2 flex items-center gap-1.5">
           <span class="text-[0.7em] text-slot-red" aria-hidden="true">▶</span>
           今週の高設定ランキング
@@ -240,7 +240,7 @@
 
       <!-- Trending Shops -->
       <% if @recommendations.present? %>
-        <div class="rpg-window p-3">
+        <div class="bg-card rounded-lg border border-border/60 p-3">
           <h2 class="text-sm font-heading text-foreground mb-2 flex items-center gap-1.5">
             <span class="text-[0.7em] text-slot-red" aria-hidden="true">▶</span>
             トレンド店舗
@@ -273,7 +273,7 @@
 
         <!-- User Card (RPGのプレイヤーカード風) -->
         <% if @voter_label %>
-          <%= link_to voter_status_path, class: "block rpg-window p-3 transition-all hover:brightness-110 active:scale-[0.99]" do %>
+          <%= link_to voter_status_path, class: "block bg-card rounded-lg border border-border/60 p-3 transition-all hover:border-primary/60 active:scale-[0.99]" do %>
             <div class="flex items-center justify-between">
               <div class="min-w-0">
                 <p class="text-sm font-semibold text-foreground truncate"><%= @voter_label %></p>
@@ -315,7 +315,7 @@
 
         <!-- Play Summary + CTA -->
         <% if @my_play_summary %>
-          <div class="rpg-window p-4">
+          <div class="bg-card rounded-lg border-l-2 border-l-primary border-y border-r border-border/40 p-4">
             <h2 class="text-sm font-heading text-foreground mb-2 flex items-center gap-1.5">
               <span class="text-[0.7em] text-primary" aria-hidden="true">▶</span>
               今月の収支
@@ -336,7 +336,7 @@
             <% end %>
           </div>
         <% else %>
-          <div class="rpg-window p-4">
+          <div class="bg-card rounded-lg border-l-2 border-l-slot-yellow border-y border-r border-border/40 p-4">
             <h2 class="text-sm font-heading text-foreground mb-3 flex items-center gap-1.5">
               <span class="text-[0.7em] text-slot-yellow" aria-hidden="true">▶</span>
               収支カレンダー
@@ -349,7 +349,7 @@
         <% end %>
 
         <!-- Points Ranking -->
-        <div class="rpg-window p-3">
+        <div class="bg-card rounded-lg border border-border/60 p-3">
           <h2 class="text-sm font-heading text-foreground mb-2 flex items-center gap-1.5">
             <span class="text-[0.7em] text-slot-yellow" aria-hidden="true">▶</span>
             ポイントランキング

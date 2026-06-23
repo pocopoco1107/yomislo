@@ -61,7 +61,7 @@
 
   <%# === My Rank Card === %>
   <% if @my_rank %>
-    <div class="rpg-window p-4 mb-4">
+    <div class="bg-card rounded-lg border-l-2 border-l-primary/40 border-y border-r border-border/40 p-4 mb-4">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-xs text-muted-foreground">あなたの順位</p>
@@ -89,7 +89,7 @@
 
   <%# === Rankings List === %>
   <% if @rankings.any? %>
-    <div class="rpg-window divide-y divide-border/50 overflow-hidden">
+    <div class="bg-card rounded-lg border border-border/60 divide-y divide-border/50 overflow-hidden">
       <% @rankings.each do |entry| %>
         <%
           is_me = cookies[:voter_token].present? && entry.voter_token == cookies[:voter_token]
