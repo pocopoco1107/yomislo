@@ -53,3 +53,16 @@ ja:
       long: "%Y年%m月%d日(%a) %H:%M"
     am: "午前"
     pm: "午後"
+  views:
+    pagination:
+      first: "« 最初"
+      last: "最後 »"
+      previous: "‹ 前"
+      next: "次 ›"
+      truncate: "…"
+  helpers:
+    page_entries_info:
+      one_page:
+        display_entries: "全%{count}件"
+      more_pages:
+        display_entries: "%{total}件中 %{first}〜%{last}件"
