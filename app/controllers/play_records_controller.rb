@@ -104,10 +104,10 @@ class PlayRecordsController < ApplicationController
         format.turbo_stream { render_shop_machine_update }
         format.html do
           if params[:return_to].present? && params[:return_to].start_with?("/")
-            redirect_to params[:return_to], notice: "収支を記録しました"
+            redirect_to params[:return_to], notice: pet_notice("収支を記録しました")
           else
             redirect_to play_records_path(month: @record.played_on.strftime("%Y-%m")),
-                        notice: "収支を記録しました"
+                        notice: pet_notice("収支を記録しました")
           end
         end
       end
@@ -194,10 +194,10 @@ class PlayRecordsController < ApplicationController
         end
       end
       # 新規に作られた収支記録 + Vote の合計件数だけペットを成長させる (同日なので1回呼び出し)
-      grow_companion(recorded_on: played_on, count: records.size + created_votes)
+      @pet_result = grow_companion(recorded_on: played_on, count: records.size + created_votes)
       month = played_on.to_s[0..6]
       redirect_to play_records_path(month: month),
-                  notice: "#{records.size}件の収支を記録しました"
+                  notice: pet_notice("#{records.size}件の収支を記録しました")
     else
       redirect_to play_records_path, alert: errors.uniq.join(", ").presence || "記録する内容がありません"
     end
@@ -205,6 +205,13 @@ class PlayRecordsController < ApplicationController
 
   def require_voter_token
     voter_token # ensure token exists
+  end
+
+  # 進化したときだけ通知文の頭にお祝いを付ける
+  def pet_notice(base)
+    return base unless @pet_result&.evolved?
+
+    "🎉 相棒が#{@pet_result.pet.stage_label}に進化！ #{base}"
   end
 
   def set_play_record

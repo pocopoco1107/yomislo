@@ -6,6 +6,7 @@ class VoterController < ApplicationController
 
     @profile = VoterProfile.find_by(voter_token: token)
     @has_votes = @profile.present? && @profile.total_votes > 0
+    @pet = Pet.find_by(voter_token: token)
 
     return unless @has_votes
 

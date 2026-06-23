@@ -29,6 +29,7 @@
     <div class="flex items-center gap-3 text-xs text-muted-foreground shrink-0 md:text-xs">
       <span><span class="stat-number text-slot-red"><%= number_with_delimiter(@today_votes_count) %></span> 今日</span>
       <span><span class="stat-number text-slot-blue"><%= number_with_delimiter(@total_votes_count) %></span> 累計</span>
+      <% if @pet %><%= render "pets/pet", pet: @pet, variant: :inline %><% end %>
     </div>
   </div>
 </section>

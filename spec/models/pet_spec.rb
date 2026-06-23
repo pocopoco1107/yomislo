@@ -132,4 +132,59 @@ RSpec.describe Pet, type: :model do
       expect(pet.last_recorded_on).to eq(Date.new(2026, 6, 1))
     end
   end
+
+  describe "#mood" do
+    let(:today) { Date.new(2026, 6, 10) }
+
+    it "is lonely when never recorded" do
+      expect(build(:pet, last_recorded_on: nil).mood(today)).to eq(:lonely)
+    end
+
+    it "is genki within 3 days" do
+      expect(build(:pet, last_recorded_on: today - 3).mood(today)).to eq(:genki)
+    end
+
+    it "is normal between 4 and 7 days" do
+      expect(build(:pet, last_recorded_on: today - 5).mood(today)).to eq(:normal)
+    end
+
+    it "is lonely at 8+ days" do
+      expect(build(:pet, last_recorded_on: today - 8).mood(today)).to eq(:lonely)
+    end
+  end
+
+  describe "#next_evolution" do
+    it "reports remaining count and days to the next stage" do
+      pet = build(:pet, stage: :baby, exp: 1, streak_days: 1)
+      evo = pet.next_evolution
+      expect(evo[:stage_label]).to eq("成長期")
+      expect(evo[:exp_remaining]).to eq(6)
+      expect(evo[:days_remaining]).to eq(2)
+    end
+
+    it "omits days for the egg→baby step (no streak threshold)" do
+      evo = build(:pet, stage: :egg).next_evolution
+      expect(evo[:exp_remaining]).to eq(1)
+      expect(evo[:days_remaining]).to be_nil
+    end
+
+    it "returns nil at the final stage" do
+      expect(build(:pet, stage: :adult).next_evolution).to be_nil
+    end
+  end
+
+  describe "labels and image" do
+    it "returns the Japanese stage label" do
+      expect(build(:pet, stage: :child).stage_label).to eq("成長期")
+    end
+
+    it "points at the stage image under companions/" do
+      expect(build(:pet, stage: :adult).image_name).to eq("companions/adult.png")
+    end
+
+    it "builds an accessible alt text" do
+      pet = build(:pet, stage: :baby, last_recorded_on: Date.current)
+      expect(pet.alt_text).to eq("あなたのペット（幼年期・ごきげん）")
+    end
+  end
 end

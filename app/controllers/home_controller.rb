@@ -14,6 +14,10 @@ class HomeController < ApplicationController
 
     @prefectures = Prefecture.left_joins(:shops).group(:id).select("prefectures.*, COUNT(shops.id) as shops_count").order(:id)
 
+    # 相棒ペット (cookie がある人だけ。新規訪問者には cookie を作らない)
+    token = cookies[:voter_token]
+    @pet = Pet.find_by(voter_token: token) if token.present?
+
     # Stats for hero (cached to avoid full table scans on every request)
     @today_votes_count = Rails.cache.fetch("home/today_votes", expires_in: 5.minutes) { Vote.where(voted_on: Date.current).count }
     @total_votes_count = Rails.cache.fetch("home/total_votes", expires_in: 10.minutes) { Vote.count }

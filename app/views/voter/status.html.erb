@@ -54,6 +54,11 @@
       </div>
     </div>
 
+    <!-- 相棒ペット -->
+    <% if @pet %>
+      <%= render "pets/pet", pet: @pet, variant: :card %>
+    <% end %>
+
     <!-- 称号 + ポイント進捗 -->
     <div class="bg-card rounded-lg border-l-2 border-l-slot-yellow p-4 mb-4">
       <div class="flex items-center justify-between">

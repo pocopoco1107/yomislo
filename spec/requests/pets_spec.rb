@@ -77,4 +77,32 @@ RSpec.describe "Pet growth via record flows", type: :request do
       expect(pet.exp).to eq(3)
     end
   end
+
+  describe "GET /voter/status (display)" do
+    it "renders the pet card with stage / mood / next evolution" do
+      cookies[:voter_token] = token
+      create(:voter_profile, voter_token: token, total_votes: 5)
+      create(:pet, voter_token: token, stage: :child, exp: 10, streak_days: 2, last_recorded_on: Date.current)
+
+      get voter_status_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("companions/child")          # 段階画像
+      expect(response.body).to include("相棒・成長期")               # 段階ラベル
+      expect(response.body).to include("ごきげん")                   # mood (今日記録 = genki)
+      expect(response.body).to include("次の進化（成熟期）")          # 次段階
+    end
+  end
+
+  describe "GET / (home, small pet)" do
+    it "renders the inline pet when the visitor has one" do
+      cookies[:voter_token] = token
+      create(:pet, voter_token: token, stage: :baby, last_recorded_on: Date.current)
+
+      get root_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("companions/baby")
+    end
+  end
 end

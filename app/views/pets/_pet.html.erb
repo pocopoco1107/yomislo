@@ -1,0 +1,45 @@
+<%#
+  相棒ペット表示パーシャル
+  locals:
+    pet      : Pet
+    variant  : :card (マイステータス大きめ) | :inline (ホーム小さめ)  既定 :card
+    evolved  : 進化直後の演出を出すか (既定 false)
+%>
+<% variant = local_assigns.fetch(:variant, :card) %>
+<% evolved = local_assigns.fetch(:evolved, false) %>
+<% mood = pet.mood %>
+
+<% if variant == :inline %>
+  <%# ホーム: 今日/累計カウンタの隣に小さく。タップでマイステータスへ %>
+  <%= link_to voter_status_path, class: "pet shrink-0", title: "相棒（#{pet.stage_label}）", "aria-label": pet.alt_text do %>
+    <%= image_tag pet.image_name, alt: pet.alt_text, width: 28, height: 28, draggable: false, class: "select-none" %>
+  <% end %>
+<% else %>
+  <%# マイステータス: 大きめカード。クリックで跳ねる + 進化演出 %>
+  <div class="bg-card rounded-lg border-l-2 <%= pet_mood_ring(mood) %> p-4 mb-4"
+       data-controller="pet" data-pet-evolved-value="<%= evolved %>">
+    <div class="flex items-center gap-4">
+      <span class="pet pet--idle shrink-0 cursor-pointer"
+            data-pet-target="sprite" data-action="click->pet#hop"
+            role="img" aria-label="<%= pet.alt_text %>">
+        <%= image_tag pet.image_name, alt: pet.alt_text, width: 88, height: 88, draggable: false, class: "select-none" %>
+      </span>
+
+      <div class="min-w-0 flex-1">
+        <p class="font-heading text-base font-bold text-foreground">
+          相棒・<%= pet.stage_label %>
+        </p>
+        <p class="text-sm mt-0.5 <%= pet_mood_text(mood) %>"><%= pet.mood_message %></p>
+
+        <% next_evo = pet.next_evolution %>
+        <% if next_evo %>
+          <p class="text-xs text-muted-foreground mt-2">
+            次の進化（<%= next_evo[:stage_label] %>）まで <%= pet_next_evolution_text(next_evo) %>
+          </p>
+        <% else %>
+          <p class="text-xs text-muted-foreground mt-2">最終進化に到達！</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

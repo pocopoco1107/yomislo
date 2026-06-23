@@ -20,7 +20,69 @@ class Pet < ApplicationRecord
 
   # register! の戻り値。進化演出の出し分けに使う
   RegistrationResult = Struct.new(:pet, :evolved, :from_stage, :to_stage, keyword_init: true) do
-    def evolved? = evolved
+    def evolved?
+      evolved
+    end
+  end
+
+  # --- 表示用ラベル / 文言 ---
+  STAGE_LABELS = { "egg" => "卵", "baby" => "幼年期", "child" => "成長期", "adult" => "成熟期" }.freeze
+  MOOD_LABELS = { genki: "ごきげん", normal: "ふつう", lonely: "しょんぼり" }.freeze
+  MOOD_MESSAGES = {
+    genki:  "よく記録してるね！",
+    normal: "ぼちぼち記録してる感じ",
+    lonely: "さいきん会えてないな…また記録してね"
+  }.freeze
+
+  # mood: 直近の記録からの経過日数で算出 (保存しない)。
+  #   0〜3日: genki / 4〜7日: normal / 8日以上 or 未記録: lonely
+  def mood(today = Date.current)
+    return :lonely if last_recorded_on.nil?
+
+    days = (today - last_recorded_on).to_i
+    if days <= 3
+      :genki
+    elsif days <= 7
+      :normal
+    else
+      :lonely
+    end
+  end
+
+  def stage_label
+    STAGE_LABELS.fetch(stage, stage)
+  end
+
+  def mood_label(today = Date.current)
+    MOOD_LABELS.fetch(mood(today))
+  end
+
+  def mood_message(today = Date.current)
+    MOOD_MESSAGES.fetch(mood(today))
+  end
+
+  # 進化段階に対応する画像 (app/assets/images/companions/{stage}.png)
+  def image_name
+    "companions/#{stage}.png"
+  end
+
+  def alt_text(today = Date.current)
+    "あなたのペット（#{stage_label}・#{mood_label(today)}）"
+  end
+
+  # 次の進化までの残り。最終段階(adult)なら nil。
+  # exp_remaining / days_remaining はどちらか達成で進化 (片方が nil の段階あり)。
+  def next_evolution
+    next_key = STAGE_ORDER[STAGES.fetch(stage.to_sym) + 1]
+    return nil if next_key.nil?
+
+    th = EVOLUTION_THRESHOLDS.fetch(next_key)
+    {
+      stage: next_key,
+      stage_label: STAGE_LABELS.fetch(next_key.to_s),
+      exp_remaining:  th[:exp] ? [ th[:exp] - exp, 0 ].max : nil,
+      days_remaining: th[:streak_days] ? [ th[:streak_days] - streak_days, 0 ].max : nil
+    }
   end
 
   # Voter モデルは存在せず、匿名識別子 voter_token(cookie) で 1人1体に紐づく。
