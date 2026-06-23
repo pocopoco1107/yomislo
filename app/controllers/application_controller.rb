@@ -20,4 +20,16 @@ class ApplicationController < ActionController::Base
     cookies[:voter_token]
   end
   helper_method :voter_token
+
+  # 記録成功後にペット(育成キャラ)を成長させる。
+  # ペット側の失敗で本来の記録フローを壊さないよう、例外は握りつぶしてログのみ。
+  # 戻り値: Pet::RegistrationResult もしくは nil
+  def grow_companion(recorded_on:, count: 1)
+    return nil if count.to_i < 1
+
+    Pet.register!(voter_token: voter_token, recorded_on: recorded_on, count: count)
+  rescue StandardError => e
+    Rails.logger.warn("[Pet] grow_companion failed: #{e.class}: #{e.message}")
+    nil
+  end
 end

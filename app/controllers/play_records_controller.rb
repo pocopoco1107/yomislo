@@ -99,6 +99,7 @@ class PlayRecordsController < ApplicationController
     @record.voter_token = token
 
     if @record.save
+      @pet_result = grow_companion(recorded_on: @record.played_on)
       respond_to do |format|
         format.turbo_stream { render_shop_machine_update }
         format.html do
@@ -172,6 +173,7 @@ class PlayRecordsController < ApplicationController
     end
 
     if errors.empty? && records.any?
+      created_votes = 0
       PlayRecord.transaction do
         records.each(&:save!)
         # Save votes alongside play records
@@ -188,8 +190,11 @@ class PlayRecordsController < ApplicationController
             vote.confirmed_setting = ((vote.confirmed_setting || []) + vd[:confirmed_setting]).uniq
           end
           vote.save!
+          created_votes += 1 if vote.previously_new_record?
         end
       end
+      # 新規に作られた収支記録 + Vote の合計件数だけペットを成長させる (同日なので1回呼び出し)
+      grow_companion(recorded_on: played_on, count: records.size + created_votes)
       month = played_on.to_s[0..6]
       redirect_to play_records_path(month: month),
                   notice: "#{records.size}件の収支を記録しました"

@@ -46,6 +46,8 @@ class VotesController < ApplicationController
       @shop = @vote.shop
       @machine_model = @vote.machine_model
       @vote_summary = @vote.cached_vote_summary
+      # 新規記録のときだけペットを成長させる (既存行へのトグル更新では増やさない)
+      @pet_result = grow_companion(recorded_on: @vote.voted_on) if @vote.previously_new_record?
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to shop_path(@shop) }
