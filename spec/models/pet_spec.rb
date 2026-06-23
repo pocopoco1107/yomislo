@@ -186,6 +186,26 @@ RSpec.describe Pet, type: :model do
     end
   end
 
+  describe "#evolution_progress_pct" do
+    it "is 0 for a fresh egg" do
+      expect(build(:pet, stage: :egg, exp: 0).evolution_progress_pct).to eq(0)
+    end
+
+    it "scales between the current and next thresholds (child→adult by exp)" do
+      # child(exp7) → adult(exp30): exp18 は (18-7)/(30-7) ≒ 48%
+      expect(build(:pet, stage: :child, exp: 18, streak_days: 3).evolution_progress_pct).to eq(48)
+    end
+
+    it "uses whichever axis (exp or streak) is further along" do
+      # child→adult: exp は 0%付近でも streak14 達成なら 100%
+      expect(build(:pet, stage: :child, exp: 7, streak_days: 14).evolution_progress_pct).to eq(100)
+    end
+
+    it "is 100 at the final stage" do
+      expect(build(:pet, stage: :adult).evolution_progress_pct).to eq(100)
+    end
+  end
+
   describe "labels and image" do
     it "returns the Japanese stage label" do
       expect(build(:pet, stage: :child).stage_label).to eq("成長期")

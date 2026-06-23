@@ -1,45 +1,41 @@
 <%#
-  相棒ペット表示パーシャル
+  相棒ペット表示パーシャル (マイステータス用カード)
   locals:
     pet      : Pet
-    variant  : :card (マイステータス大きめ) | :inline (ホーム小さめ)  既定 :card
     evolved  : 進化直後の演出を出すか (既定 false)
 %>
-<% variant = local_assigns.fetch(:variant, :card) %>
 <% evolved = local_assigns.fetch(:evolved, false) %>
 <% mood = pet.mood %>
+<% next_evo = pet.next_evolution %>
 
-<% if variant == :inline %>
-  <%# ホーム: 今日/累計カウンタの隣に小さく。タップでマイステータスへ %>
-  <%= link_to voter_status_path, class: "pet pet--idle shrink-0", title: "相棒（#{pet.stage_label}）" do %>
-    <%= image_tag pet.image_name, alt: pet.alt_text, width: 28, height: 28, draggable: false, class: "select-none" %>
-  <% end %>
-<% else %>
-  <%# マイステータス: 大きめカード。クリックで跳ねる + 進化演出 %>
-  <div class="bg-card rounded-lg border border-border/60 p-4 mb-4"
-       data-controller="pet" data-pet-evolved-value="<%= evolved %>">
-    <div class="flex items-center gap-4">
-      <%# クリックで跳ねる装飾的インタラクション。ラベルは内側 img の alt に集約 %>
-      <span class="pet pet--idle shrink-0 cursor-pointer"
-            data-pet-target="sprite" data-action="click->pet#hop">
-        <%= image_tag pet.image_name, alt: pet.alt_text, width: 88, height: 88, draggable: false, class: "select-none" %>
-      </span>
+<div class="bg-card rounded-lg border border-border/60 p-4 mb-4"
+     data-controller="pet" data-pet-evolved-value="<%= evolved %>">
+  <div class="flex items-center gap-4">
+    <%# クリックで跳ねる飾りの動き。読み上げ用ラベルは内側 img の alt に持たせる %>
+    <span class="pet pet--idle shrink-0 cursor-pointer"
+          data-pet-target="sprite" data-action="click->pet#hop">
+      <%= image_tag pet.image_name, alt: pet.alt_text, width: 88, height: 88, draggable: false, class: "select-none" %>
+    </span>
 
-      <div class="min-w-0 flex-1">
-        <p class="font-heading text-base font-bold text-foreground">
-          相棒・<%= pet.stage_label %>
+    <div class="min-w-0 flex-1">
+      <p class="text-sm font-medium <%= pet_mood_text(mood) %>"><%= pet.mood_message %></p>
+
+      <%# 進化進捗バー (称号の役割を兼ねる) %>
+      <div class="mt-2.5">
+        <p class="text-[11px] text-muted-foreground mb-1">
+          <% if next_evo %>
+            次の姿まで <%= pet_next_evolution_text(next_evo) %>
+          <% else %>
+            もう立派に育った
+          <% end %>
         </p>
-        <p class="text-sm mt-0.5 <%= pet_mood_text(mood) %>"><%= pet.mood_message %></p>
-
-        <% next_evo = pet.next_evolution %>
-        <% if next_evo %>
-          <p class="text-xs text-muted-foreground mt-2">
-            次の進化（<%= next_evo[:stage_label] %>）まで <%= pet_next_evolution_text(next_evo) %>
-          </p>
-        <% else %>
-          <p class="text-xs text-muted-foreground mt-2">最終進化に到達！</p>
-        <% end %>
+        <div class="h-1.5 bg-secondary rounded-full overflow-hidden">
+          <div class="h-full bg-primary rounded-full transition-all" style="width: <%= pet.evolution_progress_pct %>%"></div>
+        </div>
+        <p class="text-[10px] text-muted-foreground mt-1 tabular-nums">
+          これまで <%= pet.exp %> 件記録・<%= pet.streak_days %> 日連続
+        </p>
       </div>
     </div>
   </div>
-<% end %>
+</div>

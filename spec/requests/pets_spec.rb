@@ -79,7 +79,7 @@ RSpec.describe "Pet growth via record flows", type: :request do
   end
 
   describe "GET /voter/status (display)" do
-    it "renders the pet card with stage / mood / next evolution" do
+    it "renders the pet card with stage image / mood / evolution progress" do
       cookies[:voter_token] = token
       create(:voter_profile, voter_token: token, total_votes: 5)
       create(:pet, voter_token: token, stage: :child, exp: 10, streak_days: 2, last_recorded_on: Date.current)
@@ -88,9 +88,9 @@ RSpec.describe "Pet growth via record flows", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("companions/child")          # 段階画像
-      expect(response.body).to include("相棒・成長期")               # 段階ラベル
-      expect(response.body).to include("ごきげん")                   # mood (今日記録 = genki)
-      expect(response.body).to include("次の進化（成熟期）")          # 次段階
+      expect(response.body).to include("成長期・ごきげん")            # alt (段階+mood)
+      expect(response.body).to include("よく記録してるね！")          # mood メッセージ (genki)
+      expect(response.body).to include("次の姿まで")                 # 進化進捗ラベル
     end
 
     it "auto-creates an egg for a user with no records" do
@@ -100,12 +100,12 @@ RSpec.describe "Pet growth via record flows", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("companions/egg")
-      expect(response.body).to include("相棒・卵")
+      expect(response.body).to include("卵・しょんぼり")              # alt (egg は未記録 = lonely)
     end
   end
 
-  describe "GET / (home, small pet)" do
-    it "renders the inline pet when the visitor has one" do
+  describe "GET / (home user card pet)" do
+    it "renders the pet in the user card when the visitor has one" do
       cookies[:voter_token] = token
       create(:pet, voter_token: token, stage: :baby, last_recorded_on: Date.current)
 

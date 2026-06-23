@@ -29,7 +29,6 @@
     <div class="flex items-center gap-3 text-xs text-muted-foreground shrink-0 md:text-xs">
       <span><span class="score-num text-sm text-slot-red"><%= number_with_delimiter(@today_votes_count) %></span> 今日</span>
       <span><span class="score-num text-sm text-slot-blue"><%= number_with_delimiter(@total_votes_count) %></span> 累計</span>
-      <% if @pet %><%= render "pets/pet", pet: @pet, variant: :inline %><% end %>
     </div>
   </div>
 </section>
@@ -137,20 +136,10 @@
           </button>
           <p data-nearby-target="error" class="hidden mt-2 text-sm text-destructive"></p>
 
-          <div data-nearby-target="fallback" class="hidden mt-3">
-            <div class="flex items-center gap-2">
-              <svg class="h-5 w-5 text-muted-foreground shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <select id="nearby_prefecture_select" data-action="change->nearby#goToPrefecture"
-                      class="flex-1 h-11 rounded-lg border border-border bg-card px-3 text-sm text-foreground focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none transition-colors">
-                <option value="">都道府県を選んで探す</option>
-                <% @prefectures.each do |pref| %>
-                  <option value="<%= pref.slug %>"><%= pref.name %><%= " (#{pref.shops_count}店)" if pref.respond_to?(:shops_count) && pref.shops_count > 0 %></option>
-                <% end %>
-              </select>
-            </div>
+          <div data-nearby-target="fallback" class="hidden mt-2">
+            <p class="text-xs text-muted-foreground">
+              位置情報が使えないみたい。<a href="#prefectures" class="text-primary hover:underline">下の都道府県から探す</a>
+            </p>
           </div>
 
           <turbo-frame id="nearby_results"></turbo-frame>
@@ -271,42 +260,39 @@
     <div data-home-tab-target="zoneB" class="zone-hidden sm:col-span-2">
       <div class="sm:sticky sm:top-20 space-y-4">
 
-        <!-- User Card (RPGのプレイヤーカード風) -->
+        <!-- User Card (相棒 + ステータス) -->
         <% if @voter_label %>
           <%= link_to voter_status_path, class: "block bg-card rounded-lg border border-border/60 p-3 transition-all hover:border-primary/60 active:scale-[0.99]" do %>
-            <div class="flex items-center justify-between">
-              <div class="min-w-0">
-                <p class="text-sm font-semibold text-foreground truncate"><%= @voter_label %></p>
-                <% if @voter_rank_title %>
-                  <p class="text-[10px] text-muted-foreground"><%= @voter_rank_title %></p>
-                <% end %>
-              </div>
-              <svg class="w-4 h-4 text-muted-foreground shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <div class="flex items-center gap-3 mt-2">
-              <% if @voter_streak > 0 %>
-                <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slot-red">
-                  🔥 <%= @voter_streak %>日連続
+            <div class="flex items-center gap-3">
+              <% if @pet %>
+                <span class="pet shrink-0">
+                  <%= image_tag @pet.image_name, alt: @pet.alt_text, width: 44, height: 44, draggable: false, class: "select-none" %>
                 </span>
               <% end %>
-              <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slot-yellow">
-                ⚡ <%= @voter_points %>pt
-              </span>
-            </div>
-            <% if @voter_badges.present? %>
-              <div class="flex items-center gap-1.5 mt-2">
-                <% @voter_badges.each do |badge| %>
-                  <span class="text-sm" title="<%= badge[:name] %>"><%= badge[:icon] %></span>
-                <% end %>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-2">
+                  <p class="text-sm font-semibold text-foreground truncate"><%= @voter_label %></p>
+                  <svg class="w-4 h-4 text-muted-foreground shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="flex items-center gap-3 mt-1">
+                  <% if @voter_streak > 0 %>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slot-red">
+                      🔥 <%= @voter_streak %>日連続
+                    </span>
+                  <% end %>
+                  <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slot-yellow">
+                    ⚡ <%= @voter_points %>pt
+                  </span>
+                </div>
               </div>
-            <% end %>
+            </div>
           <% end %>
         <% else %>
           <%= link_to voter_status_path, class: "block rounded-lg bg-surface-inset p-3 hover:bg-card transition-all" do %>
             <div class="flex items-center justify-between">
               <div class="min-w-0">
-                <p class="text-sm font-semibold text-foreground">記録するほど称号が上がる</p>
-                <p class="text-xs text-muted-foreground">的中率も連続記録もまとめて表示</p>
+                <p class="text-sm font-semibold text-foreground">記録すると相棒が育つ</p>
+                <p class="text-xs text-muted-foreground">連続記録や収支もまとめて見れる</p>
               </div>
               <svg class="w-4 h-4 text-muted-foreground shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>

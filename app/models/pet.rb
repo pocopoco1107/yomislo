@@ -85,6 +85,30 @@ class Pet < ApplicationRecord
     }
   end
 
+  # 次の進化までの進捗 (0〜100)。前段階の閾値を起点に、exp / streak の
+  # どちらか達成度が高い方を採用する。最終段階(adult)なら 100。
+  def evolution_progress_pct
+    cur_idx = STAGES.fetch(stage.to_sym)
+    next_key = STAGE_ORDER[cur_idx + 1]
+    return 100 if next_key.nil?
+
+    nth = EVOLUTION_THRESHOLDS.fetch(next_key)
+    cth = EVOLUTION_THRESHOLDS[stage.to_sym] # egg は閾値なし(nil)
+
+    ratios = []
+    if nth[:exp]
+      base = cth&.dig(:exp) || 0
+      ratios << (exp - base).to_f / (nth[:exp] - base)
+    end
+    if nth[:streak_days]
+      base = cth&.dig(:streak_days) || 0
+      ratios << (streak_days - base).to_f / (nth[:streak_days] - base)
+    end
+    return 0 if ratios.empty?
+
+    [ [ ratios.max, 0 ].max * 100, 100 ].min.round
+  end
+
   def self.for(voter_token)
     find_or_create_by!(voter_token: voter_token)
   rescue ActiveRecord::RecordNotUnique

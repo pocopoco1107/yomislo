@@ -84,20 +84,8 @@ class HomeController < ApplicationController
     if token.present?
       profile = VoterProfile.find_by(voter_token: token)
       @voter_label = profile&.display_name.presence || "ユーザー##{token.last(4)}"
-      @voter_rank_title = profile&.rank_title
       @voter_points = profile&.points || 0
       @voter_streak = profile&.current_streak || 0
-
-      # Earned badges for user card
-      if profile
-        votes = Vote.where(voter_token: token)
-        stats = {
-          total_votes: profile.total_votes,
-          prefectures_count: votes.joins(:shop).distinct.count("shops.prefecture_id"),
-          machines_count: votes.distinct.count(:machine_model_id)
-        }
-        @voter_badges = VoterController::BADGE_DEFINITIONS.select { |b| b[:check].call(stats) }
-      end
 
       agg = PlayRecord.where(voter_token: token, played_on: Date.current.beginning_of_month..Date.current)
                       .pick(

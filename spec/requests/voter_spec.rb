@@ -29,7 +29,7 @@ RSpec.describe "Voter", type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("ユーザー#1234")
         expect(response.body).to include("設定記録")
-        expect(response.body).to include("実績バッジ")
+        expect(response.body).to include("連続記録ストリーク")
       end
 
       it "displays recent vote history with shop name" do
@@ -39,10 +39,10 @@ RSpec.describe "Voter", type: :request do
         expect(response.body).to include(machine.name)
       end
 
-      it "shows first vote badge as earned" do
+      it "renders the companion pet card" do
         get voter_status_path, headers: { "Cookie" => "voter_token=#{token}" }
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("初記録")
+        expect(response.body).to include("companions/")
       end
     end
   end
