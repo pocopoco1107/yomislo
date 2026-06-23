@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_20_145937) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_23_060737) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -115,6 +115,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_20_145937) do
     t.index ["active"], name: "index_machine_models_on_active"
     t.index ["ptown_id"], name: "index_machine_models_on_ptown_id", unique: true, where: "(ptown_id IS NOT NULL)"
     t.index ["slug"], name: "index_machine_models_on_slug", unique: true
+  end
+
+  create_table "pets", force: :cascade do |t|
+    t.integer "branch_axis", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.integer "exp", default: 0, null: false
+    t.date "last_recorded_on"
+    t.integer "stage", default: 0, null: false
+    t.integer "streak_days", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.string "voter_token", null: false
+    t.index ["voter_token"], name: "index_pets_on_voter_token", unique: true
   end
 
   create_table "play_record_summaries", force: :cascade do |t|
