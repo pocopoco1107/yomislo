@@ -115,6 +115,62 @@ RSpec.describe "PlayRecords", type: :request do
         }
       }.not_to change(PlayRecord, :count)
     end
+
+    it "機種なしの単一収支を turbo_stream で作成しても 500 にならない" do
+      cookies[:voter_token] = voter_token
+
+      expect {
+        post play_records_path,
+             params: { play_record: { shop_id: shop.id, played_on: Date.current.to_s, result_amount: 1000 } },
+             headers: { "Accept" => "text/vnd.turbo-stream.html" }
+      }.to change(PlayRecord, :count).by(1)
+
+      # 機種に紐づかない記録は Turbo Frame 行が無いため 204 を返す(500にならない)
+      expect(response).to have_http_status(:no_content)
+      expect(PlayRecord.last.machine_model_id).to be_nil
+    end
+  end
+
+  describe "POST /play_records (一括 entries)" do
+    it "creates records and votes for multiple entries" do
+      cookies[:voter_token] = voter_token
+
+      expect {
+        post play_records_path, params: {
+          shop_id: shop.id,
+          played_on: Date.current.to_s,
+          entries: {
+            "0" => {
+              machine_model_id: machine.id,
+              result_amount: 3000,
+              setting_vote: "6",
+              confirmed_setting: [ "6確" ]
+            }
+          }
+        }
+      }.to change(PlayRecord, :count).by(1).and change(Vote, :count).by(1)
+    end
+
+    it "handles confirmed_setting arriving as a String (name振り直しで[]欠落しても落ちない)" do
+      cookies[:voter_token] = voter_token
+
+      expect {
+        post play_records_path, params: {
+          shop_id: shop.id,
+          played_on: Date.current.to_s,
+          entries: {
+            "0" => {
+              machine_model_id: machine.id,
+              result_amount: 1500,
+              confirmed_setting: "6確" # 配列ではなく文字列
+            }
+          }
+        }
+      }.to change(PlayRecord, :count).by(1).and change(Vote, :count).by(1)
+
+      expect(response).to have_http_status(:redirect)
+      expect(Vote.last.confirmed_setting).to eq([ "6確" ])
+    end
   end
 
   describe "DELETE /play_records/:id" do
@@ -133,6 +189,26 @@ RSpec.describe "PlayRecords", type: :request do
       }.to change(PlayRecord, :count).by(-1)
 
       expect(response).to have_http_status(:redirect)
+    end
+
+    it "公開記録を削除すると集計キャッシュからも除外される" do
+      cookies[:voter_token] = voter_token
+      record = PlayRecord.create!(
+        voter_token: voter_token,
+        shop: shop,
+        machine_model: machine,
+        played_on: Date.current,
+        result_amount: 5000,
+        is_public: true
+      )
+      # 作成時の after_commit (test は inline) で集計され total_records=1
+      summary = PlayRecordSummary.find_by(scope_type: "shop", scope_id: shop.id, period_type: :all_time)
+      expect(summary.total_records).to eq(1)
+
+      delete play_record_path(record)
+
+      # 削除後も集計が更新され、消えたレコードが残らない
+      expect(summary.reload.total_records).to eq(0)
     end
 
     it "cannot delete another user's record" do

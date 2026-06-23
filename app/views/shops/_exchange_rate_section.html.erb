@@ -29,7 +29,7 @@
                 ? "bg-primary text-primary-foreground ring-2 ring-primary/40" \
                 : "bg-muted/50 text-muted-foreground hover:bg-muted"
             %>
-            <%= form_with url: exchange_rate_reports_path, data: { turbo: true, controller: "vote", action: "submit->vote#submit" } do |f| %>
+            <%= form_with url: exchange_rate_reports_path, scope: :exchange_rate_report, data: { turbo: true, controller: "vote", action: "submit->vote#submit" } do |f| %>
               <%= f.hidden_field :shop_id, value: shop.id %>
               <%= f.hidden_field :denomination, value: denom[:key] %>
               <%= f.hidden_field :rate_key, value: "touka" %>
@@ -42,7 +42,7 @@
               is_custom = user_rate.present? && user_rate != "touka"
               custom_value = is_custom ? user_rate : ""
             %>
-            <%= form_with url: exchange_rate_reports_path, class: "flex items-center", data: { turbo: true } do |f| %>
+            <%= form_with url: exchange_rate_reports_path, scope: :exchange_rate_report, class: "flex items-center", data: { turbo: true } do |f| %>
               <%= f.hidden_field :shop_id, value: shop.id %>
               <%= f.hidden_field :denomination, value: denom[:key] %>
               <div class="flex items-center rounded-lg overflow-hidden <%= is_custom ? 'ring-2 ring-primary/40' : '' %>">

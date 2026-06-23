@@ -16,8 +16,10 @@ class PlayRecord < ApplicationRecord
   validate :played_on_within_range
   validate :tags_valid
 
-  after_commit :enqueue_summary_refresh, on: [ :create, :update, :destroy ],
+  after_commit :enqueue_summary_refresh, on: [ :create, :update ],
                if: -> { is_public? || previous_changes.key?("is_public") }
+  # 削除時は行が消えるため id 経由では集計し直せない。属性を渡して再集計する
+  after_commit :enqueue_summary_refresh_on_destroy, on: :destroy, if: -> { is_public? }
 
   scope :public_records, -> { where(is_public: true) }
   scope :by_month, ->(date) { where(played_on: date.beginning_of_month..date.end_of_month) }
@@ -34,6 +36,16 @@ class PlayRecord < ApplicationRecord
 
   def enqueue_summary_refresh
     RefreshPlayRecordSummaryJob.perform_later(id)
+  end
+
+  def enqueue_summary_refresh_on_destroy
+    RefreshPlayRecordSummaryJob.perform_later(
+      nil,
+      machine_model_id: machine_model_id,
+      shop_id: shop_id,
+      prefecture_id: shop&.prefecture_id,
+      played_on: played_on.to_s
+    )
   end
 
   def played_on_within_range

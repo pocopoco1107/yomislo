@@ -160,14 +160,17 @@ class PlayRecordsController < ApplicationController
 
       # Collect vote data if machine and any vote field is present
       mid = entry[:machine_model_id].presence
+      # confirmed_setting は配列チェックボックス。単一選択や name 振り直しで
+      # 文字列として届くことがあるため Array() で正規化する
+      confirmed = Array(entry[:confirmed_setting]).reject(&:blank?)
       has_vote = entry[:reset_vote].present? || entry[:setting_vote].present? ||
-                 entry[:confirmed_setting]&.reject(&:blank?)&.any?
+                 confirmed.any?
       if mid && has_vote
         vote_data << {
           machine_model_id: mid.to_i,
           reset_vote: entry[:reset_vote].present? ? entry[:reset_vote].to_i : nil,
           setting_vote: entry[:setting_vote].present? ? entry[:setting_vote].to_i : nil,
-          confirmed_setting: entry[:confirmed_setting]&.reject(&:blank?) || []
+          confirmed_setting: confirmed
         }
       end
     end
@@ -222,6 +225,10 @@ class PlayRecordsController < ApplicationController
     shop ||= @record.shop
     machine_model_id ||= @record.machine_model_id
     played_on ||= @record.played_on
+
+    # 機種に紐づかない記録は更新対象の Turbo Frame 行が存在しないため stream 更新をスキップ
+    return head(:no_content) if machine_model_id.nil?
+
     token = voter_token
 
     machine_model = MachineModel.find(machine_model_id)

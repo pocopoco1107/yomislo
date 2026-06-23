@@ -17,6 +17,11 @@ export default class extends Controller {
       el.removeAttribute("data-index-placeholder")
     })
 
+    // id 属性にも __INDEX__ が残るため置換し、複製時のid重複を防ぐ
+    clone.querySelectorAll("[id*='__INDEX__']").forEach(el => {
+      el.setAttribute("id", el.getAttribute("id").replace("__INDEX__", newIndex))
+    })
+
     this.entriesContainerTarget.appendChild(clone)
 
     // Send current machine list to the newly added entry's autocomplete
@@ -45,13 +50,16 @@ export default class extends Controller {
     this._reindex()
   }
 
+  // 配列として送る必要があるフィールド (チェックボックス複数選択)
+  static arrayFields = ["confirmed_setting", "tags"]
+
   // Re-number name indices after removal
   _reindex() {
     this.entryTargets.forEach((entry, index) => {
       entry.querySelectorAll("[data-entry-field]").forEach(el => {
         const field = el.dataset.entryField
-        // tags uses entries[N][tags][] format
-        const suffix = field === "tags" ? "[]" : ""
+        // confirmed_setting / tags は entries[N][field][] 形式 (配列)
+        const suffix = this.constructor.arrayFields.includes(field) ? "[]" : ""
         el.setAttribute("name", `entries[${index}][${field}]${suffix}`)
       })
     })

@@ -41,10 +41,10 @@ class VoterController < ApplicationController
     end
 
     profile.display_name = name.presence
-    profile.save! if profile.persisted?
+    profile.save! # 新規プロフィール(votes 0件)でも display_name を保存する
 
-    # Recalculate points (display_name_set bonus)
-    VoterProfile.refresh_for(token) if profile.persisted?
+    # Recalculate points (display_name_set bonus)。votes 0件なら refresh_for は何もしない
+    VoterProfile.refresh_for(token)
 
     redirect_to voter_status_path, notice: name.present? ? "ユーザー名を設定しました" : "ユーザー名をリセットしました"
   end

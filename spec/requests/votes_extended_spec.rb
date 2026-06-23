@@ -117,5 +117,17 @@ RSpec.describe "Votes (extended)", type: :request do
       patch vote_path(vote), params: { vote: { shop_id: shop.id, machine_model_id: machine.id, voted_on: today, reset_vote: 0 } }
       expect(response).to have_http_status(:not_found)
     end
+
+    it "confirmed_setting に scalar が来ても配列カラムを空に潰さず正規化する" do
+      cookies[:voter_token] = "confirm_update"
+      post votes_path, params: { vote: { shop_id: shop.id, machine_model_id: machine.id, voted_on: today, confirmed_setting: "6確" } }
+      vote = Vote.find_by(voter_token: "confirm_update")
+      expect(vote.confirmed_setting).to eq([ "6確" ])
+
+      # update に scalar を渡しても [] に潰れず、配列として保存される
+      patch vote_path(vote), params: { vote: { shop_id: shop.id, machine_model_id: machine.id, voted_on: today, confirmed_setting: "偶数確" } }
+      vote.reload
+      expect(vote.confirmed_setting).to eq([ "偶数確" ])
+    end
   end
 end

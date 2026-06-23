@@ -93,13 +93,15 @@ class PlayRecordSummary < ApplicationRecord
         }
       end
 
+      # 勝敗が付いた件数(±0は除外)。全件±0だとゼロ除算でNaNになるためガード
+      decided = wins + losses
       summary.assign_attributes(
         total_records: stats.size,
         total_result: total,
         avg_result: (total.to_f / stats.size).round(0),
         win_count: wins,
         lose_count: losses,
-        win_rate: ((wins.to_f / (wins + losses)) * 100).round(1),
+        win_rate: decided.zero? ? 0.0 : ((wins.to_f / decided) * 100).round(1),
         weekday_stats: wday_stats
       )
     end

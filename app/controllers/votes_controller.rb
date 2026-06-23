@@ -65,7 +65,12 @@ class VotesController < ApplicationController
 
   def update
     @vote = Vote.find_by!(id: params[:id], voter_token: voter_token)
-    if @vote.update(vote_params)
+    attrs = vote_params.to_h
+    # confirmed_setting は配列カラム。scalar が来ても配列に正規化し、既存値を空に潰さない
+    if attrs.key?("confirmed_setting")
+      attrs["confirmed_setting"] = Array(attrs["confirmed_setting"]).reject(&:blank?)
+    end
+    if @vote.update(attrs)
       @shop = @vote.shop
       @machine_model = @vote.machine_model
       @vote_summary = @vote.cached_vote_summary

@@ -116,6 +116,20 @@ RSpec.describe PlayRecordSummary, type: :model do
       expect(summary.win_rate).to eq(75.0)
     end
 
+    it "全件 ±0(勝敗なし)でも win_rate が NaN にならず 0.0 になる" do
+      # wins=0, losses=0 のゼロ除算で NaN になるのを防ぐガードの回帰テスト
+      create(:play_record, shop: shop, machine_model: machine,
+             result_amount: 0, is_public: true, played_on: Date.current)
+      create(:play_record, shop: shop, machine_model: create(:machine_model),
+             result_amount: 0, is_public: true, played_on: Date.current)
+
+      summary = PlayRecordSummary.refresh_for_shop!(shop.id)
+
+      expect(summary.total_records).to eq(2)
+      expect(summary.win_rate).to eq(0.0)
+      expect(summary.win_rate.to_f).not_to be_nan
+    end
+
     it "handles all-time period" do
       create(:play_record, shop: shop, machine_model: machine,
              result_amount: 30_000, is_public: true, played_on: Date.current)
