@@ -11,7 +11,7 @@
 
 <% if variant == :inline %>
   <%# ホーム: 今日/累計カウンタの隣に小さく。タップでマイステータスへ %>
-  <%= link_to voter_status_path, class: "pet shrink-0", title: "相棒（#{pet.stage_label}）", "aria-label": pet.alt_text do %>
+  <%= link_to voter_status_path, class: "pet pet--idle shrink-0", title: "相棒（#{pet.stage_label}）" do %>
     <%= image_tag pet.image_name, alt: pet.alt_text, width: 28, height: 28, draggable: false, class: "select-none" %>
   <% end %>
 <% else %>
@@ -19,9 +19,9 @@
   <div class="bg-card rounded-lg border-l-2 <%= pet_mood_ring(mood) %> p-4 mb-4"
        data-controller="pet" data-pet-evolved-value="<%= evolved %>">
     <div class="flex items-center gap-4">
+      <%# クリックで跳ねる装飾的インタラクション。ラベルは内側 img の alt に集約 %>
       <span class="pet pet--idle shrink-0 cursor-pointer"
-            data-pet-target="sprite" data-action="click->pet#hop"
-            role="img" aria-label="<%= pet.alt_text %>">
+            data-pet-target="sprite" data-action="click->pet#hop">
         <%= image_tag pet.image_name, alt: pet.alt_text, width: 88, height: 88, draggable: false, class: "select-none" %>
       </span>
 
