@@ -1,7 +1,7 @@
 ActiveAdmin.register Shop do
   FACILITY_BOOLEAN_FIELDS = %i[
     heated_tobacco_ok slot_smoking_ok low_rate_slot wifi_available
-    charging_available data_publishing okislot open_year_round ticket_distribution
+    charging_available data_publishing okislot ticket_distribution
   ].freeze
 
   TRISTATE_COLLECTION = [
@@ -12,7 +12,7 @@ ActiveAdmin.register Shop do
                 :total_machines, :slot_machines,
                 :business_hours, :opened_on,
                 :parking_spaces, :phone_number, :morning_entry, :access_info, :features,
-                :entry_method, :regular_holiday, :facility_parsed_at,
+                :entry_method, :facility_parsed_at,
                 *FACILITY_BOOLEAN_FIELDS
 
   action_item :import_csv, only: :index do
@@ -125,7 +125,6 @@ ActiveAdmin.register Shop do
       attributes_table_for shop do
         row :facility_parsed_at
         row :entry_method
-        row :regular_holiday
         FACILITY_BOOLEAN_FIELDS.each { |attr| row attr }
       end
     end
@@ -155,7 +154,6 @@ ActiveAdmin.register Shop do
       f.input :entry_method, as: :select,
               collection: [ [ "未確認", nil ], [ "抽選", "lottery" ], [ "並び順", "queue" ], [ "その他", "other" ] ],
               include_blank: false
-      f.input :regular_holiday, placeholder: "年中無休 / 不定休 / 毎週月曜 等"
       FACILITY_BOOLEAN_FIELDS.each do |attr|
         f.input attr, as: :select, collection: TRISTATE_COLLECTION, include_blank: false
       end

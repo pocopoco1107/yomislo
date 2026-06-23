@@ -9,8 +9,7 @@ module ShopsHelper
     low_rate_slot:       "低貸しあり",
     data_publishing:     "データ公開",
     okislot:             "沖スロ",
-    ticket_distribution: "整理券あり",
-    open_year_round:     "年中無休"
+    ticket_distribution: "整理券あり"
   }.freeze
 
   def shop_facility_badges(shop)

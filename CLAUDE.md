@@ -41,7 +41,7 @@ bin/dev  # サーバー起動 (Tailwind watch + Rails)
 | モデル | 概要 |
 |--------|------|
 | Prefecture | 47都道府県 (seed) |
-| Shop | 店舗 (DMMぱちタウンから取得。ptown_shop_id必須。設備フラグ: wifi_available/charging_available/heated_tobacco_ok/slot_smoking_ok/low_rate_slot/data_publishing/okislot/ticket_distribution/open_year_round、入場: entry_method、定休日: regular_holiday、メタ: facility_parsed_at) |
+| Shop | 店舗 (DMMぱちタウンから取得。ptown_shop_id必須。設備フラグ: wifi_available/charging_available/heated_tobacco_ok/slot_smoking_ok/low_rate_slot/data_publishing/okislot/ticket_distribution、入場: entry_method、メタ: facility_parsed_at) |
 | MachineModel | パチスロ機種 (DMMぱちタウンから取得。ptown_id必須。ceiling_info, reset_info, image_url等) |
 | ShopMachineModel | 店舗×機種の設置紐づけ (N:N中間テーブル、unit_count付き) |
 | Vote | 設定記録 (voter_tokenで匿名識別。confirmed_setting配列あり) |
@@ -113,7 +113,7 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 - **正規化**: `normalize_slug()` で NFKC正規化 + 空白→ハイフン + 記号除去 + downcase
 - **core_name()**: 接頭辞(L/S/パチスロ/スマスロ等)・末尾型式コード除去で重複検出用
 - **parse_shop_detail()**: JSON-LDから店舗基本情報 + #anc-slot セクションから機種リスト + `table.default-table` から設備情報
-- **parse_basic_info_table()**: 設備/サービス/特徴/入場ルール/定休日のセルから boolean/enum を判定。FACILITY_KEYWORD_MAP 定数でキーワード管理、`keyword_present?` で否定形を排除
+- **parse_basic_info_table()**: 設備/サービス/特徴/入場ルール/整理券のセルから boolean/enum を判定。FACILITY_KEYWORD_MAP 定数でキーワード管理、`keyword_present?` で否定形を排除
 - **設備フラグの保持方針**: boolean は NULL 許容 (nil=未確認, true=あり, false=なし)。検索フィルタは `where(col: true)` で true のみ絞る。sync で nil を返した場合は既存値を維持（毎回上書きで消さない）
 
 ## Render.com 本番環境

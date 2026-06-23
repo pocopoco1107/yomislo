@@ -315,7 +315,6 @@ module PtownScraper
       info[:facility_attrs] = basic_info[:facility_attrs]
       info[:facility_parsed_at] = basic_info[:facility_parsed_at]
       info[:parking_spaces] = basic_info[:parking_spaces] if basic_info[:parking_spaces]
-      info[:regular_holiday] = basic_info[:regular_holiday] if basic_info[:regular_holiday]
 
       # 駐車場フォールバック: テーブルから取れなかったら本文テキストから
       if info[:parking_spaces].nil?
@@ -380,20 +379,18 @@ module PtownScraper
       wifi_available:      { positive: [ "Wi-Fi利用可" ],                   section: "サービス" },
       charging_available:  { positive: [ "携帯電話充電可能" ],              section: "サービス" },
       data_publishing:     { positive: [ "データ公開中" ],                  section: "特徴" },
-      okislot:             { positive: [ "沖スロ" ],                        section: "特徴" },
-      open_year_round:     { positive: [ "年中無休" ],                      section: "定休日" }
+      okislot:             { positive: [ "沖スロ" ],                        section: "特徴" }
     }.freeze
 
     NEGATION_PATTERNS = %w[なし 不可 非対応 ありません NG].freeze
 
     # 店舗基本情報テーブルをパース
-    # @return [Hash] {facility_attrs:, facility_parsed_at:, parking_spaces:, regular_holiday:}
+    # @return [Hash] {facility_attrs:, facility_parsed_at:, parking_spaces:}
     def parse_basic_info_table(doc)
       result = {
         facility_attrs: {},
         facility_parsed_at: nil,
-        parking_spaces: nil,
-        regular_holiday: nil
+        parking_spaces: nil
       }
 
       table = doc.at_css("table.default-table")
@@ -408,7 +405,7 @@ module PtownScraper
         cells[th] = td
       end
 
-      relevant_sections = %w[設備 サービス 特徴 入場ルール ルール詳細 整理券 定休日]
+      relevant_sections = %w[設備 サービス 特徴 入場ルール ルール詳細 整理券]
       result[:facility_parsed_at] = Time.current if (cells.keys & relevant_sections).any?
 
       attrs = {}
@@ -435,11 +432,6 @@ module PtownScraper
           elsif entry.include?("並び順") || entry.include?("並び") then "queue"
           elsif entry.include?("その他") then "other"
           end
-      end
-
-      # 定休日生テキスト (フリーテキスト保存、フィルタ用は open_year_round)
-      if (holiday = cells["定休日"]) && !holiday.match?(/\A-+\z/)
-        result[:regular_holiday] = holiday.truncate(200)
       end
 
       # 駐車場 (テーブル経由で台数抽出)
@@ -1012,7 +1004,6 @@ namespace :ptown do
               shop_attrs[key] = value unless value.nil?
             end
           end
-          shop_attrs[:regular_holiday] = info[:regular_holiday] if info[:regular_holiday].present?
           # facility_parsed_at はパース成否（成功/部分成功）のメタ情報として常時更新
           shop_attrs[:facility_parsed_at] = info[:facility_parsed_at] if info[:facility_parsed_at]
 
@@ -1267,8 +1258,8 @@ namespace :ptown do
 
     puts "=== Before: #{shop.name} (#{shop.prefecture.slug}/#{ptown_id}) ==="
     %i[wifi_available charging_available heated_tobacco_ok slot_smoking_ok low_rate_slot
-       data_publishing okislot open_year_round ticket_distribution entry_method
-       regular_holiday facility_parsed_at parking_spaces].each do |attr|
+       data_publishing okislot ticket_distribution entry_method
+       facility_parsed_at parking_spaces].each do |attr|
       puts "  #{attr}: #{shop.public_send(attr).inspect}"
     end
 
@@ -1279,7 +1270,6 @@ namespace :ptown do
     info = PtownScraper.parse_shop_detail(doc)
     attrs = {}
     info[:facility_attrs].each { |k, v| attrs[k] = v unless v.nil? } if info[:facility_attrs].is_a?(Hash)
-    attrs[:regular_holiday] = info[:regular_holiday] if info[:regular_holiday].present?
     attrs[:facility_parsed_at] = info[:facility_parsed_at] if info[:facility_parsed_at]
     attrs[:parking_spaces] = info[:parking_spaces] if info[:parking_spaces] && shop.parking_spaces.blank?
 
@@ -1291,8 +1281,8 @@ namespace :ptown do
 
     puts "\n=== After ==="
     %i[wifi_available charging_available heated_tobacco_ok slot_smoking_ok low_rate_slot
-       data_publishing okislot open_year_round ticket_distribution entry_method
-       regular_holiday facility_parsed_at].each do |attr|
+       data_publishing okislot ticket_distribution entry_method
+       facility_parsed_at].each do |attr|
       puts "  #{attr}: #{shop.public_send(attr).inspect}"
     end
   end
@@ -1310,21 +1300,20 @@ namespace :ptown do
       puts "===== #{name} ====="
       puts "  facility_parsed_at: #{result[:facility_parsed_at].present? ? 'set' : 'nil'}"
       puts "  parking_spaces: #{result[:parking_spaces].inspect}"
-      puts "  regular_holiday: #{result[:regular_holiday].inspect}"
       puts "  facility_attrs:"
       result[:facility_attrs].each { |k, v| puts "    #{k}: #{v.inspect}" }
       puts
     end
   end
 
-  desc "店舗詳細の基本情報テーブル(設備/サービス/特徴/入場ルール/定休日)をCSVにダンプ"
+  desc "店舗詳細の基本情報テーブル(設備/サービス/特徴/入場ルール/整理券)をCSVにダンプ"
   task :dump_facility_text, [ :per_pref ] => :environment do |_t, args|
     require "csv"
     $stdout.sync = true
     per_pref = (args[:per_pref] || 3).to_i
 
     out_path = Rails.root.join("tmp/ptown_facility_dump.csv")
-    keys_of_interest = %w[設備 サービス 特徴 入場ルール ルール詳細 整理券 定休日]
+    keys_of_interest = %w[設備 サービス 特徴 入場ルール ルール詳細 整理券]
 
     total_sampled = 0
     parsed_ok = 0

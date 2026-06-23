@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_23_060737) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_23_113339) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -301,13 +301,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_23_060737) do
     t.string "morning_entry"
     t.string "name", null: false
     t.boolean "okislot"
-    t.boolean "open_year_round"
     t.date "opened_on"
     t.integer "parking_spaces"
     t.string "phone_number"
     t.bigint "prefecture_id", null: false
     t.integer "ptown_shop_id"
-    t.string "regular_holiday"
     t.integer "slot_machines"
     t.boolean "slot_smoking_ok"
     t.string "slug", null: false

@@ -48,14 +48,6 @@ RSpec.describe PtownScraper do
     context "with a major chain shop (Maruhan)" do
       let(:result) { parse("shop_marhan.html") }
 
-      it "marks open_year_round true" do
-        expect(result[:facility_attrs][:open_year_round]).to eq(true)
-      end
-
-      it "captures regular_holiday raw text" do
-        expect(result[:regular_holiday]).to include("年中無休")
-      end
-
       it "detects entry_method as lottery" do
         expect(result[:facility_attrs][:entry_method]).to eq("lottery")
       end
@@ -79,7 +71,7 @@ RSpec.describe PtownScraper do
       it "returns nil for all facility flags except entry_method" do
         attrs = result[:facility_attrs]
         %i[heated_tobacco_ok slot_smoking_ok low_rate_slot wifi_available
-           charging_available data_publishing okislot open_year_round].each do |key|
+           charging_available data_publishing okislot].each do |key|
           expect(attrs[key]).to be_nil, "#{key} was #{attrs[key].inspect}, expected nil"
         end
       end
@@ -92,7 +84,6 @@ RSpec.describe PtownScraper do
         expect(result[:facility_parsed_at]).to be_nil
         expect(result[:facility_attrs]).to eq({})
         expect(result[:parking_spaces]).to be_nil
-        expect(result[:regular_holiday]).to be_nil
       end
     end
   end

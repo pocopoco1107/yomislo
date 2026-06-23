@@ -2,7 +2,7 @@ class SearchController < ApplicationController
   # 検索フィルタに使う boolean カラム
   FACILITY_FILTER_COLUMNS = %w[
     wifi_available charging_available low_rate_slot data_publishing
-    okislot ticket_distribution open_year_round heated_tobacco_ok slot_smoking_ok
+    okislot ticket_distribution heated_tobacco_ok slot_smoking_ok
   ].freeze
 
   def index

@@ -125,12 +125,6 @@
             </span>
           </div>
         <% end %>
-        <% if @shop.regular_holiday.present? %>
-          <div class="col-span-2 sm:col-span-3">
-            <span class="text-xs text-muted-foreground block">定休日</span>
-            <span class="font-medium text-foreground"><%= @shop.regular_holiday %></span>
-          </div>
-        <% end %>
       </div>
 
       <% facility_badges = shop_facility_badges(@shop) %>
