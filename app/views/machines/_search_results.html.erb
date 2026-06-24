@@ -1,32 +1,18 @@
 <% if machines.any? %>
-  <ul class="divide-y divide-border">
+  <%# 店舗グリッドと同じ machine_vote_row を描画。記録すると turbo_stream が
+      machine_vote_<id> frame を置換するので、その場で記録状態が反映される %>
+  <div class="space-y-2">
     <% machines.each do |machine| %>
-      <li class="py-2">
-        <%= form_with url: votes_path, scope: :vote, method: :post, data: { turbo_frame: "_top" }, class: "flex items-center justify-between" do |f| %>
-          <%= f.hidden_field :shop_id, value: shop_id %>
-          <%= f.hidden_field :machine_model_id, value: machine.id %>
-          <%= f.hidden_field :voted_on, value: date %>
-          <span class="text-sm font-medium text-foreground"><%= machine.name %></span>
-          <div class="flex gap-1.5 flex-wrap">
-            <button type="submit" name="vote[reset_vote]" value="1"
-                    class="bg-card text-muted-foreground border border-border hover:border-vote-yes hover:text-vote-yes rounded-md px-3 py-1.5 text-xs font-medium transition-colors min-h-[36px]">
-              リセYes
-            </button>
-            <button type="submit" name="vote[reset_vote]" value="0"
-                    class="bg-card text-muted-foreground border border-border hover:border-vote-no hover:text-vote-no rounded-md px-3 py-1.5 text-xs font-medium transition-colors min-h-[36px]">
-              リセNo
-            </button>
-            <% (1..6).each do |s| %>
-              <button type="submit" name="vote[setting_vote]" value="<%= s %>"
-                      class="bg-card text-muted-foreground border border-border rounded-md w-8 h-8 text-xs font-bold transition-colors hover:bg-setting-<%= s %>/10 hover:text-setting-<%= s %> hover:border-setting-<%= s %>/50">
-                <%= s %>
-              </button>
-            <% end %>
-          </div>
-        <% end %>
-      </li>
+      <%= render "shops/machine_vote_row",
+          machine_model: machine,
+          vote_summary: vote_summaries[machine.id],
+          user_vote: user_votes[machine.id],
+          user_play_record: user_play_records[machine.id],
+          shop: shop,
+          date: date,
+          unit_count: unit_counts[machine.id] %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="py-4 flex flex-col items-center">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 180" fill="none" class="w-12 h-12 mb-1 opacity-40">

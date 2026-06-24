@@ -48,6 +48,20 @@
 
     total_votes_count = vote_summary&.total_votes.to_i +
       (vote_summary ? vote_summary.reset_yes_count + vote_summary.reset_no_count : 0)
+
+    # 記録可否（モデルのバリデーションと一致させる）
+    # 設定・リセット記録: 前日まで (Vote#voted_on_not_too_old) / 収支: 90日以内 (PlayRecord#played_on_within_range)
+    can_record      = date >= Date.current - 1
+    can_play_record = date <= Date.current && date >= 90.days.ago.to_date
+
+    # 集計表示データ（過去日でも結果サマリは表示する）
+    reset_has_data = vote_summary && (vote_summary.reset_yes_count + vote_summary.reset_no_count) > 0
+    s_dist = vote_summary&.setting_distribution || {}
+    s_colors = { 1 => 'text-setting-1', 2 => 'text-setting-2', 3 => 'text-setting-3',
+                 4 => 'text-setting-4', 5 => 'text-setting-5', 6 => 'text-setting-6' }
+    s_entries = (1..6).select { |s| s_dist[s.to_s].to_i > 0 }
+    c_counts = vote_summary&.confirmed_setting_counts || {}
+    c_entries = c_counts.select { |_, v| v.to_i > 0 }.sort_by { |_, v| -v.to_i }
   %>
 
   <details class="bg-card rounded-lg overflow-hidden group shadow-sm" data-controller="vote" <%= "open" if user_vote.present? || local_assigns[:user_play_record].present? %>>
@@ -89,189 +103,195 @@
     <div class="px-3 pb-3 space-y-2.5 border-t border-border/50 bg-secondary/30">
 
       <%# 機種リンク %>
-      <div class="pt-2">
+      <div class="pt-2 flex items-center justify-between gap-2">
         <%= link_to machine_path(machine_model.slug),
             class: "text-[10px] text-primary hover:underline",
             data: { turbo_frame: "_top" } do %>
           機種ページへ →
         <% end %>
+        <% unless can_record %>
+          <span class="text-[10px] text-muted-foreground shrink-0">設定・リセットの記録は前日まで</span>
+        <% end %>
       </div>
 
       <%# === 朝イチ === %>
-      <div>
-        <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">朝イチ</p>
-        <div class="flex items-center gap-2">
-          <div class="flex gap-1.5">
-            <%= form_with url: votes_path, scope: :vote, method: :post, data: { turbo: true, "vote-target": "form" }, class: "inline" do |f| %>
-              <%= f.hidden_field :shop_id, value: shop.id %>
-              <%= f.hidden_field :machine_model_id, value: machine_model.id %>
-              <%= f.hidden_field :voted_on, value: date %>
-              <%= f.hidden_field :reset_vote, value: 1 %>
-              <button type="submit"
-                      class="<%= has_reset_yes ? 'bg-vote-yes text-white ring-1 ring-vote-yes/50' : 'bg-vote-yes/10 text-vote-yes hover:bg-vote-yes/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
-                      data-action="click->vote#submit"
-                      data-vote-target="button">
-                リセット
-              </button>
+      <% if can_record || reset_has_data %>
+        <div>
+          <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">朝イチ</p>
+          <div class="flex items-center gap-2">
+            <% if can_record %>
+              <div class="flex gap-1.5">
+                <%= form_with url: votes_path, scope: :vote, method: :post, data: { turbo: true, "vote-target": "form" }, class: "inline" do |f| %>
+                  <%= f.hidden_field :shop_id, value: shop.id %>
+                  <%= f.hidden_field :machine_model_id, value: machine_model.id %>
+                  <%= f.hidden_field :voted_on, value: date %>
+                  <%= f.hidden_field :reset_vote, value: 1 %>
+                  <button type="submit"
+                          class="<%= has_reset_yes ? 'bg-vote-yes text-white ring-1 ring-vote-yes/50' : 'bg-vote-yes/10 text-vote-yes hover:bg-vote-yes/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
+                          data-action="click->vote#submit"
+                          data-vote-target="button">
+                    リセット
+                  </button>
+                <% end %>
+                <%= form_with url: votes_path, scope: :vote, method: :post, data: { turbo: true, "vote-target": "form" }, class: "inline" do |f| %>
+                  <%= f.hidden_field :shop_id, value: shop.id %>
+                  <%= f.hidden_field :machine_model_id, value: machine_model.id %>
+                  <%= f.hidden_field :voted_on, value: date %>
+                  <%= f.hidden_field :reset_vote, value: 0 %>
+                  <button type="submit"
+                          class="<%= has_reset_no ? 'bg-vote-no text-white ring-1 ring-vote-no/50' : 'bg-vote-no/10 text-vote-no hover:bg-vote-no/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
+                          data-action="click->vote#submit"
+                          data-vote-target="button">
+                    据え置き
+                  </button>
+                <% end %>
+              </div>
             <% end %>
-            <%= form_with url: votes_path, scope: :vote, method: :post, data: { turbo: true, "vote-target": "form" }, class: "inline" do |f| %>
-              <%= f.hidden_field :shop_id, value: shop.id %>
-              <%= f.hidden_field :machine_model_id, value: machine_model.id %>
-              <%= f.hidden_field :voted_on, value: date %>
-              <%= f.hidden_field :reset_vote, value: 0 %>
-              <button type="submit"
-                      class="<%= has_reset_no ? 'bg-vote-no text-white ring-1 ring-vote-no/50' : 'bg-vote-no/10 text-vote-no hover:bg-vote-no/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
-                      data-action="click->vote#submit"
-                      data-vote-target="button">
-                据え置き
-              </button>
+
+            <% if reset_has_data %>
+              <span class="text-[10px] tabular-nums flex items-center gap-1 flex-wrap">
+                <% if vote_summary.reset_yes_count > 0 %>
+                  <span class="text-vote-yes font-bold">リセット</span>
+                  <span class="text-muted-foreground"><%= vote_summary.reset_yes_count %>件</span>
+                <% end %>
+                <% if vote_summary.reset_yes_count > 0 && vote_summary.reset_no_count > 0 %>
+                  <span class="text-muted-foreground">/</span>
+                <% end %>
+                <% if vote_summary.reset_no_count > 0 %>
+                  <span class="text-vote-no font-bold">据え置き</span>
+                  <span class="text-muted-foreground"><%= vote_summary.reset_no_count %>件</span>
+                <% end %>
+              </span>
             <% end %>
           </div>
-
-          <%# リセット結果 %>
-          <% if vote_summary && (vote_summary.reset_yes_count + vote_summary.reset_no_count) > 0 %>
-            <span class="text-[10px] tabular-nums flex items-center gap-1 flex-wrap">
-              <% if vote_summary.reset_yes_count > 0 %>
-                <span class="text-vote-yes font-bold">リセット</span>
-                <span class="text-muted-foreground"><%= vote_summary.reset_yes_count %>件</span>
-              <% end %>
-              <% if vote_summary.reset_yes_count > 0 && vote_summary.reset_no_count > 0 %>
-                <span class="text-muted-foreground">/</span>
-              <% end %>
-              <% if vote_summary.reset_no_count > 0 %>
-                <span class="text-vote-no font-bold">据え置き</span>
-                <span class="text-muted-foreground"><%= vote_summary.reset_no_count %>件</span>
-              <% end %>
-            </span>
-          <% end %>
         </div>
-      </div>
+      <% end %>
 
       <%# === 設定推測 === %>
-      <div>
-        <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">設定推測</p>
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex gap-1">
-            <% (1..6).each do |setting| %>
-              <%
-                is_selected = user_vote&.setting_vote == setting
-                color_class = is_selected ? selected_classes[setting] : unselected_classes[setting]
-              %>
-              <%= form_with url: votes_path, scope: :vote, method: :post, data: { turbo: true, "vote-target": "form" }, class: "inline" do |f| %>
-                <%= f.hidden_field :shop_id, value: shop.id %>
-                <%= f.hidden_field :machine_model_id, value: machine_model.id %>
-                <%= f.hidden_field :voted_on, value: date %>
-                <%= f.hidden_field :setting_vote, value: setting %>
-                <button type="submit"
-                        class="<%= color_class %> rounded-lg w-10 h-10 text-sm font-bold active:scale-90 transition-all duration-150"
-                        data-action="click->vote#submit"
-                        data-vote-target="button"><%= setting %></button>
-              <% end %>
+      <% if can_record || s_entries.any? %>
+        <div>
+          <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">設定推測</p>
+          <div class="flex flex-wrap items-center gap-2">
+            <% if can_record %>
+              <div class="flex gap-1">
+                <% (1..6).each do |setting| %>
+                  <%
+                    is_selected = user_vote&.setting_vote == setting
+                    color_class = is_selected ? selected_classes[setting] : unselected_classes[setting]
+                  %>
+                  <%= form_with url: votes_path, scope: :vote, method: :post, data: { turbo: true, "vote-target": "form" }, class: "inline" do |f| %>
+                    <%= f.hidden_field :shop_id, value: shop.id %>
+                    <%= f.hidden_field :machine_model_id, value: machine_model.id %>
+                    <%= f.hidden_field :voted_on, value: date %>
+                    <%= f.hidden_field :setting_vote, value: setting %>
+                    <button type="submit"
+                            class="<%= color_class %> rounded-lg w-10 h-10 text-sm font-bold active:scale-90 transition-all duration-150"
+                            data-action="click->vote#submit"
+                            data-vote-target="button"><%= setting %></button>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+
+            <% if s_entries.any? %>
+              <span class="text-[10px] tabular-nums flex items-center gap-1 flex-wrap">
+                <% s_entries.each_with_index do |s, i| %>
+                  <span class="<%= s_colors[s] %> font-bold">設定<%= s %></span>
+                  <span class="text-muted-foreground"><%= s_dist[s.to_s].to_i %>件</span>
+                  <% if i < s_entries.size - 1 %>
+                    <span class="text-muted-foreground">/</span>
+                  <% end %>
+                <% end %>
+              </span>
             <% end %>
           </div>
+        </div>
+      <% end %>
 
-          <%# 設定結果 %>
-          <%
-            s_dist = vote_summary&.setting_distribution || {}
-            s_colors = { 1 => 'text-setting-1', 2 => 'text-setting-2', 3 => 'text-setting-3',
-                         4 => 'text-setting-4', 5 => 'text-setting-5', 6 => 'text-setting-6' }
-            s_entries = (1..6).select { |s| s_dist[s.to_s].to_i > 0 }
-          %>
-          <% if s_entries.any? %>
-            <span class="text-[10px] tabular-nums flex items-center gap-1 flex-wrap">
-              <% s_entries.each_with_index do |s, i| %>
-                <span class="<%= s_colors[s] %> font-bold">設定<%= s %></span>
-                <span class="text-muted-foreground"><%= s_dist[s.to_s].to_i %>件</span>
-                <% if i < s_entries.size - 1 %>
+      <%# === 確定情報 === %>
+      <% if can_record || c_entries.any? %>
+        <div>
+          <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">確定情報</p>
+          <% if can_record %>
+            <div class="flex flex-wrap gap-1">
+              <% Vote::CONFIRMED_SETTING_TAGS.each do |tag| %>
+                <%
+                  is_selected = user_confirmed.include?(tag)
+                  btn_class = is_selected ? confirmed_btn_selected[tag] : confirmed_btn_unselected[tag]
+                %>
+                <%= form_with url: votes_path, scope: :vote, method: :post, data: { turbo: true, "vote-target": "form" }, class: "inline" do |f| %>
+                  <%= f.hidden_field :shop_id, value: shop.id %>
+                  <%= f.hidden_field :machine_model_id, value: machine_model.id %>
+                  <%= f.hidden_field :voted_on, value: date %>
+                  <%= f.hidden_field :confirmed_setting, value: tag %>
+                  <button type="submit"
+                          class="<%= btn_class %> rounded-md px-3 py-1.5 text-[11px] font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
+                          data-action="click->vote#submit"
+                          data-vote-target="button"><%= tag %></button>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% if c_entries.any? %>
+            <span class="text-[10px] tabular-nums flex items-center gap-1 flex-wrap mt-1.5">
+              <% c_entries.each_with_index do |(tag, count), i| %>
+                <span class="<%= confirmed_tag_colors[tag] || 'text-confirmed' %> font-bold"><%= tag %></span>
+                <span class="text-muted-foreground"><%= count %>件</span>
+                <% if i < c_entries.size - 1 %>
                   <span class="text-muted-foreground">/</span>
                 <% end %>
               <% end %>
             </span>
           <% end %>
         </div>
-      </div>
+      <% end %>
 
-      <%# === 確定情報 === %>
-      <div>
-        <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">確定情報</p>
-        <div class="flex flex-wrap gap-1">
-          <% Vote::CONFIRMED_SETTING_TAGS.each do |tag| %>
-            <%
-              is_selected = user_confirmed.include?(tag)
-              btn_class = is_selected ? confirmed_btn_selected[tag] : confirmed_btn_unselected[tag]
-            %>
-            <%= form_with url: votes_path, scope: :vote, method: :post, data: { turbo: true, "vote-target": "form" }, class: "inline" do |f| %>
-              <%= f.hidden_field :shop_id, value: shop.id %>
-              <%= f.hidden_field :machine_model_id, value: machine_model.id %>
-              <%= f.hidden_field :voted_on, value: date %>
-              <%= f.hidden_field :confirmed_setting, value: tag %>
-              <button type="submit"
-                      class="<%= btn_class %> rounded-md px-3 py-1.5 text-[11px] font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
-                      data-action="click->vote#submit"
-                      data-vote-target="button"><%= tag %></button>
-            <% end %>
+      <%# === 収支記録（投票と別ルール: 90日以内なら記録可） === %>
+      <% user_pr = local_assigns[:user_play_record] %>
+      <% if user_pr || can_play_record %>
+        <div>
+          <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">収支記録</p>
+          <% if user_pr %>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold tabular-nums <%= user_pr.result_amount >= 0 ? 'text-primary' : 'text-destructive' %>">
+                <%= user_pr.result_amount >= 0 ? "+" : "" %><%= number_with_delimiter(user_pr.result_amount) %>枚
+              </span>
+              <% if user_pr.tags.present? %>
+                <span class="text-[10px] text-muted-foreground"><%= user_pr.tags.join(", ") %></span>
+              <% end %>
+              <%= button_to play_record_path(user_pr), method: :delete,
+                  data: { turbo_confirm: "この収支記録を削除しますか？" },
+                  class: "text-[10px] text-muted-foreground hover:text-destructive transition-colors min-h-[36px] px-1" do %>
+                削除
+              <% end %>
+            </div>
+          <% else %>
+            <div class="flex items-center gap-1.5" data-controller="result-input">
+              <%= form_tag play_records_path, method: :post, class: "flex items-center gap-1.5" do %>
+                <input type="hidden" name="play_record[shop_id]" value="<%= shop.id %>">
+                <input type="hidden" name="play_record[machine_model_id]" value="<%= machine_model.id %>">
+                <input type="hidden" name="play_record[played_on]" value="<%= date %>">
+                <button type="button" data-action="click->result-input#toggleSign"
+                        class="shrink-0 w-9 h-9 flex items-center justify-center rounded-md border border-border bg-background text-sm font-bold transition-colors hover:bg-secondary">
+                  <span data-result-input-target="sign" class="text-primary">+</span>
+                </button>
+                <input type="number" min="0" max="999999" placeholder="収支(枚)" inputmode="numeric"
+                       name="play_record[amount_display]"
+                       data-result-input-target="amount"
+                       data-action="input->result-input#input"
+                       class="flex-1 min-w-0 border border-input bg-background text-foreground rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring tabular-nums min-h-[36px]">
+                <input type="hidden" name="play_record[result_amount]" value="0"
+                       data-result-input-target="hidden">
+                <button type="submit"
+                        class="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-xs font-medium hover:bg-primary/90 active:scale-95 transition-all duration-150 min-h-[36px]">
+                  記録
+                </button>
+              <% end %>
+            </div>
           <% end %>
         </div>
-        <%
-          c_counts = vote_summary&.confirmed_setting_counts || {}
-          c_entries = c_counts.select { |_, v| v.to_i > 0 }.sort_by { |_, v| -v.to_i }
-        %>
-        <% if c_entries.any? %>
-          <span class="text-[10px] tabular-nums flex items-center gap-1 flex-wrap mt-1.5">
-            <% c_entries.each_with_index do |(tag, count), i| %>
-              <span class="<%= confirmed_tag_colors[tag] || 'text-confirmed' %> font-bold"><%= tag %></span>
-              <span class="text-muted-foreground"><%= count %>件</span>
-              <% if i < c_entries.size - 1 %>
-                <span class="text-muted-foreground">/</span>
-              <% end %>
-            <% end %>
-          </span>
-        <% end %>
-      </div>
-
-      <%# === 収支記録 === %>
-      <div>
-        <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">収支記録</p>
-        <% user_pr = local_assigns[:user_play_record] %>
-        <% if user_pr %>
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-bold tabular-nums <%= user_pr.result_amount >= 0 ? 'text-primary' : 'text-destructive' %>">
-              <%= user_pr.result_amount >= 0 ? "+" : "" %><%= number_with_delimiter(user_pr.result_amount) %>枚
-            </span>
-            <% if user_pr.tags.present? %>
-              <span class="text-[10px] text-muted-foreground"><%= user_pr.tags.join(", ") %></span>
-            <% end %>
-            <%= button_to play_record_path(user_pr), method: :delete,
-                data: { turbo_confirm: "この収支記録を削除しますか？" },
-                class: "text-[10px] text-muted-foreground hover:text-destructive transition-colors min-h-[36px] px-1" do %>
-              削除
-            <% end %>
-          </div>
-        <% else %>
-          <div class="flex items-center gap-1.5" data-controller="result-input">
-            <%= form_tag play_records_path, method: :post, class: "flex items-center gap-1.5" do %>
-              <input type="hidden" name="play_record[shop_id]" value="<%= shop.id %>">
-              <input type="hidden" name="play_record[machine_model_id]" value="<%= machine_model.id %>">
-              <input type="hidden" name="play_record[played_on]" value="<%= date %>">
-              <button type="button" data-action="click->result-input#toggleSign"
-                      class="shrink-0 w-9 h-9 flex items-center justify-center rounded-md border border-border bg-background text-sm font-bold transition-colors hover:bg-secondary">
-                <span data-result-input-target="sign" class="text-primary">+</span>
-              </button>
-              <input type="number" min="0" max="999999" placeholder="収支(枚)" inputmode="numeric"
-                     name="play_record[amount_display]"
-                     data-result-input-target="amount"
-                     data-action="input->result-input#input"
-                     class="flex-1 min-w-0 border border-input bg-background text-foreground rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring tabular-nums min-h-[36px]">
-              <input type="hidden" name="play_record[result_amount]" value="0"
-                     data-result-input-target="hidden">
-              <button type="submit"
-                      class="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-xs font-medium hover:bg-primary/90 active:scale-95 transition-all duration-150 min-h-[36px]">
-                記録
-              </button>
-            <% end %>
-          </div>
-        <% end %>
-      </div>
+      <% end %>
 
     </div>
   </details>

@@ -82,17 +82,33 @@ class MachinesController < ApplicationController
 
   def search
     query = params[:q].to_s.strip
-    if query.length >= 1
+    shop = Shop.find_by(id: params[:shop_id])
+    date = params[:date].to_s.match?(/\A\d{4}-\d{2}-\d{2}\z/) ? Date.parse(params[:date]) : Date.current
+    if query.length >= 1 && shop
       # 旧字体カナ(ヱ/ヲ/ヰ)を新字体に寄せて比較し、「エヴァ」で「ヱヴァンゲリヲン」をヒットさせる
       pattern = "%#{MachineModel.sanitize_sql_like(query)}%"
       @machines = MachineModel.active
                               .where("translate(name, 'ヱヲヰ', 'エオイ') ILIKE translate(?, 'ヱヲヰ', 'エオイ')", pattern)
                               .order(:name)
                               .limit(10)
+      # 検索結果も店舗グリッドと同じ machine_vote_row で描画するため、記録状態・集計を読み込む
+      ids = @machines.map(&:id)
+      summaries = VoteSummary.where(shop_id: shop.id, machine_model_id: ids, target_date: date).index_by(&:machine_model_id)
+      votes = Vote.where(voter_token: voter_token, shop_id: shop.id, machine_model_id: ids, voted_on: date).index_by(&:machine_model_id)
+      play_records = PlayRecord.where(voter_token: voter_token, shop_id: shop.id, machine_model_id: ids, played_on: date).index_by(&:machine_model_id)
+      units = ShopMachineModel.where(shop_id: shop.id, machine_model_id: ids).where.not(unit_count: nil).pluck(:machine_model_id, :unit_count).to_h
     else
       @machines = MachineModel.none
+      summaries = {}
+      votes = {}
+      play_records = {}
+      units = {}
     end
-    render partial: "machines/search_results", locals: { machines: @machines, shop_id: params[:shop_id], date: params[:date] }, layout: false
+    render partial: "machines/search_results",
+           locals: { machines: @machines, shop: shop, date: date,
+                     vote_summaries: summaries, user_votes: votes,
+                     user_play_records: play_records, unit_counts: units },
+           layout: false
   end
 
   def autocomplete

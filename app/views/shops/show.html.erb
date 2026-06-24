@@ -204,7 +204,7 @@
     <% end %>
   </div>
   <% unless rec_can_record %>
-    <p class="text-[11px] text-muted-foreground -mt-1.5 mb-3 px-1">※ 記録できるのは前日までです。この日は閲覧のみ。</p>
+    <p class="text-[11px] text-muted-foreground -mt-1.5 mb-3 px-1">※ 設定・リセットの記録は前日までです（収支は90日以内なら記録できます）。</p>
   <% end %>
 
   <%# === Vote Errors === %>
@@ -266,7 +266,7 @@
                autocomplete="off">
       </div>
       <div data-machine-search-target="results"
-           class="mt-2 bg-card border border-border rounded-lg shadow-sm empty:hidden p-3"></div>
+           class="mt-3 space-y-2 empty:hidden"></div>
       <p class="text-xs text-muted-foreground mt-2 px-1">この店舗の設置機種はまだ登録されていません。機種名で検索して記録できます。</p>
     </div>
   <% end %>
