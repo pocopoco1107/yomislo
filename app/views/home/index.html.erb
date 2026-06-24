@@ -81,25 +81,9 @@
         </div>
       </div>
 
-      <!-- Search + Nearby -->
+      <!-- 店舗・機種検索 -->
       <div class="flex flex-col gap-2">
-        <%# 店舗検索 %>
-        <div data-controller="hero-search" data-hero-search-url-value="<%= autocomplete_shops_path %>" data-hero-search-type-value="shop" class="relative w-full">
-          <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground pointer-events-none z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <input type="search"
-                 id="hero_shop_search"
-                 placeholder="店舗名で検索"
-                 autocomplete="off"
-                 aria-label="店舗名で検索"
-                 data-hero-search-target="input"
-                 data-action="input->hero-search#search focus->hero-search#focus"
-                 class="h-11 w-full rounded-lg border border-border bg-card pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none md:h-14 md:text-lg md:pl-12 transition-colors">
-          <div data-hero-search-target="results"
-               class="hidden absolute left-0 right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-30 max-h-[320px] overflow-y-auto divide-y divide-border"></div>
-        </div>
-
+        <%= section_heading "店舗・機種検索", extra: "mb-1" %>
         <%# 機種検索 %>
         <div data-controller="hero-search" data-hero-search-url-value="<%= autocomplete_machines_path %>" data-hero-search-type-value="machine" class="relative w-full">
           <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground pointer-events-none z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -118,7 +102,24 @@
                class="hidden absolute left-0 right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-30 max-h-[320px] overflow-y-auto divide-y divide-border"></div>
         </div>
 
-        <%# 現在地から探す %>
+        <%# 店舗検索 %>
+        <div data-controller="hero-search" data-hero-search-url-value="<%= autocomplete_shops_path %>" data-hero-search-type-value="shop" class="relative w-full">
+          <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground pointer-events-none z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <input type="search"
+                 id="hero_shop_search"
+                 placeholder="店舗名で検索"
+                 autocomplete="off"
+                 aria-label="店舗名で検索"
+                 data-hero-search-target="input"
+                 data-action="input->hero-search#search focus->hero-search#focus"
+                 class="h-11 w-full rounded-lg border border-border bg-card pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none md:h-14 md:text-lg md:pl-12 transition-colors">
+          <div data-hero-search-target="results"
+               class="hidden absolute left-0 right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-30 max-h-[320px] overflow-y-auto divide-y divide-border"></div>
+        </div>
+
+        <%# 現在地から探す（店舗検索の直後に配置） %>
         <div data-controller="nearby">
           <button type="button"
                   data-nearby-target="button"
@@ -163,6 +164,7 @@
           prefectures_by_name = @prefectures.index_by(&:name)
         %>
 
+        <div class="ml-1 pl-3 border-l-2 border-primary/30 space-y-0.5">
         <% regions.each do |region_name, pref_names| %>
           <div class="mb-1" data-controller="accordion">
             <button type="button" data-action="click->accordion#toggle"
@@ -196,35 +198,7 @@
             </div>
           </div>
         <% end %>
-      </div>
-
-      <!-- Weekly High Setting Machines -->
-      <div class="bg-card rounded-lg border border-border/60 p-3">
-        <h2 class="text-sm font-heading text-foreground mb-2 flex items-center gap-1.5">
-          <span class="text-[0.7em] text-slot-red" aria-hidden="true">▶</span>
-          今週の高設定ランキング
-        </h2>
-        <% if @weekly_high_setting_machines.any? %>
-          <ol class="space-y-1.5">
-            <% @weekly_high_setting_machines.each_with_index do |item, i| %>
-              <li class="flex items-center gap-2">
-                <span class="text-[10px] font-bold tabular-nums w-3 shrink-0
-                  <%= case i when 0 then 'text-yellow-500' when 1 then 'text-muted-foreground' when 2 then 'text-amber-700' else 'text-muted-foreground' end %>">
-                  <%= i + 1 %>
-                </span>
-                <%= link_to machine_path(item[:machine].slug), class: "text-xs text-primary hover:underline truncate flex-1", data: { turbo_frame: "_top" } do %>
-                  <%= item[:machine].name %>
-                <% end %>
-                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive shrink-0">
-                  <%= item[:pct] %>%
-                </span>
-                <span class="text-[10px] tabular-nums text-muted-foreground shrink-0"><%= item[:high_count] %>/<%= item[:total_count] %></span>
-              </li>
-            <% end %>
-          </ol>
-        <% else %>
-          <p class="text-xs text-muted-foreground py-2 text-center">今週はまだデータなし</p>
-        <% end %>
+        </div>
       </div>
 
       <!-- Trending Shops -->
@@ -333,32 +307,6 @@
             <% end %>
           </div>
         <% end %>
-
-        <!-- Points Ranking -->
-        <div class="bg-card rounded-lg border border-border/60 p-3">
-          <h2 class="text-sm font-heading text-foreground mb-2 flex items-center gap-1.5">
-            <span class="text-[0.7em] text-slot-yellow" aria-hidden="true">▶</span>
-            ポイントランキング
-          </h2>
-          <% if @points_ranking.any? %>
-            <ol class="space-y-1.5">
-              <% @points_ranking.each do |entry| %>
-                <li class="flex items-center gap-2">
-                  <span class="text-[10px] font-bold tabular-nums w-3 shrink-0 <%= case entry[:rank] when 1 then 'text-yellow-500' when 2 then 'text-muted-foreground' when 3 then 'text-amber-700' else 'text-muted-foreground' end %>">
-                    <%= entry[:rank] %>
-                  </span>
-                  <span class="text-xs text-foreground flex-1 truncate"><%= entry[:label] %></span>
-                  <span class="text-[10px] tabular-nums text-muted-foreground shrink-0"><%= entry[:points] %>pt</span>
-                </li>
-              <% end %>
-            </ol>
-          <% else %>
-            <p class="text-xs text-muted-foreground py-2 text-center">まだデータなし</p>
-          <% end %>
-          <div class="mt-2 text-center">
-            <%= link_to "すべて見る →", rankings_path, class: "text-[10px] text-primary hover:underline" %>
-          </div>
-        </div>
 
       </div>
     </div>

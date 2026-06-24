@@ -29,7 +29,7 @@ RSpec.describe "Voter", type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("ユーザー#1234")
         expect(response.body).to include("設定記録")
-        expect(response.body).to include("連続記録ストリーク")
+        expect(response.body).to include("収支記録")
       end
 
       it "displays recent vote history with shop name" do

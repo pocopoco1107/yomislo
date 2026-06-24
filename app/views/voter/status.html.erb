@@ -10,8 +10,8 @@
         <div class="flex items-start gap-2">
           <span class="text-lg leading-none mt-0.5">⚠️</span>
           <div class="flex-1 min-w-0">
-            <p class="text-xs font-semibold text-foreground">トークンをコピーしておこう</p>
-            <p class="text-xs text-muted-foreground mt-0.5">ブラウザのデータが消えると戻れなくなる</p>
+            <p class="text-xs font-semibold text-foreground">このトークンを必ずコピーして保管しておこう</p>
+            <p class="text-xs text-muted-foreground mt-0.5">機種変更やブラウザのデータ削除で記録が消えても、このトークンがあれば元に戻せる。メモやスクショで残しておこう。</p>
             <div class="flex items-center gap-2 mt-2" data-controller="clipboard">
               <code class="flex-1 bg-secondary text-foreground text-[11px] px-2 py-1.5 rounded font-mono select-all overflow-x-auto" data-clipboard-target="source"><%= cookies[:voter_token] %></code>
               <button type="button" data-clipboard-target="button" data-action="click->clipboard#copy"
@@ -74,74 +74,6 @@
         <p class="score-num text-xl text-primary"><%= @prefectures_count %></p>
         <p class="text-[10px] text-muted-foreground mt-0.5">記録都道府県</p>
       </div>
-    </div>
-
-    <!-- ポイントの貯め方 -->
-    <div class="bg-card rounded-lg border-b border-border/50 p-4 mb-4">
-      <%= section_heading "ポイントの貯め方", accent: :yellow, extra: "mb-3" %>
-      <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-        <div class="flex items-center justify-between">
-          <span class="text-muted-foreground">設定/リセット記録</span>
-          <span class="font-bold text-slot-yellow tabular-nums">+<%= VoterProfile::POINT_RULES[:vote] %>pt</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-muted-foreground">確定情報の記録</span>
-          <span class="font-bold text-slot-yellow tabular-nums">+<%= VoterProfile::POINT_RULES[:confirmed_setting] %>pt</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-muted-foreground">収支記録</span>
-          <span class="font-bold text-slot-yellow tabular-nums">+<%= VoterProfile::POINT_RULES[:play_record] %>pt</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-muted-foreground">ご意見・要望</span>
-          <span class="font-bold text-slot-yellow tabular-nums">+<%= VoterProfile::POINT_RULES[:feedback] %>pt</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-muted-foreground">ユーザー名設定</span>
-          <span class="font-bold text-slot-yellow tabular-nums">+<%= VoterProfile::POINT_RULES[:display_name_set] %>pt</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-muted-foreground">7日連続記録</span>
-          <span class="font-bold text-slot-yellow tabular-nums">+<%= VoterProfile::POINT_RULES[:streak_7] %>pt</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-muted-foreground">3県以上で記録</span>
-          <span class="font-bold text-slot-yellow tabular-nums">+<%= VoterProfile::POINT_RULES[:multi_prefecture] %>pt</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ストリーク -->
-    <div class="bg-card rounded-lg border-b border-border/50 p-4 mb-4">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="font-heading text-sm tracking-tight text-foreground flex items-center gap-1.5">
-          <span class="text-[0.7em] text-slot-red" aria-hidden="true">▶</span>
-          連続記録ストリーク
-        </h2>
-        <div class="flex items-center gap-1.5">
-          <span class="text-2xl">🔥</span>
-          <span class="score-num text-2xl text-foreground"><%= @profile.current_streak %></span>
-          <span class="text-xs text-muted-foreground">日連続</span>
-        </div>
-      </div>
-      <div class="flex items-center justify-between gap-1">
-        <% @streak_days.each do |day| %>
-          <div class="flex flex-col items-center gap-1">
-            <span class="text-[10px] text-muted-foreground"><%= day[:label] %></span>
-            <div class="w-8 h-8 rounded-full flex items-center justify-center
-              <%= day[:voted] ? 'bg-primary text-primary-foreground' : 'bg-secondary' %>">
-              <% if day[:voted] %>
-                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-      <% if @profile.max_streak > @profile.current_streak %>
-        <p class="text-xs text-muted-foreground mt-2 text-center">最長記録: <%= @profile.max_streak %>日連続</p>
-      <% end %>
     </div>
 
     <!-- 的中率 -->
@@ -214,7 +146,7 @@
           <svg class="w-4 h-4 text-muted-foreground transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </summary>
         <div class="px-4 pb-4">
-          <p class="text-xs text-muted-foreground mb-2">ブラウザのデータが消えると戻れなくなる</p>
+          <p class="text-xs text-muted-foreground mb-2">このトークンをコピーして保管しておこう。機種変更やブラウザのデータ削除で記録が消えても、これがあれば元に戻せる。</p>
           <div class="flex items-center gap-2" data-controller="clipboard">
             <code class="flex-1 bg-secondary text-foreground text-xs px-3 py-2 rounded font-mono select-all overflow-x-auto" data-clipboard-target="source"><%= cookies[:voter_token] %></code>
             <button type="button" data-clipboard-target="button" data-action="click->clipboard#copy"

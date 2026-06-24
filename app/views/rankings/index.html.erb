@@ -171,6 +171,49 @@
     </p>
   </div>
 
+  <%# === ポイントランキング (オマケ) === %>
+  <div class="mt-8">
+    <%= section_heading "ポイントランキング", accent: :yellow, extra: "mb-3" %>
+    <div class="bg-card rounded-lg border border-border/60 p-4">
+      <% if @points_ranking.any? %>
+        <ol class="space-y-2.5">
+          <% @points_ranking.each do |entry| %>
+            <li class="flex items-center gap-3">
+              <span class="w-5 text-center text-sm font-bold tabular-nums shrink-0 <%= case entry[:rank] when 1 then 'text-yellow-500' when 2 then 'text-muted-foreground' when 3 then 'text-amber-700' else 'text-muted-foreground' end %>"><%= entry[:rank] %></span>
+              <span class="text-sm text-foreground flex-1 truncate"><%= entry[:label] %></span>
+              <span class="text-xs tabular-nums text-muted-foreground shrink-0"><%= entry[:points] %>pt</span>
+            </li>
+          <% end %>
+        </ol>
+      <% else %>
+        <p class="text-sm text-muted-foreground py-3 text-center">まだデータなし</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# === 今週の高設定ランキング (オマケ) === %>
+  <div class="mt-6">
+    <%= section_heading "今週の高設定ランキング", accent: :red, extra: "mb-3" %>
+    <div class="bg-card rounded-lg border border-border/60 p-4">
+      <% if @weekly_high_setting_machines.any? %>
+        <ol class="space-y-2.5">
+          <% @weekly_high_setting_machines.each_with_index do |item, i| %>
+            <li class="flex items-center gap-3">
+              <span class="w-5 text-center text-sm font-bold tabular-nums shrink-0 <%= case i when 0 then 'text-yellow-500' when 1 then 'text-muted-foreground' when 2 then 'text-amber-700' else 'text-muted-foreground' end %>"><%= i + 1 %></span>
+              <%= link_to machine_path(item[:machine].slug), class: "text-sm text-primary hover:underline truncate flex-1", data: { turbo_frame: "_top" } do %>
+                <%= item[:machine].name %>
+              <% end %>
+              <span class="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive shrink-0"><%= item[:pct] %>%</span>
+              <span class="text-[11px] tabular-nums text-muted-foreground shrink-0"><%= item[:high_count] %>/<%= item[:total_count] %></span>
+            </li>
+          <% end %>
+        </ol>
+      <% else %>
+        <p class="text-sm text-muted-foreground py-3 text-center">今週はまだデータなし</p>
+      <% end %>
+    </div>
+  </div>
+
   <%# === Link to Voter Status === %>
   <div class="mt-6 text-center">
     <%= link_to voter_status_path, class: "inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline min-h-[44px]" do %>

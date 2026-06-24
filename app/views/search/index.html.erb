@@ -28,6 +28,33 @@
     </p>
   </header>
 
+  <%# 現在地から探す（店舗検索の主要導線） %>
+  <div data-controller="nearby" class="mb-6">
+    <button type="button"
+            data-nearby-target="button"
+            data-action="click->nearby#locate"
+            class="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-secondary hover:border-primary/50 active:scale-95 transition-all duration-150 min-h-[44px]">
+      <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span data-nearby-target="buttonText">現在地から探す</span>
+      <svg data-nearby-target="spinner" class="hidden h-4 w-4 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>
+    </button>
+    <p data-nearby-target="error" class="hidden mt-2 text-sm text-destructive"></p>
+
+    <div data-nearby-target="fallback" class="hidden mt-2">
+      <p class="text-xs text-muted-foreground">
+        位置情報が使えないみたい。下の検索フォームから探してね。
+      </p>
+    </div>
+
+    <turbo-frame id="nearby_results"></turbo-frame>
+  </div>
+
   <%# 検索フォーム %>
   <%= form_tag search_path, method: :get, class: "mb-8" do %>
     <%# フリーワード検索（主役） %>

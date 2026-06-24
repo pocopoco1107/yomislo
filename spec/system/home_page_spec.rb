@@ -49,11 +49,11 @@ RSpec.describe "Home page", type: :system do
     end
   end
 
-  describe "weekly ranking section" do
-    it "displays the weekly ranking card" do
+  describe "search section" do
+    it "displays the shop/machine search heading" do
       visit root_path
 
-      expect(page).to have_content("今週の高設定ランキング")
+      expect(page).to have_content("店舗・機種検索")
     end
   end
 

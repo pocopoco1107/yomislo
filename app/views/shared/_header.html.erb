@@ -11,7 +11,7 @@
     <nav class="hidden items-center gap-6 md:flex">
       <%= link_to "ホーム", root_path,
             class: "text-sm font-medium transition-colors #{current_page?(root_path) ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}" %>
-      <%= link_to "検索", search_path,
+      <%= link_to "店舗検索", search_path,
             class: "text-sm font-medium transition-colors #{current_page?(search_path) ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}" %>
       <%= link_to "収支", play_records_path,
             class: "text-sm font-medium transition-colors #{current_page?(play_records_path) ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}" %>
@@ -73,7 +73,7 @@
     <%= link_to search_path,
           class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>
       <%= icon_search("w-5 h-5 text-muted-foreground") %>
-      検索
+      店舗検索
     <% end %>
     <%= link_to play_records_path,
           class: "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground min-h-[44px]" do %>

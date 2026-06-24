@@ -48,9 +48,19 @@
       <h1 class="font-heading text-2xl md:text-3xl font-bold text-foreground flex-1"><%= @shop.name %></h1>
       <div data-controller="favorite" data-favorite-shop-slug-value="<%= @shop.slug %>">
         <button data-action="click->favorite#toggle"
-                class="text-2xl leading-none p-1 hover:scale-110 transition-transform min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
+                class="shrink-0 inline-flex flex-col items-center justify-center gap-0.5 rounded-lg border border-border bg-card px-2 min-w-[56px] min-h-[44px] hover:border-yellow-500/60 active:scale-95 transition-all"
+                aria-label="お気に入りに追加"
+                aria-pressed="false"
                 title="お気に入り">
-          <span data-favorite-star class="text-muted-foreground">&#9734;</span>
+          <%# Outline star (未登録) %>
+          <svg data-favorite-icon-empty class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <%# Filled star (登録済) %>
+          <svg data-favorite-icon-filled class="hidden w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z"/>
+          </svg>
+          <span data-favorite-label class="text-[9px] leading-none text-muted-foreground">お気に入り</span>
         </button>
       </div>
     </div>

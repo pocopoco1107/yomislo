@@ -20,9 +20,6 @@ class VoterController < ApplicationController
                          .order(voted_on: :desc, updated_at: :desc)
                          .limit(10)
 
-    # Streak data for view (last 7 days)
-    @streak_days = build_streak_calendar(token)
-
     @voter_label = @profile.display_name.presence || "ユーザー##{token.last(4)}"
 
     # Points breakdown for display
@@ -56,24 +53,6 @@ class VoterController < ApplicationController
       redirect_to voter_status_path, notice: "トークンを復元しました"
     else
       redirect_to voter_status_path, alert: "トークンが見つかりません"
-    end
-  end
-
-  private
-
-  def build_streak_calendar(token)
-    today = Date.current
-    dates_range = (today - 6.days)..today
-    voted_dates = Vote.where(voter_token: token, voted_on: dates_range)
-                      .distinct.pluck(:voted_on).to_set
-
-    (0..6).map do |i|
-      day = today - (6 - i).days
-      {
-        label: ApplicationHelper::DAY_LABELS[day.wday],
-        date: day,
-        voted: voted_dates.include?(day)
-      }
     end
   end
 end
