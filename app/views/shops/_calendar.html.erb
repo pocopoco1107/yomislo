@@ -82,7 +82,7 @@
                   hover:bg-secondary active:bg-primary/10
                   #{bg_class}
                   #{'ring-2 ring-primary rounded-md' if is_today}
-                  #{'bg-primary/20' if is_selected && !is_today}
+                  #{'ring-2 ring-primary bg-primary/25 font-bold' if is_selected && !is_today}
                   #{'bg-destructive/5' if date.wday == 0 && !is_selected && votes == 0}
                   #{'bg-chart-1/5' if date.wday == 6 && !is_selected && votes == 0}" do %>
         <span class="text-[11px] tabular-nums leading-none

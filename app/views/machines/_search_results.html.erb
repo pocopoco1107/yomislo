@@ -2,12 +2,10 @@
   <ul class="divide-y divide-border">
     <% machines.each do |machine| %>
       <li class="py-2">
-        <%= form_with url: votes_path, method: :post, data: { turbo_frame: "_top" }, class: "flex items-center justify-between" do |f| %>
+        <%= form_with url: votes_path, scope: :vote, method: :post, data: { turbo_frame: "_top" }, class: "flex items-center justify-between" do |f| %>
           <%= f.hidden_field :shop_id, value: shop_id %>
           <%= f.hidden_field :machine_model_id, value: machine.id %>
           <%= f.hidden_field :voted_on, value: date %>
-          <%= f.hidden_field :reset_vote, value: nil %>
-          <%= f.hidden_field :setting_vote, value: nil %>
           <span class="text-sm font-medium text-foreground"><%= machine.name %></span>
           <div class="flex gap-1.5 flex-wrap">
             <button type="submit" name="vote[reset_vote]" value="1"
