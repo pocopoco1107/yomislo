@@ -264,6 +264,7 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 | `promotion-placement` | render_promotion を含むファイル、Promotion 関連の編集 |
 | `before-deploy-render` | git push 直前、render.yaml/migration 編集、「デプロイする」発言 |
 | `wrap-up` | 「振り返り」「まとめ」「終わり」 |
+| `handoff` | 「引き継ぎ」「ハンドオフ」「新セッション」発言 or 会話の散らかり兆候を自動検出 |
 
 ### サブエージェント（`.claude/agents/`）
 
