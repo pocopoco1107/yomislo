@@ -76,8 +76,10 @@ class MachinesController < ApplicationController
   def search
     query = params[:q].to_s.strip
     if query.length >= 1
+      # 旧字体カナ(ヱ/ヲ/ヰ)を新字体に寄せて比較し、「エヴァ」で「ヱヴァンゲリヲン」をヒットさせる
+      pattern = "%#{MachineModel.sanitize_sql_like(query)}%"
       @machines = MachineModel.active
-                              .where("name ILIKE ?", "%#{MachineModel.sanitize_sql_like(query)}%")
+                              .where("translate(name, 'ヱヲヰ', 'エオイ') ILIKE translate(?, 'ヱヲヰ', 'エオイ')", pattern)
                               .order(:name)
                               .limit(10)
     else

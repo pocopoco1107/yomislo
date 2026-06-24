@@ -100,6 +100,11 @@ bin/dev  # サーバー起動 (Tailwind watch + Rails)
 | tag-select | タグチップ選択トグル (hidden input同期) |
 | result-input | 収支額±切替UI |
 | ranking-tab | ランキング期間/スコープ切替 (Turbo navigation) |
+| hero-search | ホームの店舗名/機種名ライブ検索 (インクリメンタル候補表示) |
+| shop-autocomplete | 収支記録モーダルの店舗名オートコンプリート (/shops/autocomplete) |
+| record-modal | 収支カレンダーの記録モーダル開閉 (日付指定/今日) |
+| auto-submit | select変更で親formを自動submit (機種詳細の設置店舗 県フィルタ等) |
+| image-fallback | 機種画像の読み込み失敗時フォールバック |
 
 ## テスト
 ```bash

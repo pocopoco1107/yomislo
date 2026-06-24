@@ -3,8 +3,19 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["input", "list"]
 
+  // 旧字体カナ（ヱ/ヲ/ヰ）を新字体に寄せて比較する。
+  // 例: 機種正式名「ヱヴァンゲリヲン」を、ユーザー入力「エヴァ」でヒットさせる。
+  #normalize(str) {
+    return (str || "")
+      .normalize("NFKC")
+      .toLowerCase()
+      .replace(/ヱ/g, "エ")
+      .replace(/ヲ/g, "オ")
+      .replace(/ヰ/g, "イ")
+  }
+
   filter() {
-    const query = this.inputTarget.value.toLowerCase().trim()
+    const query = this.#normalize(this.inputTarget.value.trim())
     const list = this.listTarget
 
     // Machine vote rows (shop page) — check first since rows are turbo-frames
@@ -31,7 +42,7 @@ export default class extends Controller {
 
   #filterMachineRows(list, rows, query) {
     rows.forEach(el => {
-      const name = el.dataset.filterName || ""
+      const name = this.#normalize(el.dataset.filterName)
       el.classList.toggle("hidden", query !== "" && !name.includes(query))
     })
 
@@ -56,7 +67,7 @@ export default class extends Controller {
       }
 
       cards.forEach(el => {
-        const name = el.dataset.filterName || ""
+        const name = this.#normalize(el.dataset.filterName)
         const visible = name.includes(query)
         el.classList.toggle("hidden", !visible)
         if (visible) anyVisible = true
@@ -80,7 +91,7 @@ export default class extends Controller {
     }
 
     cards.forEach(el => {
-      const name = el.dataset.filterName || ""
+      const name = this.#normalize(el.dataset.filterName)
       el.classList.toggle("hidden", !name.includes(query))
     })
   }

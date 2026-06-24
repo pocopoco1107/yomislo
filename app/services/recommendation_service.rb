@@ -18,8 +18,9 @@ class RecommendationService
   end
 
   # 都道府県別TOP N
+  # 県ページでは表示に prefecture を使わないため eager load しない (Bullet の unused eager loading 回避)
   def self.top_for_prefecture(prefecture, limit: 5)
-    new.top_shops(scope: prefecture.shops, limit: limit)
+    new.top_shops(scope: prefecture.shops, limit: limit, with_prefecture: false)
   end
 
   # 将来のAI連携用インターフェース
@@ -43,7 +44,7 @@ class RecommendationService
     end
   end
 
-  def top_shops(scope:, limit:)
+  def top_shops(scope:, limit:, with_prefecture: true)
     shop_ids = scope.pluck(:id)
     return [] if shop_ids.empty?
 
@@ -80,9 +81,9 @@ class RecommendationService
     return [] if top.empty?
 
     # 店舗オブジェクトを1クエリで取得
-    shops_by_id = Shop.where(id: top.map { |s| s[:shop_id] })
-                      .includes(:prefecture)
-                      .index_by(&:id)
+    shops_relation = Shop.where(id: top.map { |s| s[:shop_id] })
+    shops_relation = shops_relation.includes(:prefecture) if with_prefecture
+    shops_by_id = shops_relation.index_by(&:id)
 
     top.filter_map do |entry|
       shop = shops_by_id[entry[:shop_id]]
