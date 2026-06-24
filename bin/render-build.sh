@@ -15,3 +15,6 @@ bundle exec rails db:migrate
 if bundle exec rails runner "exit(Prefecture.count == 0 ? 0 : 1)" 2>/dev/null; then
   bundle exec rails db:seed
 fi
+
+# Generate sitemap (static XML in public/ — served directly by Rails)
+bundle exec rails sitemap:refresh:no_ping

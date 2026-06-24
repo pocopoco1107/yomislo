@@ -185,11 +185,11 @@
   <% end %>
 
   <%# === Ceiling Info (天井・期待値) === %>
-  <details class="bg-card border border-border rounded-lg mb-6 group">
+  <details<%= " open" if @machine_model.ceiling_info.present? && @machine_model.ceiling_info.any? %> class="bg-card border border-border rounded-lg mb-6 group">
     <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 rounded-lg transition-colors">
       <h2 class="text-sm font-heading font-bold text-foreground flex items-center gap-2">
         <span class="w-1 h-4 bg-chart-5 rounded-full"></span>
-        天井・期待値
+        <%= @machine_model.name %> 天井・期待値
       </h2>
       <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
     </summary>
@@ -231,11 +231,11 @@
   </details>
 
   <%# === Reset Info (リセット・据え置き) === %>
-  <details class="bg-card border border-border rounded-lg mb-6 group">
+  <details<%= " open" if @machine_model.reset_info.present? && @machine_model.reset_info.any? %> class="bg-card border border-border rounded-lg mb-6 group">
     <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 rounded-lg transition-colors">
       <h2 class="text-sm font-heading font-bold text-foreground flex items-center gap-2">
         <span class="w-1 h-4 bg-vote-yes rounded-full"></span>
-        リセット・据え置き情報
+        <%= @machine_model.name %> リセット恩恵・据え置き
         <% if @all_time_reset_rate %>
           <span class="text-[10px] font-normal text-muted-foreground">(<%= @all_time_reset_rate %>%)</span>
         <% end %>

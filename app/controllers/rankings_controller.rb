@@ -1,6 +1,8 @@
 class RankingsController < ApplicationController
   def index
-    set_meta_tags title: "記録ランキング"
+    set_meta_tags title: "パチスロ設定記録ランキング",
+                  description: "パチスロの設定記録数ランキング。週間・月間・累計で全国/都道府県別の記録ランカーをチェック。",
+                  keywords: "パチスロ, ランキング, 設定記録, 週間, 月間, 全国"
 
     @period = params[:period].presence || "weekly"
     @period = "weekly" unless %w[weekly monthly all_time].include?(@period)

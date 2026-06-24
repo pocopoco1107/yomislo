@@ -12,7 +12,7 @@ class HomeController < ApplicationController
                         url: root_url },
                   twitter: { card: "summary" }
 
-    @prefectures = Prefecture.left_joins(:shops).group(:id).select("prefectures.*, COUNT(shops.id) as shops_count").order(:id)
+    @prefectures = Prefecture.left_joins(:shops).group(:id).select("prefectures.*, COUNT(shops.id) FILTER (WHERE shops.ptown_delisted_at IS NULL) as shops_count").order(:id)
 
     # 相棒ペット (cookie がある人だけ。新規訪問者には cookie を作らない)
     token = cookies[:voter_token]
@@ -21,7 +21,7 @@ class HomeController < ApplicationController
     # Stats for hero (cached to avoid full table scans on every request)
     @today_votes_count = Rails.cache.fetch("home/today_votes", expires_in: 5.minutes) { Vote.where(voted_on: Date.current).count }
     @total_votes_count = Rails.cache.fetch("home/total_votes", expires_in: 10.minutes) { Vote.count }
-    @shops_count = Rails.cache.fetch("home/shops_count", expires_in: 1.hour) { Shop.count }
+    @shops_count = Rails.cache.fetch("home/shops_count", expires_in: 1.hour) { Shop.listed.count }
     @machines_count = Rails.cache.fetch("home/machines_count", expires_in: 1.hour) {
       MachineModel.active
         .joins(:shop_machine_models)

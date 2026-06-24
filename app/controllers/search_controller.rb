@@ -11,9 +11,9 @@ class SearchController < ApplicationController
     @any_filter_active = filter_active?
     @shops = search_shops
 
-    set_meta_tags title: "全国店舗検索",
-                  description: "全国のパチスロ店舗を条件で横断検索。",
-                  keywords: "パチスロ, 店舗検索, 店舗"
+    set_meta_tags title: "全国パチスロ店舗検索 - 設備・営業時間で絞り込み",
+                  description: "全国のパチスロ店舗を設備・営業時間・入場方法で横断検索。Wi-Fi・充電・低貸・データ公開など条件で絞り込み。",
+                  keywords: "パチスロ, 店舗検索, 優良店, Wi-Fi, 低貸, データ公開"
   end
 
   private
@@ -28,7 +28,7 @@ class SearchController < ApplicationController
   end
 
   def search_shops
-    scope = Shop.includes(:prefecture)
+    scope = Shop.listed.includes(:prefecture)
 
     if @selected_prefecture
       pref_id = Prefecture.where(slug: @selected_prefecture).pick(:id)

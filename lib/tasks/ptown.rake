@@ -28,6 +28,12 @@ module PtownScraper
   REQUEST_INTERVAL = 5.0
   MAX_RETRIES = 3
 
+  @last_response_code = nil
+
+  def self.last_response_code
+    @last_response_code
+  end
+
   class << self
     def fetch_page(url)
       uri = URI.parse(url)
@@ -50,6 +56,7 @@ module PtownScraper
           request["Accept-Language"] = "ja"
 
           response = http.request(request)
+          PtownScraper.instance_variable_set(:@last_response_code, response.code.to_i)
 
           case response
           when Net::HTTPRedirection
@@ -880,6 +887,7 @@ namespace :ptown do
           attrs[:ptown_shop_id] = shop_data[:ptown_shop_id] if shop.ptown_shop_id.blank?
           attrs[:address] = shop_data[:address] if shop_data[:address].present? && shop.address.blank?
           attrs[:business_hours] = shop_data[:business_hours] if shop_data[:business_hours].present? && shop.business_hours.blank?
+          attrs[:ptown_delisted_at] = nil if shop.ptown_delisted_at.present?
 
           if attrs.any?
             shop.update!(attrs)
@@ -980,6 +988,10 @@ namespace :ptown do
 
         doc = PtownScraper.fetch_page(url)
         unless doc
+          if PtownScraper.last_response_code == 404 && shop.ptown_delisted_at.nil?
+            shop.update_column(:ptown_delisted_at, Time.current)
+            puts "  [DELISTED] #{shop.name} (ptown_shop_id=#{shop.ptown_shop_id}) → 404"
+          end
           pref_errors += 1
           next
         end
@@ -1033,8 +1045,9 @@ namespace :ptown do
             pref_removed += stale.size
           end
 
-          # 成功時のみ last_synced_at を更新
+          # 成功時のみ last_synced_at を更新、delisted解除
           shop_attrs[:last_synced_at] = Time.current
+          shop_attrs[:ptown_delisted_at] = nil if shop.ptown_delisted_at.present?
           shop.update_columns(shop_attrs)
 
           pref_synced += 1
@@ -1359,6 +1372,95 @@ namespace :ptown do
     puts "総サンプル: #{total_sampled} 店"
     puts "table.default-table 取得成功: #{parsed_ok} 店 (#{(parsed_ok * 100.0 / total_sampled).round(1)}%)"
     puts "CSV: #{out_path}"
+  end
+
+  desc "DMMぱちタウン掲載終了店舗の一括検出（県一覧とDB照合）"
+  task :detect_delisted, [ :pref_slug ] => :environment do |_t, args|
+    $stdout.sync = true
+    pref_slug = args[:pref_slug]
+
+    prefectures = if pref_slug.present?
+                    Prefecture.where(slug: pref_slug)
+    else
+                    Prefecture.order(:id)
+    end
+
+    abort "ERROR: Prefecture '#{pref_slug}' not found" if prefectures.empty?
+
+    puts "=== DMMぱちタウン 掲載終了店舗 検出 ==="
+    total_delisted = 0
+    total_relisted = 0
+    total_checked = 0
+
+    prefectures.each do |pref|
+      db_shops = pref.shops.where.not(ptown_shop_id: nil)
+      db_ptown_ids = db_shops.pluck(:ptown_shop_id).to_set
+      next if db_ptown_ids.empty?
+
+      # Step 1: 県ページからエリア一覧取得
+      pref_url = "#{PtownScraper::BASE_URL}/shops/#{pref.slug}"
+      pref_doc = PtownScraper.fetch_page(pref_url)
+      unless pref_doc
+        puts "  #{pref.name}: ページ取得失敗、スキップ"
+        next
+      end
+
+      areas = PtownScraper.parse_prefecture_areas(pref_doc, pref.slug)
+      sleep PtownScraper::REQUEST_INTERVAL
+
+      # Step 2: 各エリアページから掲載中の ptown_shop_id を収集
+      live_ptown_ids = Set.new
+      areas.each_with_index do |area, ai|
+        next if area[:count] == 0
+
+        area_doc = PtownScraper.fetch_page(area[:url])
+        unless area_doc
+          puts "  #{pref.name}/#{area[:name]}: 取得失敗"
+          sleep PtownScraper::REQUEST_INTERVAL
+          next
+        end
+
+        shops = PtownScraper.parse_area_shops(area_doc, pref.slug)
+        shops.each { |s| live_ptown_ids.add(s[:ptown_shop_id]) }
+        print "\r  #{pref.name}: エリア #{ai + 1}/#{areas.size} (掲載中: #{live_ptown_ids.size})"
+        sleep PtownScraper::REQUEST_INTERVAL
+      end
+      puts ""
+
+      # Step 3: DB側にあってDMMに無い → 掲載終了
+      missing_ids = db_ptown_ids - live_ptown_ids
+      pref_delisted = 0
+      if missing_ids.any?
+        db_shops.where(ptown_shop_id: missing_ids.to_a, ptown_delisted_at: nil).find_each do |shop|
+          shop.update_column(:ptown_delisted_at, Time.current)
+          pref_delisted += 1
+          puts "  [DELISTED] #{shop.name} (ptown_shop_id=#{shop.ptown_shop_id})"
+        end
+      end
+
+      # Step 4: DMMに復帰していた店舗 → 解除
+      relisted_ids = live_ptown_ids & db_ptown_ids
+      pref_relisted = 0
+      db_shops.where(ptown_shop_id: relisted_ids.to_a).where.not(ptown_delisted_at: nil).find_each do |shop|
+        shop.update_column(:ptown_delisted_at, nil)
+        pref_relisted += 1
+        puts "  [RELISTED] #{shop.name} (ptown_shop_id=#{shop.ptown_shop_id})"
+      end
+
+      total_delisted += pref_delisted
+      total_relisted += pref_relisted
+      total_checked += db_ptown_ids.size
+
+      if pref_delisted > 0 || pref_relisted > 0
+        puts "  #{pref.name}: 掲載終了 #{pref_delisted}件, 復帰 #{pref_relisted}件 (DB #{db_ptown_ids.size} / DMM #{live_ptown_ids.size})"
+      end
+    end
+
+    puts "\n=== 結果 ==="
+    puts "チェック: #{total_checked} 店舗"
+    puts "掲載終了: #{total_delisted} 件 (今回新規検出)"
+    puts "復帰: #{total_relisted} 件"
+    puts "累計掲載終了: #{Shop.where.not(ptown_delisted_at: nil).count} 店舗"
   end
 end
 

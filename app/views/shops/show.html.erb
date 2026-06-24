@@ -50,6 +50,13 @@
     </ol>
   </nav>
 
+  <% if @shop.delisted? %>
+    <div class="bg-destructive/10 border border-destructive/30 rounded-lg p-3 mb-4 text-sm text-destructive">
+      <p class="font-bold">この店舗の情報は更新が停止しています</p>
+      <p class="mt-1 text-destructive/80">設置機種の情報が古くなっている可能性があります。閉店または掲載終了が考えられます。</p>
+    </div>
+  <% end %>
+
   <%# === Shop Header === %>
   <div class="bg-card rounded-lg border-l-2 border-l-primary/30 border-y border-r border-border/40 p-4 mb-4">
     <div class="flex items-center gap-2">

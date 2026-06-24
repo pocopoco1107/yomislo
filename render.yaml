@@ -78,7 +78,7 @@ services:
         VoterRanking.refresh_all_time!;
         PlayRecordSummary.refresh_all!;
         Vote.where(voted_on: 7.days.ago..Date.current).select(:voter_token).distinct.pluck(:voter_token).each { |t| VoterProfile.refresh_for(t) }
-      "
+      " && bundle exec rails sitemap:refresh:no_ping
     envVars: *batch-env
 
   # ── 月次: DMMぱちタウン 店舗+機種+詳細+設置機種フル同期 ──

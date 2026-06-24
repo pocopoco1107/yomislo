@@ -3,7 +3,7 @@ class PrefecturesController < ApplicationController
     @prefecture = Prefecture.find_by!(slug: params[:slug])
 
     # Single query: load all shops with columns needed for stats + display
-    all_shops = @prefecture.shops
+    all_shops = @prefecture.shops.listed
                   .select(:id, :name, :slug, :address,
                           :business_hours, :parking_spaces, :morning_entry,
                           :prefecture_id, :slot_machines, :total_machines, :phone_number,
@@ -72,11 +72,12 @@ class PrefecturesController < ApplicationController
     # おすすめ店舗 (県内TOP3)
     @recommendations = RecommendationService.top_for_prefecture(@prefecture, limit: 3)
 
-    desc = "#{@prefecture.name}のパチスロ店舗#{@total_shops_count}件の設定・リセット記録情報一覧。"
-    set_meta_tags title: "#{@prefecture.name}のパチスロ店舗一覧",
+    desc = "#{@prefecture.name}のパチスロ優良店・高設定店舗#{@total_shops_count}件を網羅。設定・リセット記録をもとにした設定傾向を毎日更新中。"
+    seo_title = "#{@prefecture.name}のパチスロ優良店・高設定店舗#{@total_shops_count}件"
+    set_meta_tags title: seo_title,
                   description: desc,
-                  keywords: "#{@prefecture.name}, パチスロ, 設定, リセット, 店舗",
-                  og: { title: "#{@prefecture.name}のパチスロ店舗一覧 | ヨミスロ",
+                  keywords: "#{@prefecture.name}, パチスロ, 優良店, 高設定, スロット, 設定, リセット",
+                  og: { title: "#{seo_title} | ヨミスロ",
                         description: desc,
                         type: "website",
                         url: request.original_url.split("?").first },

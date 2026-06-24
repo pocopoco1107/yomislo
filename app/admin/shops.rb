@@ -83,6 +83,10 @@ ActiveAdmin.register Shop do
     redirect_to admin_shops_path, notice: message
   end
 
+  scope :all, default: true
+  scope :listed
+  scope :delisted
+
   index do
     selectable_column
     id_column
@@ -90,6 +94,7 @@ ActiveAdmin.register Shop do
     column :prefecture
     column :slot_machines
     column :facility_parsed_at
+    column(:ptown_delisted_at) { |shop| shop.ptown_delisted_at&.strftime("%Y-%m-%d") }
     column :address
     actions
   end
@@ -98,6 +103,7 @@ ActiveAdmin.register Shop do
   filter :prefecture
   filter :address
   filter :facility_parsed_at
+  filter :ptown_delisted_at
   filter :entry_method, as: :select, collection: [ [ "抽選", "lottery" ], [ "並び順", "queue" ], [ "その他", "other" ] ]
   filter :wifi_available
   filter :slot_smoking_ok, label: "スロット喫煙可"

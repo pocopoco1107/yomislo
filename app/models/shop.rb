@@ -14,6 +14,9 @@ class Shop < ApplicationRecord
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
 
+  scope :listed, -> { where(ptown_delisted_at: nil) }
+  scope :delisted, -> { where.not(ptown_delisted_at: nil) }
+
   include PgSearch::Model
   pg_search_scope :search_by_name, against: :name, using: { tsearch: { prefix: true } }
 
@@ -23,5 +26,9 @@ class Shop < ApplicationRecord
 
   def geocode_accurate?
     geocode_precision.to_i >= 2
+  end
+
+  def delisted?
+    ptown_delisted_at.present?
   end
 end

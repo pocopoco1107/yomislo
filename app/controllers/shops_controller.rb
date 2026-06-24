@@ -71,7 +71,7 @@ class ShopsController < ApplicationController
       return
     end
 
-    shops = Shop.where("name LIKE ?", "%#{Shop.sanitize_sql_like(query)}%")
+    shops = Shop.listed.where("name LIKE ?", "%#{Shop.sanitize_sql_like(query)}%")
                 .includes(:prefecture)
                 .order(:name)
                 .limit(10)
@@ -119,16 +119,6 @@ class ShopsController < ApplicationController
   private
 
   def load_shop_data
-    desc = "#{@shop.name}（#{@shop.prefecture.name}）のパチスロ設定・リセット記録。機種ごとの設定傾向をチェック。"
-    set_meta_tags title: "#{@shop.name} - 設定・リセット記録",
-                  description: desc,
-                  keywords: "#{@shop.name}, #{@shop.prefecture.name}, パチスロ, 設定, リセット",
-                  og: { title: "#{@shop.name} - 設定・リセット記録 | ヨミスロ",
-                        description: desc,
-                        type: "website",
-                        url: request.original_url.split("?").first },
-                  twitter: { card: "summary" }
-
     # Show machines registered to this shop (join table) + machines with votes today
     registered_ids = @shop.shop_machine_models.pluck(:machine_model_id)
     voted_ids = Vote.where(shop_id: @shop.id, voted_on: @date)
@@ -137,6 +127,17 @@ class ShopsController < ApplicationController
 
     @machine_models = MachineModel.where(id: machine_ids).order(:name).to_a
                         .sort_by { |m| [ m.display_type_sort, m.name ] }
+
+    desc = "#{@shop.name}（#{@shop.prefecture.name}）のパチスロ設定・リセット記録を匿名集計。#{@machine_models.size}機種の設定傾向を毎日更新。#{@shop.address}"
+    seo_title = "#{@shop.name}（#{@shop.prefecture.name}）設定・出玉データ"
+    set_meta_tags title: seo_title,
+                  description: desc,
+                  keywords: "#{@shop.name}, #{@shop.prefecture.name}, パチスロ, 設定, リセット, 出玉, 高設定",
+                  og: { title: "#{seo_title} | ヨミスロ",
+                        description: desc,
+                        type: "website",
+                        url: request.original_url.split("?").first },
+                  twitter: { card: "summary" }
 
     # ShopMachineModel台数マップ (machine_model_id => unit_count)
     @unit_counts = ShopMachineModel.where(shop_id: @shop.id, machine_model_id: machine_ids)
@@ -189,7 +190,7 @@ class ShopsController < ApplicationController
   end
 
   def nearby_query(distance_sql, radius_km, precision_condition, limit)
-    Shop.where.not(lat: nil).where.not(lng: nil)
+    Shop.listed.where.not(lat: nil).where.not(lng: nil)
         .where(precision_condition)
         .where("#{distance_sql} <= ?", radius_km)
         .select("shops.*, (#{distance_sql}) AS distance_km")

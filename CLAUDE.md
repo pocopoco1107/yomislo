@@ -45,7 +45,7 @@ bin/dev  # サーバー起動 (Tailwind watch + Rails)
 | モデル | 概要 |
 |--------|------|
 | Prefecture | 47都道府県 (seed) |
-| Shop | 店舗 (DMMぱちタウンから取得。ptown_shop_id必須。設備フラグ: wifi_available/charging_available/heated_tobacco_ok/slot_smoking_ok/low_rate_slot/data_publishing/okislot/ticket_distribution、入場: entry_method、メタ: facility_parsed_at) |
+| Shop | 店舗 (DMMぱちタウンから取得。ptown_shop_id必須。設備フラグ: wifi_available/charging_available/heated_tobacco_ok/slot_smoking_ok/low_rate_slot/data_publishing/okislot/ticket_distribution、入場: entry_method、メタ: facility_parsed_at/ptown_delisted_at。スコープ: listed/delisted) |
 | MachineModel | パチスロ機種 (DMMぱちタウンから取得。ptown_id必須。ceiling_info, reset_info, image_url等) |
 | ShopMachineModel | 店舗×機種の設置紐づけ (N:N中間テーブル、unit_count付き) |
 | Vote | 設定記録 (voter_tokenで匿名識別。confirmed_setting配列あり) |
@@ -169,6 +169,7 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 | `import_events[area]` | DMMぱちタウンからイベント情報取得（取材・新台入替等） |
 | `merge_duplicates` | core_name一致で重複機種をマージ |
 | `cleanup` | type_detail汚染修正、is_smart_slot補正、孤立機種の再アクティブ化 |
+| `detect_delisted[slug]` | DMMぱちタウン掲載終了店舗の一括検出（県一覧とDB照合、都道府県別 or 全国） |
 | `purge_pworld` | P-WORLD由来データの一括整理（ユーザーデータ移行→機種inactive化→店舗削除） |
 
 ## Rakeタスク（ranking: / play_records:）
