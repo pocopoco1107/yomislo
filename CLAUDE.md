@@ -3,8 +3,12 @@
 ## プロジェクト概要
 パチスロの設定・リセット情報を匿名ワンタップ記録で集め、集合知として可視化するCGMサイト。
 
+## 残タスク・ロードマップ
+- **`BACKLOG.md`** — 具体的な残タスク・バグ・改善項目（着手時はここを参照）
+- **`docs/ROADMAP.md`** — フェーズ別の全体計画・優先順位・コスト現況
+
 ## 技術スタック
-- **Ruby 4.0.0** / **Rails 8.0.4** / **PostgreSQL 17**
+- **Ruby 4.0.0** / **Rails 8.1.3** / **PostgreSQL 17**
 - Hotwire (Turbo + Stimulus) / Tailwind CSS v4
 - Devise (管理者認証のみ) / ActiveAdmin
 - pg_search / kaminari / rack-attack / meta-tags / sitemap_generator
@@ -34,7 +38,7 @@ bin/dev  # サーバー起動 (Tailwind watch + Rails)
 | 機種マスタ | DMMぱちタウン | `ptown:import_machines` + `ptown:import_details` | 日次 |
 | 店舗マスタ | DMMぱちタウン | `ptown:import_shops` | 月次 |
 | 設置機種 + 台数 + 店舗詳細 | DMMぱちタウン | `ptown:sync_shop_machines` | 日次 |
-| 交換率 | ユーザー投稿 | （未実装） | リアルタイム |
+| 交換率 | ユーザー投稿 | ExchangeRateReport | リアルタイム |
 | ランキング・集計 | 内部計算 | `ranking:refresh` / `play_records:refresh_summaries` | 日次 |
 
 ## 主要モデル
@@ -46,7 +50,6 @@ bin/dev  # サーバー起動 (Tailwind watch + Rails)
 | ShopMachineModel | 店舗×機種の設置紐づけ (N:N中間テーブル、unit_count付き) |
 | Vote | 設定記録 (voter_tokenで匿名識別。confirmed_setting配列あり) |
 | VoteSummary | 記録集計キャッシュ (Vote保存時に自動更新) |
-| SnsReport | SNS/RSS自動収集データ (トロフィー・確定演出情報、日次バッチ停止中) |
 | VoterProfile | ユーザープロフィールキャッシュ (称号・ストリーク・的中率) |
 | VoterRanking | ランキング集計キャッシュ (週間/月間/累計×全国/県別) |
 | PlayRecord | 収支記録 (voter_token, shop, machine_model, result_amount, tags) |

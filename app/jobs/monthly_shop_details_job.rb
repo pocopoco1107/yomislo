@@ -43,6 +43,11 @@ class MonthlyShopDetailsJob < ApplicationJob
       Rake::Task["geocode:shops"].reenable
     end
 
+    run_step("merge_duplicates") do
+      Rake::Task["ptown:merge_duplicates"].invoke
+      Rake::Task["ptown:merge_duplicates"].reenable
+    end
+
     run_step("cleanup") { deactivate_orphan_machines }
 
     log_summary

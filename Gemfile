@@ -45,6 +45,10 @@ gem "activeadmin", "4.0.0.beta22"
 # Search
 gem "pg_search"
 
+# Error monitoring
+gem "sentry-ruby"
+gem "sentry-rails"
+
 # Rate limiting
 gem "rack-attack"
 

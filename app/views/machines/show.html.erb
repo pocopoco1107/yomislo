@@ -271,38 +271,6 @@
     </div>
   </details>
 
-  <%# === SNS Reports === %>
-  <% if @sns_reports.any? %>
-    <details class="bg-card border border-border rounded-lg mb-6 group">
-      <summary class="p-4 cursor-pointer select-none list-none flex items-center justify-between hover:bg-secondary/50 rounded-lg transition-colors">
-        <h2 class="text-sm font-heading font-bold text-foreground flex items-center gap-2">
-          <span class="w-1 h-4 bg-chart-1 rounded-full"></span>
-          SNS情報 (自動収集)
-          <span class="text-xs font-normal text-muted-foreground">(<%= @sns_reports.size %>件)</span>
-        </h2>
-        <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-      </summary>
-      <div class="px-4 pb-4">
-        <div class="space-y-2">
-          <% @sns_reports.each do |report| %>
-            <div class="border border-border rounded-lg p-2.5">
-              <div class="flex items-center gap-2 mb-1">
-                <% if report.trophy_type.present? %>
-                  <span class="bg-confirmed/10 text-confirmed text-xs font-medium rounded-md px-2 py-0.5"><%= report.trophy_type %></span>
-                <% end %>
-                <% if report.suggested_setting.present? %>
-                  <span class="bg-setting-4/10 text-setting-4 text-xs font-medium rounded-md px-2 py-0.5"><%= report.suggested_setting %></span>
-                <% end %>
-                <span class="text-xs text-muted-foreground ml-auto"><%= report.reported_on&.strftime("%-m/%-d") %></span>
-              </div>
-              <p class="text-xs text-muted-foreground line-clamp-2"><%= report.source_title %></p>
-            </div>
-          <% end %>
-        </div>
-        <p class="text-[10px] text-muted-foreground mt-2">※ RSS等から自動収集した情報です。正確性は保証しません。</p>
-      </div>
-    </details>
-  <% end %>
 
   <%# === Guide Links (type-grouped) === %>
   <% if @guide_links.any? %>

@@ -34,6 +34,8 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      - key: SENTRY_DSN
+        sync: false
 
   # ── 日次: DMMぱちタウン 機種+設置機種同期 ──
   # 03:00 JST (18:00 UTC前日) — 約5時間
@@ -57,6 +59,8 @@ services:
         value: production
       - key: RAILS_LOG_TO_STDOUT
         value: "1"
+      - key: SENTRY_DSN
+        sync: false
 
   # ── 日次: 軽量集計バッチ ──────────
   # ランキング + 収支集計 + VoterProfile — 04:00 JST (19:00 UTC前日)

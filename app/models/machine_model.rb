@@ -3,7 +3,6 @@ class MachineModel < ApplicationRecord
   has_many :shops, through: :shop_machine_models
   has_many :votes, dependent: :destroy
   has_many :vote_summaries, dependent: :destroy
-  has_many :sns_reports, dependent: :destroy
   has_many :machine_guide_links, dependent: :destroy
   has_many :play_records, dependent: :destroy
 

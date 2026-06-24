@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_23_113339) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_24_043405) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -320,29 +320,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_23_113339) do
     t.index ["slug"], name: "index_shops_on_slug", unique: true
   end
 
-  create_table "sns_reports", force: :cascade do |t|
-    t.integer "confidence", default: 0
-    t.datetime "created_at", null: false
-    t.bigint "machine_model_id"
-    t.text "raw_text"
-    t.date "reported_on"
-    t.bigint "shop_id"
-    t.string "source", null: false
-    t.string "source_title"
-    t.string "source_url"
-    t.integer "status", default: 0
-    t.jsonb "structured_data", default: {}
-    t.string "suggested_setting"
-    t.string "trophy_type"
-    t.datetime "updated_at", null: false
-    t.index ["machine_model_id", "reported_on"], name: "index_sns_reports_on_machine_model_id_and_reported_on"
-    t.index ["machine_model_id"], name: "index_sns_reports_on_machine_model_id"
-    t.index ["shop_id"], name: "index_sns_reports_on_shop_id"
-    t.index ["source"], name: "index_sns_reports_on_source"
-    t.index ["source_url"], name: "index_sns_reports_on_source_url", unique: true, where: "(source_url IS NOT NULL)"
-    t.index ["status"], name: "index_sns_reports_on_status"
-  end
-
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -448,8 +425,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_23_113339) do
   add_foreign_key "shop_requests", "prefectures"
   add_foreign_key "shop_reviews", "shops"
   add_foreign_key "shops", "prefectures"
-  add_foreign_key "sns_reports", "machine_models"
-  add_foreign_key "sns_reports", "shops"
   add_foreign_key "vote_summaries", "machine_models"
   add_foreign_key "vote_summaries", "shops"
   add_foreign_key "votes", "machine_models"

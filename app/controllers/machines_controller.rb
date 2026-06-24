@@ -24,7 +24,6 @@ class MachinesController < ApplicationController
                                      .includes(:shop)
                                      .order(total_votes: :desc)
                                      .page(params[:page]).per(20)
-    @sns_reports = @machine_model.sns_reports.approved.recent.limit(10)
     @guide_links = @machine_model.machine_guide_links.approved.recent
 
     # 全期間の統計 — single aggregate query instead of 5+ separate queries
@@ -95,8 +94,9 @@ class MachinesController < ApplicationController
       return
     end
 
+    pattern = "%#{MachineModel.sanitize_sql_like(query)}%"
     machines = MachineModel.active
-                           .where("name ILIKE ?", "%#{MachineModel.sanitize_sql_like(query)}%")
+                           .where("translate(name, 'ヱヲヰ', 'エオイ') ILIKE translate(?, 'ヱヲヰ', 'エオイ')", pattern)
                            .order(:name)
                            .limit(10)
 
