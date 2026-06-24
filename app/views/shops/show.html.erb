@@ -15,7 +15,15 @@
       } : nil,
       "telephone": @shop.phone_number.presence,
       "openingHours": @shop.business_hours.presence,
-      "url": request.original_url.split("?").first
+      "url": request.original_url.split("?").first,
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "ホーム", "item": root_url },
+          { "@type": "ListItem", "position": 2, "name": @shop.prefecture.name, "item": prefecture_url(@shop.prefecture.slug) },
+          { "@type": "ListItem", "position": 3, "name": @shop.name }
+        ]
+      }
     }.compact.to_json) %>
   </script>
 <% end %>

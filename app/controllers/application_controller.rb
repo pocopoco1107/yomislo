@@ -3,7 +3,15 @@ class ApplicationController < ActionController::Base
 
   allow_browser versions: :modern
 
+  before_action :set_default_meta
+
   protected
+
+  def set_default_meta
+    og_image_url = helpers.image_url("logo.png")
+    set_meta_tags og: { image: og_image_url },
+                  twitter: { image: og_image_url }
+  end
 
   def current_date
     @current_date ||= Date.current

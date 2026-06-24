@@ -16,7 +16,14 @@
         @machine_model.payout_rate_display ? { "@type": "PropertyValue", "name": "機械割", "value": @machine_model.payout_rate_display } : nil,
         @machine_model.type_detail.present? ? { "@type": "PropertyValue", "name": "タイプ", "value": @machine_model.type_detail } : nil,
         { "@type": "PropertyValue", "name": "設置店舗数", "value": @installed_shop_count.to_s }
-      ].compact
+      ].compact,
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "ホーム", "item": root_url },
+          { "@type": "ListItem", "position": 2, "name": @machine_model.name }
+        ]
+      }
     }.compact.to_json) %>
   </script>
 <% end %>
