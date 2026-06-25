@@ -128,8 +128,8 @@ class ShopsController < ApplicationController
     @machine_models = MachineModel.where(id: machine_ids).order(:name).to_a
                         .sort_by { |m| [ m.display_type_sort, m.name ] }
 
-    desc = "#{@shop.name}（#{@shop.prefecture.name}）のパチスロ設定・リセット記録を匿名集計。#{@machine_models.size}機種の設定傾向を毎日更新。#{@shop.address}"
-    seo_title = "#{@shop.name}（#{@shop.prefecture.name}）設定・出玉データ"
+    desc = "#{@shop.name}（#{@shop.prefecture.name}）の設定・リセット情報を、打ち手の投稿でチェック。設置#{@machine_models.size}機種。#{@shop.address}"
+    seo_title = "#{@shop.name}（#{@shop.prefecture.name}）の設定・リセット情報"
     set_meta_tags title: seo_title,
                   description: desc,
                   keywords: "#{@shop.name}, #{@shop.prefecture.name}, パチスロ, 設定, リセット, 出玉, 高設定",

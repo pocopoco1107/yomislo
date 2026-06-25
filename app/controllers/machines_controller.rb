@@ -13,7 +13,7 @@ class MachinesController < ApplicationController
     meta_desc_parts = [ "#{@machine_model.name}の天井・リセット恩恵・設定判別情報" ]
     meta_desc_parts << "機械割#{@machine_model.payout_rate_display}" if @machine_model.payout_rate_display
     meta_desc_parts << @machine_model.type_detail if @machine_model.type_detail.present?
-    meta_desc_parts << "全国#{@installed_shop_count}店舗の設定記録データで高設定傾向をチェック" if @installed_shop_count > 0
+    meta_desc_parts << "全国#{@installed_shop_count}店舗に設置、打ち手の投稿で設定状況がわかる" if @installed_shop_count > 0
     meta_desc = meta_desc_parts.join("。") + "。"
 
     seo_keywords = [ @machine_model.name, "天井", "設定判別", "リセット恩恵", "期待値",

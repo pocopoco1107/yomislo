@@ -2,16 +2,6 @@ class HomeController < ApplicationController
   include TrendData
 
   def index
-    desc = "パチスロの設定・リセット情報をみんなで記録して傾向をチェック。ログイン不要、匿名OK。"
-    set_meta_tags title: "みんなの記録でパチスロの設定が見える",
-                  description: desc,
-                  keywords: "パチスロ, 設定, リセット, 記録, 設定判別, スロット",
-                  og: { title: "ヨミスロ - みんなの記録でパチスロの設定が見える",
-                        description: desc,
-                        type: "website",
-                        url: root_url },
-                  twitter: { card: "summary" }
-
     @prefectures = Prefecture.left_joins(:shops).group(:id).select("prefectures.*, COUNT(shops.id) FILTER (WHERE shops.ptown_delisted_at IS NULL) as shops_count").order(:id)
 
     # 相棒ペット (cookie がある人だけ。新規訪問者には cookie を作らない)
@@ -29,6 +19,16 @@ class HomeController < ApplicationController
         .having("COUNT(shop_machine_models.id) >= 50")
         .count.size
     }
+
+    @meta_description = "パチスロ リセット・設定情報の共有 & 収支管理サイト｜全国#{helpers.number_with_delimiter(@shops_count)}店掲載"
+    set_meta_tags title: "パチスロのリセット・設定情報共有／収支管理",
+                  description: @meta_description,
+                  keywords: "パチスロ リセット, パチスロ 据え置き, 設定狙い, 設定共有, 収支管理, パチスロ 記録, 設定判別, スロット",
+                  og: { title: "ヨミスロ｜パチスロのリセット・設定情報共有／収支管理",
+                        description: @meta_description,
+                        type: "website",
+                        url: root_url },
+                  twitter: { card: "summary" }
 
     # AI おすすめ店舗 (全国TOP5)
     @recommendations = RecommendationService.top_nationwide(limit: 5)

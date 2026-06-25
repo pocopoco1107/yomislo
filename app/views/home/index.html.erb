@@ -1,5 +1,3 @@
-<% content_for(:title) { "ヨミスロ - みんなの記録でパチスロの設定が見える" } %>
-
 <%# JSON-LD structured data for WebSite %>
 <% content_for(:head) do %>
   <script type="application/ld+json">
@@ -8,7 +6,7 @@
       "@type": "WebSite",
       "name": "ヨミスロ",
       "url": root_url,
-      "description": "パチスロの設定・リセット情報をみんなで記録して傾向をチェック。ログイン不要、匿名OK。",
+      "description": @meta_description,
       "potentialAction": {
         "@type": "SearchAction",
         "target": "#{root_url}search?q={search_term_string}",
