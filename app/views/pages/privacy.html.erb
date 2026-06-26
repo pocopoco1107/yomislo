@@ -1,6 +1,6 @@
 <section class="mt-4 max-w-3xl mx-auto px-4">
   <h1 class="text-2xl font-bold text-foreground mb-2">プライバシーポリシー</h1>
-  <p class="text-xs text-muted-foreground mb-6">最終更新日: 2026年5月20日</p>
+  <p class="text-xs text-muted-foreground mb-6">最終更新日: 2026年6月26日</p>
 
   <div class="bg-card border border-border rounded-lg p-5 md:p-7 space-y-6 text-sm leading-relaxed text-foreground">
 
@@ -59,9 +59,20 @@
 
     <section>
       <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">6. 外部サービスの利用</h2>
-      <p class="text-muted-foreground">
+      <p class="text-muted-foreground mb-2">
         本サイトは、運営費用回収のためアフィリエイト広告を掲載することがあります。
         広告リンクをクリックして遷移した先のサービスにおける情報取得・利用については、各サービスのプライバシーポリシーに従います。
+      </p>
+      <p class="text-muted-foreground mb-2">
+        本サイトはアクセス解析のため、以下の外部サービスを利用しています。これらのサービスはトラフィック分析のため Cookie やIPアドレスを使用することがあります（個人を特定する目的では使用しません）。
+      </p>
+      <ul class="list-disc list-inside space-y-1 text-muted-foreground">
+        <li>Google Analytics 4 — <%= link_to "Googleプライバシーポリシー", "https://policies.google.com/privacy", target: "_blank", rel: "noopener", class: "text-primary underline" %></li>
+        <li>Cloudflare Web Analytics — <%= link_to "Cloudflareプライバシーポリシー", "https://www.cloudflare.com/privacypolicy/", target: "_blank", rel: "noopener", class: "text-primary underline" %></li>
+        <li>Sentry — エラー監視（個人情報は送信されません）</li>
+      </ul>
+      <p class="mt-2 text-muted-foreground">
+        Google Analytics の利用を停止したい場合は、<%= link_to "Google Analytics オプトアウト アドオン", "https://tools.google.com/dlpage/gaoptout", target: "_blank", rel: "noopener", class: "text-primary underline" %> をご利用ください。
       </p>
     </section>
 

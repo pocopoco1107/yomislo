@@ -4,9 +4,11 @@ Rails.application.configure do
     policy.font_src    :self, "https://fonts.gstatic.com"
     policy.img_src     :self, :data, "https:"
     policy.object_src  :none
-    policy.script_src  :self
+    policy.script_src  :self, "https://www.googletagmanager.com", "https://static.cloudflareinsights.com"
     policy.style_src   :self, :unsafe_inline, "https://fonts.googleapis.com"
-    policy.connect_src :self, "https://*.ingest.sentry.io"
+    policy.connect_src :self, "https://*.ingest.sentry.io",
+                       "https://www.google-analytics.com", "https://*.analytics.google.com",
+                       "https://cloudflareinsights.com"
     policy.frame_src   :none
     policy.base_uri    :self
     policy.form_action :self

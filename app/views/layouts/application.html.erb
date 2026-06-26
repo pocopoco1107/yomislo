@@ -37,6 +37,23 @@
 
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+
+    <%# Google Analytics 4 (本番のみ。GA4_MEASUREMENT_ID 未設定なら読み込まない) %>
+    <% if ENV["GA4_MEASUREMENT_ID"].present? %>
+      <script async src="https://www.googletagmanager.com/gtag/js?id=<%= ENV["GA4_MEASUREMENT_ID"] %>"></script>
+      <script nonce="<%= content_security_policy_nonce %>">
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '<%= ENV["GA4_MEASUREMENT_ID"] %>', { anonymize_ip: true });
+      </script>
+    <% end %>
+
+    <%# Cloudflare Web Analytics (Cookie 不要、軽量。CLOUDFLARE_ANALYTICS_TOKEN 未設定なら読み込まない) %>
+    <% if ENV["CLOUDFLARE_ANALYTICS_TOKEN"].present? %>
+      <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+              data-cf-beacon='{"token": "<%= ENV["CLOUDFLARE_ANALYTICS_TOKEN"] %>"}'></script>
+    <% end %>
   </head>
 
   <body class="min-h-screen flex flex-col">
