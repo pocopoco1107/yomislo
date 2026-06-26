@@ -3,9 +3,24 @@ class ApplicationController < ActionController::Base
 
   allow_browser versions: :modern
 
+  before_action :redirect_to_canonical_host
   before_action :set_default_meta
 
   protected
+
+  # CANONICAL_HOST が設定されている場合、それ以外のホスト経由でのアクセスを
+  # 同じパス・クエリのまま 301 で新ドメインへリダイレクトする。
+  # ENV 未設定なら何もしないので、デプロイしただけでは挙動が変わらない。
+  def redirect_to_canonical_host
+    canonical = ENV["CANONICAL_HOST"]
+    return if canonical.blank?
+    return if request.host == canonical
+    return if request.path == "/up"
+
+    redirect_to "https://#{canonical}#{request.fullpath}",
+                status: :moved_permanently,
+                allow_other_host: true
+  end
 
   def set_default_meta
     og_image_url = helpers.image_url("logo.png")

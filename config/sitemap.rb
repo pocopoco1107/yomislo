@@ -1,4 +1,4 @@
-SitemapGenerator::Sitemap.default_host = ENV.fetch("SITE_URL", "https://yomislo.onrender.com")
+SitemapGenerator::Sitemap.default_host = ENV.fetch("SITE_URL", "https://yomislo.com")
 
 SitemapGenerator::Sitemap.create do
   # Static pages
