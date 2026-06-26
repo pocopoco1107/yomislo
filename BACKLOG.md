@@ -3,7 +3,7 @@
 実装済みの機能改善・調査タスクを積んでおくバックログ。優先度や着手予定は項目ごとに決める。
 作業着手時は GitHub Issue 化するか、直接ブランチ切って進める。
 
-> **最終更新: 2026-06-24**
+> **最終更新: 2026-06-26**
 
 ## 目次
 
@@ -36,8 +36,10 @@ DESIGN.md と照合してサーフェス階層・余白・カラートークン�
 
 ### SEO 構造化データの網羅性
 - 構造化データ (LocalBusiness / WebSite / SearchAction) の追加余地
-- 店舗・機種ページの title / description テンプレート最適化
-- Google Search Console でのインデックス状況確認
+- ~~店舗・機種ページの title / description テンプレート最適化~~ ✅ 済 (2026-06-26) AIっぽい言い回し排除、打ち手目線に刷新
+- Google Search Console でのインデックス状況確認（新ドメイン yomislo.com で再開）
+- **サイトマップ取得失敗の解消**: 登録直後「取得できませんでした」状態。24h以内にGoogle自動リトライ予定、要追跡
+- **アドレス変更ツールが Render の Cloudflare で失敗する件**: 旧 yomislo.onrender.com への Googlebot アクセスが Cloudflare Bot Challenge でブロック。301は効いているのでGoogleの自然学習に任せる（数週間〜数ヶ月）
 
 ### 検索UIの使い勝手改善
 - 設備フィルタの項目数・優先度の見直し
@@ -121,13 +123,17 @@ DMMぱちタウン側で `#anc-slot` セクションがないパチンコ専門�
 
 ## インフラ / 運用
 
-### エラー監視の導入 ★優先度高
-本番でエラーが起きても気づく手段がない（Render ログ確認のみ）。
-- 候補: Sentry（無料枠 5k errors/月）, Honeybadger, Bugsnag
-- 通知先: Discord webhook or メール
+### ~~エラー監視の導入~~ ✅ 済 (2026-06-24)
+Sentry 導入済み（コミット 1302056）。
 
-### アクセス解析の導入
-HTTP リクエスト計測が未確認。GA4 or 軽量解析（Plausible, Umami）の導入。
+### ~~アクセス解析の導入~~ ✅ 済 (2026-06-26)
+GA4 (`G-BPNX0BSC9H`) + Cloudflare Web Analytics 両方導入。ENV: `GA4_MEASUREMENT_ID` / `CLOUDFLARE_ANALYTICS_TOKEN`。
+
+### ~~独自ドメイン取得~~ ✅ 済 (2026-06-26)
+`yomislo.com` 取得（ムームー）→ Cloudflare DNS → Render Custom Domain + Let's Encrypt SSL。`yomislo.onrender.com` から 301 リダイレクト稼働中。
+
+### Cloudflare Proxy 化（任意）
+現在 DNS only モード。Proxied (オレンジ雲) に切替で CDN/WAF/Bot対策が有効化。**前提**: Cloudflare SSL/TLS モードを「Full (strict)」に変更しないとリダイレクトループする。
 
 ### アップタイム監視
 UptimeRobot 無料枠等でダウン検知。
@@ -139,10 +145,7 @@ UptimeRobot 無料枠等でダウン検知。
 Render Basic プランの自動バックアップ有無を確認。なければ `pg_dump` cron 追加。
 
 ### テストカバレッジ拡充
-現在 630 examples / 47.5% coverage。コア機能（Vote, PlayRecord, スクレイピング）の重点的なカバー拡充。
-
-### 独自ドメイン取得
-現在 `yomislo.onrender.com`。独自ドメイン + SSL 設定。
+現在 610 examples / 48.5% coverage。コア機能（Vote, PlayRecord, スクレイピング）の重点的なカバー拡充。
 
 ---
 
@@ -150,6 +153,11 @@ Render Basic プランの自動バックアップ有無を確認。なければ 
 
 | タスク | 完了時期 |
 |--------|---------|
+| 独自ドメイン yomislo.com 移行（Cloudflare DNS + Render Custom Domain + SSL + 301リダイレクト） | 2026-06-26 |
+| ファビコン・PWAアイコンを相棒ペット(baby)に差し替え、背景透過 | 2026-06-26 |
+| SEO 文言を打ち手目線に刷新（AIっぽい言い回し排除） | 2026-06-26 |
+| GA4 + Cloudflare Web Analytics 導入 | 2026-06-26 |
+| Sentry エラー監視導入 | 2026-06-24 |
 | Postgres Free → Basic ($6/mo) 移行 | 2026-06-22 |
 | Puma cluster mode 警告解消 | 2026-05-25 |
 | geocode 未取得 347件 → 1件に解消 | 2026-05-25 |
@@ -172,5 +180,5 @@ Render Basic プランの自動バックアップ有無を確認。なければ 
 ## メタ
 
 - 作成: 2026-05-21
-- 最終更新: 2026-06-24
+- 最終更新: 2026-06-26
 - 関連: `docs/ROADMAP.md`（フェーズ別計画）、`docs/companion_spec.md`（ペット仕様書）
