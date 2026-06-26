@@ -265,6 +265,8 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 | `scraping-verify` | rake ptown:* の直前/直後（Hook で snapshot 自動化済み） |
 | `data-check` | 「データチェック」「件数確認」「DB状況」「機種何件？」等の質問 |
 | `design-check` | .erb / .css / .html 編集の直後（Hook で自動実行済み） |
+| `activeadmin-check` | app/admin/*.rb 編集、active_admin initializer 編集、/admin で 500、Ransack エラー発生時（Hook なし、手動 or 明示依頼で発火） |
+| `hotwire-form-check` | 動的フォームJS（*_form_controller.js）編集、配列カラム持ちモデル（Vote/PlayRecord）の controller/params 編集（Hook なし） |
 | `promotion-placement` | render_promotion を含むファイル、Promotion 関連の編集 |
 | `before-deploy-render` | git push 直前、render.yaml/migration 編集、「デプロイする」発言 |
 | `wrap-up` | 「振り返り」「まとめ」「終わり」 |

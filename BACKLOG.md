@@ -3,7 +3,7 @@
 実装済みの機能改善・調査タスクを積んでおくバックログ。優先度や着手予定は項目ごとに決める。
 作業着手時は GitHub Issue 化するか、直接ブランチ切って進める。
 
-> **最終更新: 2026-06-26**
+> **最終更新: 2026-06-26**（セキュリティ・a11y・E2E 項目追加）
 
 ## 目次
 
@@ -14,6 +14,7 @@
 - [相棒ペット](#相棒ペット)
 - [バグ調査](#バグ調査)
 - [広告 / 収益化](#広告--収益化)
+- [セキュリティ](#セキュリティ)
 - [インフラ / 運用](#インフラ--運用)
 - [完了済み](#完了済み)
 
@@ -30,6 +31,15 @@ DESIGN.md と照合してサーフェス階層・余白・カラートークン�
 ### ロゴ・キャッチコピーの再検討
 現ヒーローキャッチ「みんなの記録で設定が見えてくる」等の時間帯切替バリエーションも含めて再評価。
 
+### アクセシビリティ (WCAG 2.1 AA)
+2026-06-26 レビューで HIGH 4件・MED 7件検出。最頻出箇所のコントラスト破綻が主。
+- **[HIGH] ライトモード `--primary` を `#10b981` → `#059669` に下げる** — `bg-primary text-primary-foreground` の組み合わせが現状 2.5:1 (全 primary ボタンで WCAG fail)
+- **[HIGH] `bg-setting-4 text-white` / `bg-vote-yes text-white` 等の白文字配色見直し** — 記録UI 最頻出。彩度の高い緑・黄 + 白文字で約 2.0:1
+- **[HIGH] `--text-tertiary:#9ca3af` を `#6b7280` 相当に** — ライト背景 `#fafafa` 上で 2.7:1。10–11px 補足ラベルに使われている
+- **[HIGH] お気に入り星ボタンの `aria-pressed`/`aria-label` を Stimulus でトグル** — 現状 `aria-pressed="false"` 固定で SR ユーザに状態伝わらず
+- [MED] Turbo Frame 更新後のフォーカス管理（vote 投稿後 autofocus）、トースト/エラーへ `aria-live`、確定設定トグル群へ `aria-pressed`、`prefers-reduced-motion` 対応を `.animate-*` 全般に拡張、モーダルに focus trap + `role="dialog"`、ボトムナビ active の `.dq-cursor--blink` 点滅停止条件
+- DESIGN.md に a11y チェックリスト 5項目追記（コントラスト前提・トグル aria-pressed・reduced-motion 全停止・DotGothic16 14px未満禁止・モーダル focus trap）
+
 ---
 
 ## 検索 / 発見性
@@ -37,8 +47,9 @@ DESIGN.md と照合してサーフェス階層・余白・カラートークン�
 ### SEO 構造化データの網羅性
 - 構造化データ (LocalBusiness / WebSite / SearchAction) の追加余地
 - ~~店舗・機種ページの title / description テンプレート最適化~~ ✅ 済 (2026-06-26) AIっぽい言い回し排除、打ち手目線に刷新
-- Google Search Console でのインデックス状況確認（新ドメイン yomislo.com で再開）
-- **サイトマップ取得失敗の解消**: 登録直後「取得できませんでした」状態。24h以内にGoogle自動リトライ予定、要追跡
+- Google Search Console でのインデックス状況確認（新ドメイン yomislo.com、明日以降にページ/検索パフォーマンスを確認）
+- ~~**サイトマップ取得失敗の解消**~~ ✅ 済 (2026-06-26) `https://yomislo.com/sitemap.xml.gz` 送信成功、6,701ページ検出
+- 主要URLの個別インデックス登録リクエスト（`/`・`/rankings`・人気県・人気機種5-10本）でクロール前倒し
 - **アドレス変更ツールが Render の Cloudflare で失敗する件**: 旧 yomislo.onrender.com への Googlebot アクセスが Cloudflare Bot Challenge でブロック。301は効いているのでGoogleの自然学習に任せる（数週間〜数ヶ月）
 
 ### 検索UIの使い勝手改善
@@ -121,6 +132,30 @@ DMMぱちタウン側で `#anc-slot` セクションがないパチンコ専門�
 
 ---
 
+## セキュリティ
+
+2026-06-26 レビューで HIGH 4件検出。公開CGM・ASP審査前なので優先度高。
+
+### [HIGH] voter_token Cookie を `cookies.signed` 化
+現状 `cookies[:voter_token]` plain text。改ざんで他人の voter_token を名乗ると Vote/PlayRecord を update/destroy 経由で書き換え可能。`cookies.signed[:voter_token]` (or `encrypted`) に切替 + `secure: Rails.env.production?` 明示。既存 token 互換のため 30日のフォールバック層を入れて移行。
+
+### [HIGH] `play_records_controller#create` の `return_to` Open Redirect 修正
+`redirect_to params[:return_to]` のチェックが `start_with?("/")` のみで `//evil.com` や `/\evil.com` を通過させる。`\A/[^/\\]` 正規表現で先頭 `//` `/\` を除外、または `URI.parse(...).relative? && !host` で検証。
+
+### [HIGH] Promotion `target_url` を自社ハンドラ経由化 + ASP ドメイン allowlist
+現状 `_promotion_banner.html.erb` / `_promotion_card.html.erb` で `target_url` を直接 href。`/p/:id/click` ハンドラ経由でクリック計測も兼ねる構造に変える。`rel="sponsored noopener noreferrer"` に統一（現状 `noreferrer` 欠落）。
+
+### [HIGH] Devise lockable 有効化 + sign_in 専用 throttle
+`/admin` への brute force 対策。`User` モデルに `:lockable, :timeoutable` 追加 + `maximum_attempts: 10`。`config/initializers/rack_attack.rb` に `/users/sign_in` 専用 throttle 5/min/ip 追加。
+
+### [MED] その他
+- rack_attack に `shop_reviews_create/ip` (10/hour) と `shop_autocomplete/ip` (60/min) 追加
+- CSP `script-src` の nonce ジェネレータを session.id ベース → `SecureRandom.base64(16)` に
+- Strict-Transport-Security ヘッダを明示 (`max-age=63072000; includeSubDomains; preload`)
+- プライバシーポリシーに IP/UA 保持期間明記（個人情報保護法）
+
+---
+
 ## インフラ / 運用
 
 ### ~~エラー監視の導入~~ ✅ 済 (2026-06-24)
@@ -146,6 +181,16 @@ Render Basic プランの自動バックアップ有無を確認。なければ 
 
 ### テストカバレッジ拡充
 現在 610 examples / 48.5% coverage。コア機能（Vote, PlayRecord, スクレイピング）の重点的なカバー拡充。
+
+### E2E テスト導入 (capybara-playwright)
+現状 `spec/system/` は `driven_by :rack_test` 一択で JS 動かず（`voting_flow_spec` で2件 pending）。記録UI（最重要・配列カラム JS バグの再発リスク）を JS 実行込みで検証する。
+- 導入: `Gemfile` に `capybara-playwright-driver` 追加、`package.json` に `playwright`、`npx playwright install chromium`
+- `spec/support/capybara.rb` に `:playwright` ドライバ登録、`js: true` 時のみ駆動
+- 最小E2E 2本:
+  - `voting_flow_spec.rb` の pending 解除 — `confirmed_setting` が配列で着弾することを assert
+  - `play_record_flow_spec.rb` 新規 — タグチップ複数トグル → `PlayRecord.tags` 配列確認
+- CI 限定運用（Render Starter 本番に Chromium 載せない）
+- `.claude/skills/webapp-test/` 薄いスキル化検討（FactoryBot シード・voter_token Cookie 仕込み・Turbo Frame 待機の3点）
 
 ---
 

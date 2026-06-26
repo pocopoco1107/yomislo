@@ -36,6 +36,16 @@
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/auto-design-check.sh",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/rspec-on-spec-edit.sh",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/brakeman-on-controller-edit.sh",
+            "timeout": 60
           }
         ]
       }
