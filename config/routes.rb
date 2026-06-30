@@ -36,6 +36,9 @@ Rails.application.routes.draw do
   resources :feedbacks, only: [ :new, :create ]
   resources :shop_requests, only: [ :new, :create, :show ]
 
+  # Promotion クリック計測 + 外部リダイレクト (/p/:id → ASP)
+  get "p/:id", to: "promotions#click", as: :promotion_click
+
   resources :rankings, only: [ :index ]
 
   get "voter/status", to: "voter#status", as: :voter_status

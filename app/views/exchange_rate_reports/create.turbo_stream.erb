@@ -2,5 +2,5 @@
   <%= render "shops/exchange_rate_section",
       shop: @shop,
       exchange_rate_summaries: ExchangeRateSummary.where(shop_id: @shop.id).index_by(&:denomination),
-      user_reports: ExchangeRateReport.where(voter_token: cookies[:voter_token], shop_id: @shop.id).index_by(&:denomination) %>
+      user_reports: ExchangeRateReport.where(voter_token: voter_token, shop_id: @shop.id).index_by(&:denomination) %>
 <% end %>

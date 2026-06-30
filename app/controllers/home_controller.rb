@@ -5,7 +5,7 @@ class HomeController < ApplicationController
     @prefectures = Prefecture.left_joins(:shops).group(:id).select("prefectures.*, COUNT(shops.id) FILTER (WHERE shops.ptown_delisted_at IS NULL) as shops_count").order(:id)
 
     # 相棒ペット (cookie がある人だけ。新規訪問者には cookie を作らない)
-    token = cookies[:voter_token]
+    token = existing_voter_token
     @pet = Pet.for(token) if token.present?
 
     # Stats for hero (cached to avoid full table scans on every request)

@@ -49,8 +49,14 @@ DESIGN.md と照合してサーフェス階層・余白・カラートークン�
 - ~~店舗・機種ページの title / description テンプレート最適化~~ ✅ 済 (2026-06-26) AIっぽい言い回し排除、打ち手目線に刷新
 - Google Search Console でのインデックス状況確認（新ドメイン yomislo.com、明日以降にページ/検索パフォーマンスを確認）
 - ~~**サイトマップ取得失敗の解消**~~ ✅ 済 (2026-06-26) `https://yomislo.com/sitemap.xml.gz` 送信成功、6,701ページ検出
-- 主要URLの個別インデックス登録リクエスト（`/`・`/rankings`・人気県・人気機種5-10本）でクロール前倒し
+- ~~主要URLの個別インデックス登録リクエスト~~ ✅ 済 (2026-06-30) トップ/ランキング/機種5本は既に登録済み、県5本（tokyo/osaka/aichi/hokkaido/kanagawa）はリクエスト送信完了
 - **アドレス変更ツールが Render の Cloudflare で失敗する件**: 旧 yomislo.onrender.com への Googlebot アクセスが Cloudflare Bot Challenge でブロック。301は効いているのでGoogleの自然学習に任せる（数週間〜数ヶ月）
+
+### 機種ページの商品スニペット構造化データ修正
+2026-06-30 Search Console で確認、全機種ページに「商品スニペット 1件の無効なアイテムを検出しました」警告。インデックスは通っているが Rich Results 対象外になっている。`app/views/machines/show.html.erb` のJSON-LD（Product schema）の必須フィールド（offers/aggregateRating/review のいずれか、name、image等）を点検。
+
+### 県ページのインデックス遅延
+2026-06-30 確認、機種ページ・トップ・ランキングは全部登録済みだが、`/prefectures/:slug` 5本は未登録（リクエスト送信済み）。今回は手動投入で対応したが、根本的には県ページへの内部リンク導線が弱い可能性。トップ/ランキング/機種詳細から県ページへの自然な戻り線・関連リンクを増やす検討。
 
 ### 検索UIの使い勝手改善
 - 設備フィルタの項目数・優先度の見直し

@@ -1,9 +1,9 @@
 <%# レクタングル型おすすめ案件。サイドカラム・ステータス画面下などの縦長/正方形エリア向け。 %>
 <aside class="relative my-4 overflow-hidden rounded-lg border border-border bg-card shadow-sm"
        data-promotion-slot="<%= slot_key %>">
-  <a href="<%= promotion.target_url %>"
+  <a href="<%= promotion_click_path(promotion) %>"
      target="_blank"
-     rel="sponsored noopener"
+     rel="sponsored noopener noreferrer"
      class="block hover:bg-secondary/40 transition-colors"
      aria-label="<%= promotion.title %>（おすすめ）">
     <% if promotion.image_url.present? %>

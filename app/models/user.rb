@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   devise :database_authenticatable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable, :validatable,
+         :lockable, :timeoutable
 
   enum :role, { general: 0, admin: 1 }
 

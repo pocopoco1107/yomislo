@@ -52,7 +52,7 @@ RSpec.describe PromotionsHelper, type: :helper do
         expect(output).to include("テスト案件")
         expect(output).to include("data-promotion-slot=\"home_hero\"")
         expect(output).to include("PR")
-        expect(output).to include('rel="sponsored noopener"')
+        expect(output).to include('rel="sponsored noopener noreferrer"')
       end
 
       it "renders card partial markup by default" do

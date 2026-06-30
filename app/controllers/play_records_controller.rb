@@ -103,8 +103,8 @@ class PlayRecordsController < ApplicationController
       respond_to do |format|
         format.turbo_stream { render_shop_machine_update }
         format.html do
-          if params[:return_to].present? && params[:return_to].start_with?("/")
-            redirect_to params[:return_to], notice: pet_notice("収支を記録しました")
+          if (target = safe_return_to)
+            redirect_to target, notice: pet_notice("収支を記録しました")
           else
             redirect_to play_records_path(month: @record.played_on.strftime("%Y-%m")),
                         notice: pet_notice("収支を記録しました")
@@ -119,8 +119,8 @@ class PlayRecordsController < ApplicationController
           render turbo_stream: turbo_stream.replace("vote_errors", error_html)
         end
         format.html do
-          if params[:return_to].present? && params[:return_to].start_with?("/")
-            redirect_to params[:return_to], alert: @record.errors.full_messages.join(", ")
+          if (target = safe_return_to)
+            redirect_to target, alert: @record.errors.full_messages.join(", ")
           else
             redirect_to play_records_path, alert: @record.errors.full_messages.join(", ")
           end
@@ -254,5 +254,14 @@ class PlayRecordsController < ApplicationController
     params.require(:play_record).permit(:shop_id, :machine_model_id, :played_on,
                                          :result_amount, :investment, :payout,
                                          :memo, :is_public, tags: [])
+  end
+
+  # Open Redirect 対策: アプリ内パスのみ許可。
+  # 先頭が `/` で、かつ 2文字目が `/` でも `\` でもないことを要求 (`//evil.com` や `/\evil.com` を弾く)。
+  def safe_return_to
+    target = params[:return_to]
+    return nil if target.blank?
+    return nil unless target.match?(/\A\/[^\/\\]/)
+    target
   end
 end

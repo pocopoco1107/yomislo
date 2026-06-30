@@ -39,6 +39,13 @@ class Rack::Attack
     end
   end
 
+  # /admin への brute-force 対策。Devise lockable と二段構え。
+  throttle("admin_sign_in/ip", limit: 5, period: 1.minute) do |req|
+    if req.path == "/users/sign_in" && req.post?
+      req.ip
+    end
+  end
+
   self.throttled_responder = lambda do |req|
     match_data = req.env["rack.attack.match_data"]
     now = Time.now.utc
