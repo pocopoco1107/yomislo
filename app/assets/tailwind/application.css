@@ -27,19 +27,21 @@
   --card-foreground: #111827;
   --popover: #ffffff;
   --popover-foreground: #111827;
-  --primary: #10b981;
+  /* a11y: --primary は bg-primary text-primary-foreground (白文字) で 4.5:1 を満たす #059669 へ。
+     ファミコン感を出すアクセントは --accent-text (#059669) や rounded で担保し、CTA の文字可読性を優先。 */
+  --primary: #059669;
   --primary-foreground: #ffffff;
   --secondary: #f3f4f6;
   --secondary-foreground: #111827;
   --muted: #f3f4f6;
   --muted-foreground: #6b7280;
-  --accent: #10b981;
+  --accent: #059669;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: #e5e7eb;
   --input: #e5e7eb;
-  --ring: #10b981;
+  --ring: #059669;
   --chart-1: #3b82f6;
   --chart-2: #06b6d4;
   --chart-3: #22c55e;
@@ -58,7 +60,9 @@
   /* Custom tokens */
   --text-primary: #111827;
   --text-secondary: #6b7280;
-  --text-tertiary: #9ca3af;
+  /* a11y: ライト背景 #fafafa 上で 4.5:1 を満たす #6b7280 へ (旧 #9ca3af は 2.7:1)。
+     10–11px の補足ラベルでも読めるよう、tertiary でも AA 基準を担保する。 */
+  --text-tertiary: #6b7280;
   --accent-muted: rgba(34, 197, 94, 0.12);
   --accent-text: #059669;
   --surface-inset: #f0f1f3;
@@ -501,3 +505,20 @@
   85%{transform:translateY(0) scale(1.05,0.9)}
 }
 @media (prefers-reduced-motion: reduce){ .pet,.pet--idle,.pet--breathe,.pet--hop{animation:none} }
+
+/* ============================================
+   a11y: prefers-reduced-motion 全停止
+   ============================================
+   OS の「視差効果を減らす」設定が有効なときは Tailwind の animate-* / 自前の
+   .animate-* / hop 系 / dq-cursor 点滅 / vote-success など、自動再生される
+   アニメーションを一律で止める。`transition` は user 操作起点なので残す
+   （ボタンの押し心地は WCAG 的にも問題なし）。 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

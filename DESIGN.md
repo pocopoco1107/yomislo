@@ -202,6 +202,16 @@ AIコード生成は「ネット上の最頻出パターン＝中央値の見た
 - [ ] 「最適化」「集約」「ソリューション」等の空疎・硬いコピーが無いか（→ copy-reviewer）
 - [ ] カードが全部同一スタイルの単調グリッドになっていないか
 
+## アクセシビリティ (WCAG 2.1 AA) チェックリスト
+
+ヨミスロは緑基調ビビッドカラー＋ファミコン調なので、特に **コントラスト** と **ドット絵フォントの可読性** で落ちやすい。新しい色組み合わせ・モーダル・トグルUIを足すときは下記を必ず通すこと。
+
+- [ ] **コントラスト 4.5:1 以上** — `bg-primary text-primary-foreground` / `bg-vote-* text-*` / `bg-setting-* text-*` 等の組み合わせは原則 AA Normal を満たす値で実装。明るい背景(setting-2〜5/vote-yes/vote-no) は **`text-gray-900`** を使い、暗い背景(setting-1/setting-6) のみ `text-white` を許容。`--primary` (light) は `#059669` で固定（`#10b981` は CTA 用としては NG）
+- [ ] **トグルボタンの aria-pressed** — お気に入り星・確定設定トグル等、状態を持つボタンは Stimulus の `connect()` 時に `aria-pressed`/`aria-label` を必ずトグル。初期 HTML 上で `aria-pressed="false"` を書くだけにしない
+- [ ] **`prefers-reduced-motion` で全アニメ停止** — 自前で `@keyframes` を足したらグローバルの `@media (prefers-reduced-motion: reduce)` ブロックで止まるか確認。新規 `animate-*` を独自実装した場合は対象に含まれているか確認
+- [ ] **DotGothic16 は 14px 未満で使わない** — `.font-heading` / `.score-num` (700) は見出し・大きなスコアに限定。本文・表・補足ラベル（`text-xs` 以下）には絶対に当てない（ドットがにじんで判読不能になる）
+- [ ] **モーダル/ダイアログに `role="dialog"` + `aria-modal="true"` + `aria-labelledby` + focus 管理** — open 時にパネルへ `focus()` を移し、close 時に直前のフォーカス要素へ戻す（`record_modal_controller.js` 参照）。`tabindex="-1"` をパネルに付ける
+
 ## Do's and Don'ts
 
 ### Do's

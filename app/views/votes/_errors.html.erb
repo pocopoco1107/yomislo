@@ -1,6 +1,7 @@
 <div id="vote_errors">
   <% if vote.errors.any? %>
-    <div class="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 mb-4">
+    <div class="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 mb-4"
+         role="alert" aria-live="assertive">
       <ul class="text-sm text-destructive list-disc list-inside">
         <% vote.errors.full_messages.each do |msg| %>
           <li><%= msg %></li>

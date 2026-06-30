@@ -1,6 +1,7 @@
 <div id="review_form_errors">
   <% if review.errors.any? %>
-    <div class="rounded-lg border border-destructive/20 bg-destructive/5 p-3 mb-3">
+    <div class="rounded-lg border border-destructive/20 bg-destructive/5 p-3 mb-3"
+         role="alert" aria-live="assertive">
       <ul class="text-sm text-destructive list-disc list-inside">
         <% review.errors.full_messages.each do |msg| %>
           <li><%= msg %></li>

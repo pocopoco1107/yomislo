@@ -35,6 +35,10 @@ export default class extends Controller {
     if (this._isOpen) return
     this._isOpen = true
 
+    // a11y: モーダル開閉時のフォーカス管理。直前のフォーカス要素を覚えておき、
+    // close 時に戻す。完全な focus trap は重いので最小限。
+    this._previouslyFocused = document.activeElement
+
     const panel = this.panelTarget
     const backdrop = this.backdropTarget
     const desktop = this._isDesktop()
@@ -70,6 +74,8 @@ export default class extends Controller {
         } else {
           panel.style.transform = "translateY(0)"
         }
+        // a11y: パネル本体にフォーカスを移し、SR がダイアログタイトルから読む
+        panel.focus({ preventScroll: true })
       })
     })
   }
@@ -104,6 +110,11 @@ export default class extends Controller {
       backdrop.style.transition = ""
       document.body.style.overflow = ""
       document.removeEventListener("keydown", this._onKeydown)
+      // a11y: フォーカスを開く前の要素に戻す
+      if (this._previouslyFocused && typeof this._previouslyFocused.focus === "function") {
+        this._previouslyFocused.focus({ preventScroll: true })
+      }
+      this._previouslyFocused = null
     }, 300)
   }
 

@@ -4,12 +4,14 @@
     has_reset_no  = user_vote&.reset_vote == 0
     user_confirmed = user_vote&.confirmed_setting || []
 
+    # a11y: 明るい背景(cyan/green/yellow/orange)は黒文字、暗い背景(blue/red)は白文字で
+    # WCAG AA (4.5:1) を満たす。ファミコン感のビビッド配色は維持。
     selected_classes = {
       1 => 'bg-setting-1 text-white ring-2 ring-setting-1/40',
-      2 => 'bg-setting-2 text-white ring-2 ring-setting-2/40',
-      3 => 'bg-setting-3 text-white ring-2 ring-setting-3/40',
-      4 => 'bg-setting-4 text-white ring-2 ring-setting-4/40',
-      5 => 'bg-setting-5 text-white ring-2 ring-setting-5/40',
+      2 => 'bg-setting-2 text-gray-900 ring-2 ring-setting-2/40',
+      3 => 'bg-setting-3 text-gray-900 ring-2 ring-setting-3/40',
+      4 => 'bg-setting-4 text-gray-900 ring-2 ring-setting-4/40',
+      5 => 'bg-setting-5 text-gray-900 ring-2 ring-setting-5/40',
       6 => 'bg-setting-6 text-white ring-2 ring-setting-6/40'
     }
     unselected_classes = {
@@ -28,12 +30,12 @@
       '6確' => 'text-setting-6'
     }
     confirmed_btn_selected = {
-      '偶数確' => 'bg-setting-2 text-white ring-2 ring-setting-2/40',
+      '偶数確' => 'bg-setting-2 text-gray-900 ring-2 ring-setting-2/40',
       '奇数確' => 'bg-setting-1 text-white ring-2 ring-setting-1/40',
-      '2以上' => 'bg-setting-2 text-white ring-2 ring-setting-2/40',
-      '3以上' => 'bg-setting-3 text-white ring-2 ring-setting-3/40',
-      '4以上' => 'bg-setting-4 text-white ring-2 ring-setting-4/40',
-      '5以上' => 'bg-setting-5 text-white ring-2 ring-setting-5/40',
+      '2以上' => 'bg-setting-2 text-gray-900 ring-2 ring-setting-2/40',
+      '3以上' => 'bg-setting-3 text-gray-900 ring-2 ring-setting-3/40',
+      '4以上' => 'bg-setting-4 text-gray-900 ring-2 ring-setting-4/40',
+      '5以上' => 'bg-setting-5 text-gray-900 ring-2 ring-setting-5/40',
       '6確' => 'bg-setting-6 text-white ring-2 ring-setting-6/40'
     }
     confirmed_btn_unselected = {
@@ -127,7 +129,7 @@
                   <%= f.hidden_field :voted_on, value: date %>
                   <%= f.hidden_field :reset_vote, value: 1 %>
                   <button type="submit"
-                          class="<%= has_reset_yes ? 'bg-vote-yes text-white ring-1 ring-vote-yes/50' : 'bg-vote-yes/10 text-vote-yes hover:bg-vote-yes/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
+                          class="<%= has_reset_yes ? 'bg-vote-yes text-gray-900 ring-1 ring-vote-yes/50' : 'bg-vote-yes/10 text-vote-yes hover:bg-vote-yes/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
                           data-action="click->vote#submit"
                           data-vote-target="button">
                     リセット
@@ -139,7 +141,7 @@
                   <%= f.hidden_field :voted_on, value: date %>
                   <%= f.hidden_field :reset_vote, value: 0 %>
                   <button type="submit"
-                          class="<%= has_reset_no ? 'bg-vote-no text-white ring-1 ring-vote-no/50' : 'bg-vote-no/10 text-vote-no hover:bg-vote-no/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
+                          class="<%= has_reset_no ? 'bg-vote-no text-gray-900 ring-1 ring-vote-no/50' : 'bg-vote-no/10 text-vote-no hover:bg-vote-no/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
                           data-action="click->vote#submit"
                           data-vote-target="button">
                     据え置き

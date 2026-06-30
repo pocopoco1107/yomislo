@@ -3,7 +3,7 @@
 実装済みの機能改善・調査タスクを積んでおくバックログ。優先度や着手予定は項目ごとに決める。
 作業着手時は GitHub Issue 化するか、直接ブランチ切って進める。
 
-> **最終更新: 2026-06-26**（セキュリティ・a11y・E2E 項目追加）
+> **最終更新: 2026-06-30**（a11y HIGH 4件 + MED 3件消化、DESIGN.md にチェックリスト追記）
 
 ## 目次
 
@@ -32,13 +32,16 @@ DESIGN.md と照合してサーフェス階層・余白・カラートークン�
 現ヒーローキャッチ「みんなの記録で設定が見えてくる」等の時間帯切替バリエーションも含めて再評価。
 
 ### アクセシビリティ (WCAG 2.1 AA)
-2026-06-26 レビューで HIGH 4件・MED 7件検出。最頻出箇所のコントラスト破綻が主。
-- **[HIGH] ライトモード `--primary` を `#10b981` → `#059669` に下げる** — `bg-primary text-primary-foreground` の組み合わせが現状 2.5:1 (全 primary ボタンで WCAG fail)
-- **[HIGH] `bg-setting-4 text-white` / `bg-vote-yes text-white` 等の白文字配色見直し** — 記録UI 最頻出。彩度の高い緑・黄 + 白文字で約 2.0:1
-- **[HIGH] `--text-tertiary:#9ca3af` を `#6b7280` 相当に** — ライト背景 `#fafafa` 上で 2.7:1。10–11px 補足ラベルに使われている
-- **[HIGH] お気に入り星ボタンの `aria-pressed`/`aria-label` を Stimulus でトグル** — 現状 `aria-pressed="false"` 固定で SR ユーザに状態伝わらず
-- [MED] Turbo Frame 更新後のフォーカス管理（vote 投稿後 autofocus）、トースト/エラーへ `aria-live`、確定設定トグル群へ `aria-pressed`、`prefers-reduced-motion` 対応を `.animate-*` 全般に拡張、モーダルに focus trap + `role="dialog"`、ボトムナビ active の `.dq-cursor--blink` 点滅停止条件
-- DESIGN.md に a11y チェックリスト 5項目追記（コントラスト前提・トグル aria-pressed・reduced-motion 全停止・DotGothic16 14px未満禁止・モーダル focus trap）
+2026-06-26 レビューで HIGH 4件・MED 7件検出 → 2026-06-30 HIGH 全消化＋MED 主要3件＋DESIGN.md チェックリスト追記済。
+- ~~**[HIGH] ライトモード `--primary` を `#10b981` → `#059669` に下げる**~~ ✅ 済 (2026-06-30) `--primary` / `--accent` / `--ring` を `#059669` に変更、白文字 CTA で AA 通過
+- ~~**[HIGH] `bg-setting-4 text-white` / `bg-vote-yes text-white` 等の白文字配色見直し**~~ ✅ 済 (2026-06-30) `_machine_vote_row.html.erb` の selected/confirmed/vote-yes/vote-no を「明るい背景=`text-gray-900`、暗い背景=`text-white`」ルールに統一
+- ~~**[HIGH] `--text-tertiary:#9ca3af` を `#6b7280` 相当に**~~ ✅ 済 (2026-06-30) ライトモード token を `#6b7280` に更新
+- ~~**[HIGH] お気に入り星ボタンの `aria-pressed`/`aria-label` を Stimulus でトグル**~~ ✅ 済 既に `favorite_controller.js#updateUI` で `connect()` 時に動的トグル済み（BACKLOG が古かっただけ）
+- ~~[MED] トースト/エラーへ `aria-live`~~ ✅ 済 (2026-06-30) `_flash` notice=`role=status/aria-live=polite`、alert / `_errors` / `_form_errors` を `role=alert/aria-live=assertive`
+- ~~[MED] `prefers-reduced-motion` 対応を `.animate-*` 全般に拡張~~ ✅ 済 (2026-06-30) `application.css` 末尾にグローバル `* { animation-duration: 0.001ms !important }` ブロックを追加
+- ~~[MED] モーダルに focus trap + `role="dialog"`~~ ✅ 済 (2026-06-30) `record-modal` を `role="dialog" aria-modal aria-labelledby tabindex=-1` 化、open/close で 前フォーカス保存→復帰の軽量実装
+- [MED] 残り: Turbo Frame 更新後のフォーカス管理（vote 投稿後 autofocus）、確定設定トグル群へ `aria-pressed`、ボトムナビ active の `.dq-cursor--blink` 点滅停止条件
+- ~~DESIGN.md に a11y チェックリスト 5項目追記~~ ✅ 済 (2026-06-30)
 
 ---
 
