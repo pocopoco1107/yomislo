@@ -1,0 +1,17 @@
+<%# マイルストーン達成トースト。既存の進化トーストと同じ .rpg-window--glow 枠を使い、
+    dismissable が 5秒後に自動フェード。#pet_toast コンテナに append される。
+    milestone: { type:, threshold: or setting: } を UiHelper#milestone_display で描画情報に変換。 %>
+<% info = milestone_display(milestone) %>
+<% if info %>
+  <div class="pointer-events-auto rpg-window--glow px-4 py-3 flex items-center gap-3 animate-fade-in"
+       role="status"
+       aria-live="polite"
+       data-controller="dismissable"
+       data-dismissable-delay-value="5000">
+    <span class="text-3xl leading-none shrink-0" aria-hidden="true"><%= info[:emoji] %></span>
+    <div class="min-w-0">
+      <p class="font-heading text-sm text-slot-yellow"><%= info[:title] %></p>
+      <p class="text-xs text-muted-foreground mt-0.5"><%= info[:desc] %></p>
+    </div>
+  </div>
+<% end %>

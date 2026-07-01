@@ -171,9 +171,9 @@
     </p>
   </div>
 
-  <%# === ポイントランキング (オマケ) === %>
+  <%# === ゴールドランキング (オマケ) === %>
   <div class="mt-8">
-    <%= section_heading "ポイントランキング", accent: :yellow, extra: "mb-3" %>
+    <%= section_heading "ゴールドランキング", accent: :yellow, extra: "mb-3" %>
     <div class="bg-card rounded-lg border border-border/60 p-4">
       <% if @points_ranking.any? %>
         <ol class="space-y-2.5">
@@ -181,7 +181,7 @@
             <li class="flex items-center gap-3">
               <span class="w-5 text-center text-sm font-bold tabular-nums shrink-0 <%= case entry[:rank] when 1 then 'text-yellow-500' when 2 then 'text-muted-foreground' when 3 then 'text-amber-700' else 'text-muted-foreground' end %>"><%= entry[:rank] %></span>
               <span class="text-sm text-foreground flex-1 truncate"><%= entry[:label] %></span>
-              <span class="text-xs tabular-nums text-muted-foreground shrink-0"><%= entry[:points] %>pt</span>
+              <span class="text-xs tabular-nums text-muted-foreground shrink-0"><%= entry[:points] %>G</span>
             </li>
           <% end %>
         </ol>

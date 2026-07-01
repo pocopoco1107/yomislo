@@ -57,9 +57,10 @@
     </div>
   <% end %>
 
-  <%# === Shop Header === %>
-  <div class="bg-card rounded-lg border-l-2 border-l-primary/30 border-y border-r border-border/40 p-4 mb-4">
+  <%# === Shop Header (rpg-window: 店舗ページの主役1枚だけ許容) === %>
+  <div class="rpg-window p-4 mb-6 mt-2">
     <div class="flex items-center gap-2">
+      <span class="font-heading text-slot-yellow text-xl shrink-0" aria-hidden="true">▶</span>
       <h1 class="font-heading text-2xl md:text-3xl font-bold text-foreground flex-1"><%= @shop.name %></h1>
       <div data-controller="favorite" data-favorite-shop-slug-value="<%= @shop.slug %>">
         <button data-action="click->favorite#toggle"

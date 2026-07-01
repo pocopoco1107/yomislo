@@ -1,7 +1,7 @@
 <% content_for(:title) { "マイステータス | ヨミスロ" } %>
 
 <section class="max-w-2xl mx-auto">
-  <%= section_heading "マイステータス", size: :lg, tag: :h1, extra: "mb-4" %>
+  <%= section_heading "ぼうけんのしょ", size: :lg, tag: :h1, extra: "mb-4" %>
 
   <% if @has_votes %>
     <!-- トークンバックアップ (目立つ位置に) -->
@@ -24,24 +24,57 @@
       </div>
     <% end %>
 
-    <!-- Voter Identity + Display Name -->
-    <div class="bg-card rounded-lg border border-border/60 p-4 mb-4">
-      <div class="flex items-center justify-between gap-3">
-        <div class="min-w-0">
-          <p class="text-xl font-bold text-primary truncate"><%= @voter_label %></p>
+    <!-- 相棒 & 称号カード (rpg-window — ステータス画面の主役1枚だけ許容) -->
+    <%
+      # レベル = pet stage index + 1 (卵=Lv.1, 幼年期=Lv.2, 成長期=Lv.3, 成熟期=Lv.4)
+      pet_level = @pet ? (Pet::STAGE_ORDER.index(@pet.stage.to_sym) || 0) + 1 : 1
+      next_evo = @pet&.next_evolution
+    %>
+    <div class="rpg-window p-4 mb-6 mt-2" data-controller="pet" data-pet-evolved-value="false">
+      <div class="flex items-center gap-4">
+        <% if @pet %>
+          <span class="pet pet--idle shrink-0 cursor-pointer" data-pet-target="sprite" data-action="click->pet#hop">
+            <%= image_tag @pet.image_name, alt: @pet.alt_text, width: 72, height: 72, draggable: false, class: "select-none" %>
+          </span>
+        <% end %>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-baseline gap-2 flex-wrap">
+            <p class="font-heading text-base text-foreground truncate"><%= @voter_label %></p>
+            <span class="font-heading text-xs text-slot-green tabular-nums shrink-0">Lv.<%= pet_level %></span>
+          </div>
+          <p class="font-heading text-[11px] text-slot-yellow mt-0.5">称号 ･ <%= @profile.rank_title %></p>
           <p class="text-[11px] text-muted-foreground mt-0.5">ID: <%= voter_token&.last(4) %></p>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="score-num text-lg text-slot-yellow"><%= @profile.points %></span>
-          <span class="text-xs text-muted-foreground">pt</span>
+        <div class="flex flex-col items-end shrink-0">
+          <span class="score-num text-xl text-slot-yellow leading-none"><%= @profile.points %></span>
+          <span class="text-[10px] text-muted-foreground mt-1">ゴールド</span>
         </div>
       </div>
 
-      <!-- Display Name Form -->
-      <div class="mt-3 pt-3 border-t border-border/50">
+      <%# 相棒メッセージ (小さめのRPG風フキダシではなく border でシンプルに) %>
+      <% if @pet %>
+        <div class="mt-3 border-t border-border/50 pt-3 flex items-center gap-2">
+          <span class="text-slot-yellow font-heading text-xs shrink-0" aria-hidden="true">▶</span>
+          <p class="text-xs text-foreground/90 flex-1"><%= @pet.mood_message %></p>
+        </div>
+
+        <%# 次の姿までのドット分割バー %>
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="font-heading text-[10px] text-muted-foreground">
+              <% if next_evo %>次の姿まで<% else %>もう立派に育った<% end %>
+            </span>
+            <span class="font-heading text-[10px] text-slot-green tabular-nums"><%= @pet.evolution_progress_pct %>%</span>
+          </div>
+          <%= dot_bar @pet.evolution_progress_pct, 100, color: :green, segments: 12, height: :sm %>
+        </div>
+      <% end %>
+
+      <!-- Display Name Form (rpg-window内に統合、ぼうけんのしょ感を維持) -->
+      <div class="mt-3 border-t border-border/50 pt-3">
         <%= form_tag voter_display_name_path, method: :patch, class: "flex items-center gap-2" do %>
           <input type="text" name="display_name" value="<%= @profile.display_name %>"
-                 placeholder="ユーザー名を設定 (+<%= VoterProfile::POINT_RULES[:display_name_set] %>pt)"
+                 placeholder="なまえを 設定 (+<%= VoterProfile::POINT_RULES[:display_name_set] %>ゴールド)"
                  maxlength="20"
                  class="flex-1 min-w-0 border border-input bg-background text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground min-h-[40px]">
           <button type="submit" class="shrink-0 bg-secondary text-secondary-foreground px-3 py-2 rounded-md text-xs font-medium hover:bg-secondary/80 active:scale-95 transition-all min-h-[40px]">
@@ -51,28 +84,43 @@
       </div>
     </div>
 
-    <!-- 相棒ペット -->
-    <% if @pet %>
-      <%= render "pets/pet", pet: @pet, variant: :card %>
-    <% end %>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-      <div class="bg-surface-inset rounded-lg p-3 text-center">
-        <p class="score-num text-xl text-primary"><%= @total_votes_count %></p>
-        <p class="text-[10px] text-muted-foreground mt-0.5">設定記録</p>
+    <!-- 「▶ つよさ」窓 (dot_bar 3本) -->
+    <%
+      # 次のランクの min_points (nil なら現在最上位 → 500pt でカンスト表示)
+      rank_titles = VoterProfile::RANK_TITLES
+      current_idx = rank_titles.index { |r| r[:title] == @profile.rank_title }
+      next_rank = current_idx && current_idx > 0 ? rank_titles[current_idx - 1] : nil
+      gold_target = next_rank ? next_rank[:min_points] : rank_titles.first[:min_points]
+      # 記録件数はマイルストーンをtargetに。次のしきい値まで
+      vote_target = [ 10, 100, 1000 ].find { |t| @total_votes_count < t } || @total_votes_count
+    %>
+    <div class="bg-card rounded-lg border border-border/60 p-4 mb-4">
+      <%= section_heading "つよさ", accent: :yellow, extra: "mb-3" %>
+      <div class="space-y-2.5">
+        <%= dot_bar @total_votes_count, vote_target, color: :green, segments: 12, height: :sm, label: "記録", value: "#{@total_votes_count}件" %>
+        <%= dot_bar @profile.current_streak || 0, 30, color: :blue, segments: 12, height: :sm, label: "連続", value: "#{@profile.current_streak || 0}日" %>
+        <%= dot_bar @profile.points, gold_target, color: :yellow, segments: 12, height: :sm, label: "ゴールド", value: @profile.points.to_s %>
       </div>
+      <% if next_rank %>
+        <p class="text-[11px] text-muted-foreground mt-3">
+          次の称号「<span class="text-slot-yellow font-heading"><%= next_rank[:title] %></span>」まで あと <span class="tabular-nums font-semibold text-foreground"><%= [ next_rank[:min_points] - @profile.points, 0 ].max %></span>ゴールド
+        </p>
+      <% end %>
+    </div>
+
+    <!-- Stats (副次的な数字だけ残す) -->
+    <div class="grid grid-cols-3 gap-2 mb-4">
       <div class="bg-surface-inset rounded-lg p-3 text-center">
         <p class="score-num text-xl text-primary"><%= @play_records_count %></p>
-        <p class="text-[10px] text-muted-foreground mt-0.5">収支記録</p>
+        <p class="text-[11px] text-muted-foreground mt-0.5">収支記録</p>
       </div>
       <div class="bg-surface-inset rounded-lg p-3 text-center">
         <p class="score-num text-xl text-primary"><%= @shops_count %></p>
-        <p class="text-[10px] text-muted-foreground mt-0.5">記録店舗</p>
+        <p class="text-[11px] text-muted-foreground mt-0.5">記録店舗</p>
       </div>
       <div class="bg-surface-inset rounded-lg p-3 text-center">
         <p class="score-num text-xl text-primary"><%= @prefectures_count %></p>
-        <p class="text-[10px] text-muted-foreground mt-0.5">記録都道府県</p>
+        <p class="text-[11px] text-muted-foreground mt-0.5">記録都道府県</p>
       </div>
     </div>
 

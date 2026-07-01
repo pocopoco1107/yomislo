@@ -60,7 +60,10 @@
 
       <div class="flex-1 min-w-0">
         <%# 機種名 + バッジ群 %>
-        <h1 class="font-heading text-xl md:text-2xl font-bold text-foreground leading-tight"><%= @machine_model.name %></h1>
+        <h1 class="font-heading text-xl md:text-2xl font-bold text-foreground leading-tight flex items-baseline gap-1.5">
+          <span class="text-slot-yellow text-[0.75em] shrink-0" aria-hidden="true">▶</span>
+          <span class="flex-1"><%= @machine_model.name %></span>
+        </h1>
         <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
           <span class="text-[11px] font-bold px-2 py-0.5 rounded-md <%= @machine_model.display_type_badge_class %>">
             <%= @machine_model.display_type_label %>

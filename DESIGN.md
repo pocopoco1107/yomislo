@@ -127,7 +127,10 @@
 
 ### コマンドウィンドウ枠 (`.rpg-window`) — ⚠️ 乱用禁止
 - ドラクエ風の白い二重縁取り（box-shadowの多重リング、追加DOMなし）。`--rpg-frame` / `--rpg-frame-inner` トークン、ライト/ダーク自動対応。`.rpg-window` 自身が地色 (`--rpg-window-bg`) と角丸4pxを持つので `bg-card`/`rounded-*`/`border-*` は付けない
-- **使うのは一時ポップアップ（メッセージウィンドウ）だけ**。現状は進化トースト（`.rpg-window--glow` = 枠＋グロウ一体）のみ。**ゲームでも窓は1画面に1つ**。カードやリストやヘッダーを枠で囲むのは禁止（見づらい・不自然・緑基調と中途半端になる）
+- **1画面に窓は1つが原則**。トースト（進化 / マイルストーン）は一時ポップアップなので別カウント。ページ内の永続配置は下記のみ：
+  - `shops/show` の店舗ヘッダー（そのページの主役1枚として）
+  - `voter/status` の相棒＆称号カード（「ぼうけんのしょ」の主役1枚として）
+- カードやリスト・機種行を枠で囲むのは禁止（見づらい・不自然・緑基調と中途半端になる）
 - 通常のカードは `bg-card rounded-lg border border-border/60`（必要なら左アクセント `border-l-2 border-l-{accent}`）で表現する
 
 ### ▶ メニューカーソル (`.dq-cursor` / `section_heading`)
@@ -143,6 +146,25 @@
 - コンパクトさ重視（縦幅を抑える）
 - 機種名 + 設定ボタン6個 + リセットボタン を1行に収める
 - **RPG装飾（ドット絵フォント・ウィンドウ枠）を持ち込まない**（記録動線の可読性・操作性が最優先）
+
+### ドット分割バー (`dot_bar` ヘルパー)
+- HP/MP風のドット分割プログレスバー。[app/helpers/ui_helper.rb](app/helpers/ui_helper.rb) の `dot_bar(current, total, color:, segments:, height:, label:, value:)`
+- パチスロ演出カラー (`:primary`/`:green`/`:blue`/`:yellow`/`:red`/`:confirmed`) の中から意味に紐付けて選ぶ
+- 「ぼうけんのしょ」(voter/status) のつよさバー、ペット進化バーで使用。**通常のリニアバー (`.h-1.5 bg-secondary`) は残してもOK**（併存 → 用途で使い分け）
+- `role="progressbar"` + `aria-valuenow/min/max/label` 自動付与 (a11y準拠)
+
+### トースト / 記録フィードバック
+[app/views/layouts/application.html.erb](app/views/layouts/application.html.erb) の `#pet_toast` (fixed bottom, z-50) に turbo_stream で append。3種混在OK、階層は「サイズ」で表現：
+
+| 種類 | パーシャル | 用途 | サイズ | 発火頻度 |
+|---|---|---|---|---|
+| ゴールドトースト | `votes/_gold_toast.html.erb` | 新規記録ごとの「+N ゴールド」 | 丸ピル(小) | 毎回 |
+| マイルストーントースト | `votes/_milestone_toast.html.erb` | 節目到達 (10/100/1000件、7/30日連続、初高設定) | `.rpg-window--glow`(中) | 生涯数回 |
+| 進化トースト | `pets/_evolution_toast.html.erb` | Pet進化 (baby→child→adult) | `.rpg-window--glow`(中) | 各2〜3回 |
+
+- **鬱陶しさ回避**: 大きい演出（rpg-window 系）は節目のみ。毎回のフィードバックは小さいピルに徹する
+- `dismissable` controller で自動フェード。`delay-value`: 1400ms (gold) / 5000ms (milestone) / 4000ms (evolution)
+- 「毎回フルスクリーン演出」はNG (打ち手が1日に何回もタップする動線を阻害する)
 
 ### アコーディオン
 - アニメーション: `accordion-down` / `accordion-up` (0.2s ease-out)
@@ -168,9 +190,15 @@
 - `@custom-variant dark (&:is(.dark *))` で Tailwind v4 対応
 
 ### ページ構成
-- ホーム: 2ゾーンタブ (店舗・設定 / マイデータ)
-- 店舗ページ: 機種一覧 → 記録UI (Turbo Frame)
+- ホーム: 2ゾーンタブ (店舗・設定 / マイデータ)。地域は「都道府県からさがす」7地域タイル（地域固有色の▶＋DotGothic16見出し＋件数）。中身はアコーディオンで都道府県chipsを展開
+- 店舗ページ: `.rpg-window` の店舗ヘッダー → 機種一覧 → 記録UI (Turbo Frame)
 - 県ページ: 市区町村グループ → 店舗一覧
+- マイステータス (voter/status): 「ぼうけんのしょ」レイアウト。相棒＆称号カード (`.rpg-window`) → 「▶ つよさ」窓 (dot_bar 3本)  → 副次Stats → 的中率 → 最近の記録
+
+### テーマ強化: 夜=ダンジョン / 昼=そうげん
+- ダーク時: `body::before` に固定スキャンライン (opacity 0.35, pointer-events:none, reduced-motion対応)。ファミコンCRT感を演出しつつ、可読性・タップ性は無干渉
+- ライト時: ホームヒーロー等に `.world-meadow` クラスで空→草原の極薄グラデを敷ける (既存 `.noise-texture` と両立、`::after` レイヤ)
+- 既存 dark/light テーマの延長として実装。「モード追加」概念は増やさない
 
 ## Spacing（余白）
 

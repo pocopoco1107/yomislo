@@ -1,0 +1,11 @@
+<%# 記録成功マイクロフィードバック。既存 #pet_toast コンテナに append される小型トースト。
+    ドット字で「＋ N ゴールド」を短く見せ、dismissable が1.4秒後に自動フェードする。 %>
+<div class="pointer-events-auto bg-card border border-slot-yellow/40 rounded-full pl-3 pr-4 py-1.5 flex items-center gap-1.5 animate-fade-in shadow-md"
+     role="status"
+     aria-live="polite"
+     data-controller="dismissable"
+     data-dismissable-delay-value="1400">
+  <span class="font-heading text-base text-slot-yellow leading-none" aria-hidden="true">＋</span>
+  <span class="font-heading text-sm text-slot-yellow tabular-nums leading-none"><%= gain %></span>
+  <span class="text-xs text-muted-foreground leading-none">ゴールド</span>
+</div>

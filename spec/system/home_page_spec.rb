@@ -10,8 +10,8 @@ RSpec.describe "Home page", type: :system do
       travel_to Time.zone.local(2026, 5, 20, 12, 0) do
         visit root_path
 
-        expect(page).to have_content("調子はどう？")
-        expect(page).to have_content("台の機嫌")
+        expect(page).to have_content("みんなの記録で")
+        expect(page).to have_content("設定を 暴け！")
         expect(page).to have_content("累計")
         expect(page).to have_content("今日")
       end

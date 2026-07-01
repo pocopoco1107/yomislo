@@ -9,6 +9,18 @@
     unit_count: ShopMachineModel.find_by(shop_id: @shop.id, machine_model_id: @machine_model.id)&.unit_count %>
 <% end %>
 
+<% if @gold_gain.to_i > 0 %>
+  <%= turbo_stream.append "pet_toast" do %>
+    <%= render "votes/gold_toast", gain: @gold_gain %>
+  <% end %>
+<% end %>
+
+<% Array(@milestones).each do |milestone| %>
+  <%= turbo_stream.append "pet_toast" do %>
+    <%= render "votes/milestone_toast", milestone: milestone %>
+  <% end %>
+<% end %>
+
 <% if @pet_result&.evolved? %>
   <%= turbo_stream.append "pet_toast" do %>
     <%= render "pets/evolution_toast", pet: @pet_result.pet %>
