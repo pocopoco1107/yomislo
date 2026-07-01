@@ -93,22 +93,20 @@
       <% @rankings.each do |entry| %>
         <%
           is_me = existing_voter_token.present? && entry.voter_token == existing_voter_token
-          medal = case entry.rank_position
-                  when 1 then { icon: "\u{1F947}", color: "text-yellow-500" }
-                  when 2 then { icon: "\u{1F948}", color: "text-gray-400" }
-                  when 3 then { icon: "\u{1F949}", color: "text-amber-700" }
-                  else nil
-                  end
+          # 上位3位はDotGothic16の色付き大数字で表現 (絵文字🥇🥈🥉は世界観と合わないため置換)
+          rank_class = case entry.rank_position
+                       when 1 then "text-slot-yellow"
+                       when 2 then "text-muted-foreground"
+                       when 3 then "text-amber-700 dark:text-amber-500"
+                       else "text-muted-foreground"
+                       end
+          is_top3 = entry.rank_position <= 3
           profile = VoterProfile.find_by(voter_token: entry.voter_token)
         %>
         <div class="flex items-center gap-3 px-4 py-3 min-h-[52px] <%= 'bg-primary/5' if is_me %>">
           <%# Rank %>
           <div class="w-8 text-center shrink-0">
-            <% if medal %>
-              <span class="text-xl"><%= medal[:icon] %></span>
-            <% else %>
-              <span class="text-sm font-bold tabular-nums text-muted-foreground"><%= entry.rank_position %></span>
-            <% end %>
+            <span class="score-num tabular-nums <%= is_top3 ? 'text-2xl' : 'text-sm font-bold' %> <%= rank_class %>"><%= entry.rank_position %></span>
           </div>
 
           <%# Voter Info %>
@@ -128,8 +126,8 @@
 
           <%# Vote Count %>
           <div class="text-right shrink-0">
-            <span class="text-sm font-bold tabular-nums text-foreground"><%= entry.vote_count %></span>
-            <span class="text-[10px] text-muted-foreground ml-0.5">件</span>
+            <span class="score-num text-base tabular-nums text-foreground"><%= entry.vote_count %></span>
+            <span class="text-[11px] text-muted-foreground ml-0.5">件</span>
           </div>
         </div>
       <% end %>

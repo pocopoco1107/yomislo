@@ -115,7 +115,7 @@
       <% if @machine_model.effective_introduced_on.present? %>
         <span>導入日: <span class="font-medium text-foreground"><%= @machine_model.effective_introduced_on.strftime("%Y年%-m月%-d日") %></span></span>
       <% end %>
-      <span>設置店舗: <span class="font-medium text-foreground"><%= @installed_shop_count %>店</span></span>
+      <span>設置店舗: <span class="score-num text-sm text-foreground tabular-nums"><%= @installed_shop_count %></span><span class="text-[11px] text-muted-foreground ml-0.5">店</span></span>
     </div>
 
   </div>
