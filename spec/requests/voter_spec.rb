@@ -28,7 +28,7 @@ RSpec.describe "Voter", type: :request do
         get voter_status_path, headers: { "Cookie" => "voter_token=#{token}" }
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("ユーザー#1234")
-        expect(response.body).to include("つよさ") # 「▶ つよさ」窓
+        expect(response.body).to include("スコア") # 「▶ スコア」窓
         expect(response.body).to include("収支記録")
       end
 

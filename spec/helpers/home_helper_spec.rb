@@ -44,13 +44,13 @@ RSpec.describe HomeHelper, type: :helper do
 
     it "renders the late-night tagline at 23:00" do
       travel_to(Time.zone.local(2026, 5, 20, 23, 0, 0)) do
-        expect(helper.hero_tagline_html).to eq(%(今日の収支は <span class="text-primary">ぼうけんのしょへ</span>))
+        expect(helper.hero_tagline_html).to eq(%(今日の結果を <span class="text-primary">振り返ろう</span>))
       end
     end
 
     it "treats 4:59 as late night and 5:00 as morning" do
       travel_to(Time.zone.local(2026, 5, 20, 4, 59, 59)) do
-        expect(helper.hero_tagline_html).to include("ぼうけんのしょへ")
+        expect(helper.hero_tagline_html).to include("振り返ろう")
       end
       travel_to(Time.zone.local(2026, 5, 20, 5, 0, 0)) do
         expect(helper.hero_tagline_html).to include("読み解け！")
@@ -80,13 +80,13 @@ RSpec.describe HomeHelper, type: :helper do
         expect(helper.hero_tagline_html).to include("記録しよう")
       end
       travel_to(Time.zone.local(2026, 5, 20, 23, 0, 0)) do
-        expect(helper.hero_tagline_html).to include("ぼうけんのしょへ")
+        expect(helper.hero_tagline_html).to include("振り返ろう")
       end
     end
 
     it "stays in late_night across midnight (0:00)" do
       travel_to(Time.zone.local(2026, 5, 20, 0, 0, 0)) do
-        expect(helper.hero_tagline_html).to include("ぼうけんのしょへ")
+        expect(helper.hero_tagline_html).to include("振り返ろう")
       end
     end
   end

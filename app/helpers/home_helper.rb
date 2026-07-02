@@ -3,7 +3,7 @@ module HomeHelper
     morning_open:  [ "今日のリセットを ",  "読み解け！",          "" ],
     daytime:       [ "みんなの記録で ",    "設定を 暴け！",       "" ],
     evening_close: [ "今日の勝負の1台を ", "記録しよう",          "" ],
-    late_night:    [ "今日の収支は ",      "ぼうけんのしょへ",    "" ]
+    late_night:    [ "今日の結果を ",      "振り返ろう",           "" ]
   }.freeze
 
   def hero_tagline_html(now = Time.zone.now)

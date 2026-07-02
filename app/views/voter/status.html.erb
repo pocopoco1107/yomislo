@@ -1,7 +1,7 @@
 <% content_for(:title) { "マイステータス | ヨミスロ" } %>
 
 <section class="max-w-2xl mx-auto">
-  <%= section_heading "ぼうけんのしょ", size: :lg, tag: :h1, extra: "mb-4" %>
+  <%= section_heading "マイステータス", size: :lg, tag: :h1, extra: "mb-4" %>
 
   <% if @has_votes %>
     <!-- トークンバックアップ (目立つ位置に) -->
@@ -24,7 +24,7 @@
       </div>
     <% end %>
 
-    <!-- 相棒 & 称号カード (rpg-window — ステータス画面の主役1枚だけ許容) -->
+    <!-- 相棒 & 称号カード (rpg-window — マイステータス画面の主役1枚だけ許容) -->
     <%
       # レベル = pet stage index + 1 (卵=Lv.1, 幼年期=Lv.2, 成長期=Lv.3, 成熟期=Lv.4)
       pet_level = @pet ? (Pet::STAGE_ORDER.index(@pet.stage.to_sym) || 0) + 1 : 1
@@ -70,11 +70,11 @@
         </div>
       <% end %>
 
-      <!-- Display Name Form (rpg-window内に統合、ぼうけんのしょ感を維持) -->
+      <!-- Display Name Form (相棒カード内に統合) -->
       <div class="mt-3 border-t border-border/50 pt-3">
         <%= form_tag voter_display_name_path, method: :patch, class: "flex items-center gap-2" do %>
           <input type="text" name="display_name" value="<%= @profile.display_name %>"
-                 placeholder="なまえを 設定 (+<%= VoterProfile::POINT_RULES[:display_name_set] %>ゴールド)"
+                 placeholder="ユーザー名を設定 (+<%= VoterProfile::POINT_RULES[:display_name_set] %>ゴールド)"
                  maxlength="20"
                  class="flex-1 min-w-0 border border-input bg-background text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground min-h-[40px]">
           <button type="submit" class="shrink-0 bg-secondary text-secondary-foreground px-3 py-2 rounded-md text-xs font-medium hover:bg-secondary/80 active:scale-95 transition-all min-h-[40px]">
@@ -84,7 +84,7 @@
       </div>
     </div>
 
-    <!-- 「▶ つよさ」窓 (dot_bar 3本) -->
+    <!-- 「▶ スコア」窓 (dot_bar 3本) -->
     <%
       # 次のランクの min_points (nil なら現在最上位 → 500pt でカンスト表示)
       rank_titles = VoterProfile::RANK_TITLES
@@ -95,7 +95,7 @@
       vote_target = [ 10, 100, 1000 ].find { |t| @total_votes_count < t } || @total_votes_count
     %>
     <div class="bg-card rounded-lg border border-border/60 p-4 mb-4">
-      <%= section_heading "つよさ", accent: :yellow, extra: "mb-3" %>
+      <%= section_heading "スコア", accent: :yellow, extra: "mb-3" %>
       <div class="space-y-2.5">
         <%= dot_bar @total_votes_count, vote_target, color: :green, segments: 12, height: :sm, label: "記録", value: "#{@total_votes_count}件" %>
         <%= dot_bar @profile.current_streak || 0, 30, color: :blue, segments: 12, height: :sm, label: "連続", value: "#{@profile.current_streak || 0}日" %>

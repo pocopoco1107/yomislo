@@ -129,7 +129,7 @@
 - ドラクエ風の白い二重縁取り（box-shadowの多重リング、追加DOMなし）。`--rpg-frame` / `--rpg-frame-inner` トークン、ライト/ダーク自動対応。`.rpg-window` 自身が地色 (`--rpg-window-bg`) と角丸4pxを持つので `bg-card`/`rounded-*`/`border-*` は付けない
 - **1画面に窓は1つが原則**。トースト（進化 / マイルストーン）は一時ポップアップなので別カウント。ページ内の永続配置は下記のみ：
   - `shops/show` の店舗ヘッダー（そのページの主役1枚として）
-  - `voter/status` の相棒＆称号カード（「ぼうけんのしょ」の主役1枚として）
+  - `voter/status` の相棒＆称号カード（マイステータス画面の主役1枚として）
 - カードやリスト・機種行を枠で囲むのは禁止（見づらい・不自然・緑基調と中途半端になる）
 - 通常のカードは `bg-card rounded-lg border border-border/60`（必要なら左アクセント `border-l-2 border-l-{accent}`）で表現する
 
@@ -150,7 +150,7 @@
 ### ドット分割バー (`dot_bar` ヘルパー)
 - HP/MP風のドット分割プログレスバー。[app/helpers/ui_helper.rb](app/helpers/ui_helper.rb) の `dot_bar(current, total, color:, segments:, height:, label:, value:)`
 - パチスロ演出カラー (`:primary`/`:green`/`:blue`/`:yellow`/`:red`/`:confirmed`) の中から意味に紐付けて選ぶ
-- 「ぼうけんのしょ」(voter/status) のつよさバー、ペット進化バーで使用。**通常のリニアバー (`.h-1.5 bg-secondary`) は残してもOK**（併存 → 用途で使い分け）
+- マイステータス (voter/status) のスコアバー、ペット進化バーで使用。**通常のリニアバー (`.h-1.5 bg-secondary`) は残してもOK**（併存 → 用途で使い分け）
 - `role="progressbar"` + `aria-valuenow/min/max/label` 自動付与 (a11y準拠)
 
 ### トースト / 記録フィードバック
@@ -193,7 +193,7 @@
 - ホーム: 2ゾーンタブ (店舗・設定 / マイデータ)。地域は「都道府県からさがす」7地域タイル（地域固有色の▶＋DotGothic16見出し＋件数）。中身はアコーディオンで都道府県chipsを展開
 - 店舗ページ: `.rpg-window` の店舗ヘッダー → 機種一覧 → 記録UI (Turbo Frame)
 - 県ページ: 市区町村グループ → 店舗一覧
-- マイステータス (voter/status): 「ぼうけんのしょ」レイアウト。相棒＆称号カード (`.rpg-window`) → 「▶ つよさ」窓 (dot_bar 3本)  → 副次Stats → 的中率 → 最近の記録
+- マイステータス (voter/status): 相棒＆称号カード (`.rpg-window`) → 「▶ スコア」窓 (dot_bar 3本) → 副次Stats → 的中率 → 最近の記録
 
 ### テーマ強化: 夜=ダンジョン / 昼=そうげん
 - ダーク時: `body::before` に固定スキャンライン (opacity 0.35, pointer-events:none, reduced-motion対応)。ファミコンCRT感を演出しつつ、可読性・タップ性は無干渉
