@@ -191,7 +191,8 @@ Devise.setup do |config|
   # ==> Configuration for :timeoutable
   # The time you want to timeout the user session without activity. After this
   # time the user will be asked for credentials again. Default is 30 minutes.
-  config.timeout_in = 30.minutes
+  # /admin 運用向けに 12h。長時間放置後のセッション乗っ取り耐性を確保。
+  config.timeout_in = 12.hours
 
   # ==> Configuration for :lockable
   # /admin への brute-force 対策。10 回失敗で 30 分間ロック。

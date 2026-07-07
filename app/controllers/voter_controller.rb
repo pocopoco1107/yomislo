@@ -49,7 +49,8 @@ class VoterController < ApplicationController
   def restore
     token = params[:token]&.strip
     if token.present? && Vote.exists?(voter_token: token)
-      cookies.permanent[:voter_token] = token
+      # signed cookie で保存 (改ざん耐性)。1年有効化のため voter_token_cookie_options を再利用。
+      cookies.signed[:voter_token] = voter_token_cookie_options(token)
       redirect_to voter_status_path, notice: "トークンを復元しました"
     else
       redirect_to voter_status_path, alert: "トークンが見つかりません"

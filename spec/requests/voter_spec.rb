@@ -87,8 +87,10 @@ RSpec.describe "Voter", type: :request do
       post restore_voter_token_path, params: { token: "new_restore_token" }
       expect(response).to redirect_to(voter_status_path)
       expect(flash[:notice]).to include("復元")
-      # The cookie should be overwritten with the new token
-      expect(cookies[:voter_token]).to eq("new_restore_token")
+      # restore は cookies.signed で書き込む。Rack::Test の cookie jar には signed アクセサが
+      # 無いため、後続リクエストで voter_status ページが「new_restore_token」の投票主とみなすかで検証。
+      get voter_status_path
+      expect(response.body).to include("ユーザー#" + "new_restore_token".last(4))
     end
 
     it "trims whitespace from token before lookup" do

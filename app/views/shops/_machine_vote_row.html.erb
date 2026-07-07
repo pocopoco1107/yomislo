@@ -131,7 +131,9 @@
                   <button type="submit"
                           class="<%= has_reset_yes ? 'bg-vote-yes text-gray-900 ring-1 ring-vote-yes/50' : 'bg-vote-yes/10 text-vote-yes hover:bg-vote-yes/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
                           data-action="click->vote#submit"
-                          data-vote-target="button">
+                          data-vote-target="button"
+                          aria-pressed="<%= has_reset_yes %>"
+                          aria-label="リセット あり<%= has_reset_yes ? ' 記録済み' : ' を記録' %>">
                     リセット
                   </button>
                 <% end %>
@@ -143,7 +145,9 @@
                   <button type="submit"
                           class="<%= has_reset_no ? 'bg-vote-no text-gray-900 ring-1 ring-vote-no/50' : 'bg-vote-no/10 text-vote-no hover:bg-vote-no/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
                           data-action="click->vote#submit"
-                          data-vote-target="button">
+                          data-vote-target="button"
+                          aria-pressed="<%= has_reset_no %>"
+                          aria-label="リセット なし<%= has_reset_no ? ' 記録済み' : ' を記録' %>">
                     据え置き
                   </button>
                 <% end %>
@@ -189,7 +193,9 @@
                     <button type="submit"
                             class="<%= color_class %> rounded-lg w-10 h-10 text-sm font-bold active:scale-90 transition-all duration-150"
                             data-action="click->vote#submit"
-                            data-vote-target="button"><%= setting %></button>
+                            data-vote-target="button"
+                            aria-pressed="<%= is_selected %>"
+                            aria-label="設定<%= setting %><%= is_selected ? ' 記録済み' : ' を記録' %>"><%= setting %></button>
                   <% end %>
                 <% end %>
               </div>
@@ -229,7 +235,9 @@
                   <button type="submit"
                           class="<%= btn_class %> rounded-md px-3 py-1.5 text-[11px] font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
                           data-action="click->vote#submit"
-                          data-vote-target="button"><%= tag %></button>
+                          data-vote-target="button"
+                          aria-pressed="<%= is_selected %>"
+                          aria-label="確定情報 <%= tag %><%= is_selected ? ' 記録済み' : ' を記録' %>"><%= tag %></button>
                 <% end %>
               <% end %>
             </div>

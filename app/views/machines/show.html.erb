@@ -1,22 +1,36 @@
 <% content_for(:title) { "#{@machine_model.name} - ヨミスロ" } %>
 
-<%# JSON-LD structured data %>
+<%# JSON-LD structured data
+    パチスロ機種は Product ではなく Thing として扱う (このサイトで販売しておらず offers/price を
+    持たない)。Search Console の「商品スニペット 無効なアイテム」警告を回避しつつ、additionalType で
+    Product の意味合いを補足。ページ全体は Article でラップして author/publisher を明示する。 %>
 <% content_for(:head) do %>
   <script type="application/ld+json">
     <%= raw({
       "@context": "https://schema.org",
-      "@type": "Product",
-      "name": @machine_model.name,
-      "description": [@machine_model.type_detail, @machine_model.payout_rate_display ? "機械割#{@machine_model.payout_rate_display}" : nil].compact.join(" / ").presence || "パチスロ機種",
-      "brand": @machine_model.maker.present? ? { "@type": "Brand", "name": @machine_model.maker } : nil,
-      "image": @machine_model.image_url.presence,
-      "category": "パチスロ",
-      "additionalProperty": [
-        @machine_model.generation_label ? { "@type": "PropertyValue", "name": "号機区分", "value": @machine_model.generation_label } : nil,
-        @machine_model.payout_rate_display ? { "@type": "PropertyValue", "name": "機械割", "value": @machine_model.payout_rate_display } : nil,
-        @machine_model.type_detail.present? ? { "@type": "PropertyValue", "name": "タイプ", "value": @machine_model.type_detail } : nil,
-        { "@type": "PropertyValue", "name": "設置店舗数", "value": @installed_shop_count.to_s }
-      ].compact,
+      "@type": "Article",
+      "headline": "#{@machine_model.name} の設定・リセット情報",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": request.original_url.split("?").first },
+      "publisher": {
+        "@type": "Organization",
+        "name": "ヨミスロ",
+        "logo": { "@type": "ImageObject", "url": image_url("logo.png") }
+      },
+      "image": @machine_model.image_url.presence || image_url("logo.png"),
+      "about": {
+        "@type": "Thing",
+        "additionalType": "https://schema.org/Product",
+        "name": @machine_model.name,
+        "description": [@machine_model.type_detail, @machine_model.payout_rate_display ? "機械割#{@machine_model.payout_rate_display}" : nil].compact.join(" / ").presence || "パチスロ機種",
+        "brand": @machine_model.maker.present? ? { "@type": "Brand", "name": @machine_model.maker } : nil,
+        "image": @machine_model.image_url.presence,
+        "additionalProperty": [
+          @machine_model.generation_label ? { "@type": "PropertyValue", "name": "号機区分", "value": @machine_model.generation_label } : nil,
+          @machine_model.payout_rate_display ? { "@type": "PropertyValue", "name": "機械割", "value": @machine_model.payout_rate_display } : nil,
+          @machine_model.type_detail.present? ? { "@type": "PropertyValue", "name": "タイプ", "value": @machine_model.type_detail } : nil,
+          { "@type": "PropertyValue", "name": "設置店舗数", "value": @installed_shop_count.to_s }
+        ].compact
+      }.compact,
       "breadcrumb": {
         "@type": "BreadcrumbList",
         "itemListElement": [
