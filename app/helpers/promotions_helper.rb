@@ -9,9 +9,9 @@ module PromotionsHelper
     return unless promo
 
     partial = case variant
-              when :banner then "shared/promotion_banner"
-              else "shared/promotion_card"
-              end
+    when :banner then "shared/promotion_banner"
+    else "shared/promotion_card"
+    end
 
     render partial: partial, locals: { promotion: promo, slot_key: slot_key.to_s }
   end
