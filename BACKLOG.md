@@ -3,10 +3,12 @@
 実装済みの機能改善・調査タスクを積んでおくバックログ。優先度や着手予定は項目ごとに決める。
 作業着手時は GitHub Issue 化するか、直接ブランチ切って進める。
 
-> **最終更新: 2026-07-01**（セキュリティ HIGH 4件全消化 + SEO Product schema 修正 + a11y aria-pressed 追加。BACKLOG 実態確認で「多数が既に実装済み」と判明、記載を最新化）
+> **最終更新: 2026-07-01**
+> セキュリティ HIGH 4件 + MED 4件 全消化 / SEO Product schema・県ページ内部リンク導線 / a11y aria-pressed / レトロ化 Phase 1-4 + ドラクエ脱色。ASP審査前チェック完了。
 
 ## 目次
 
+- [🎯 次の優先候補](#-次の優先候補)
 - [UI / UX](#ui--ux)
 - [検索 / 発見性](#検索--発見性)
 - [データ品質](#データ品質)
@@ -20,23 +22,42 @@
 
 ---
 
+## 🎯 次の優先候補
+
+セクション別リストの中から、次に着手すべきものを抜粋。
+
+### 🟡 中優先 (私が単独で進められる)
+- **マイクロコピー横断レビュー** — プレースホルダー/空状態/エラーメッセージのAIっぽい硬さ排除 (`copy-reviewer` エージェント活用)
+- **Turbo Frame 更新後のフォーカス管理** — vote 投稿後の autofocus 復元 (a11y MED残)
+- **ランキングメニュー露出調整** — ゲーミフィケーション目的の投稿でデータ品質が落ちるリスク対策
+- **検索UI の設備フィルタ項目数見直し**
+- **設置機種未掲載店舗（約1,002件）の「データ未取得」表示確認**
+
+### 🔵 ユーザー行動が必要
+- **ASP 本格登録→有効化** — A8/もしも/バリューコマース アカウント作成→提携申請→承認→`target_url` 更新 → Render env `PROMOTIONS_ENABLED=true` セット
+- **特商法ページの実名化** — 金融系案件開始時に必要 (時期次第)
+- **Cloudflare Proxy 化** — SSL/TLS を "Full (strict)" に切替後、Proxied モードに (CDN/WAF/Bot対策)
+- **UptimeRobot 等アップタイム監視** — アカウント作成 → yomislo.com/up 監視設定
+
+### 🟣 大タスク (工数大・要計画)
+- **相棒ペット壮大版** — 6段階×4系統分岐、ご当地ヨミ、ドット絵生成パイプライン (docs/companion_spec.md v0.6)
+- **E2E テスト導入 (capybara-playwright)** — 記録UI・配列カラムJSバグ再発防止、CI 限定運用
+- **テストカバレッジ拡充** — 現在 615 examples / 49% coverage → コア機能を70%程度に
+
+---
+
 ## UI / UX
 
-### ~~レトロ化 Phase 1-3~~ ✅ 済 (2026-07-01)
-レトロ案 (`ヨミスロ レトロ案.html`) を参考に、UXを損なわない範囲で世界観を強化。
-- Phase 1: ワールドマップ地域タイル (地域固有色▶) / pt→ゴールド統一 / ヒーロー打ち手口調 / dark=ダンジョン(scanlines)+light=そうげん(world-meadow) / dot_bar ヘルパー追加
-- Phase 2A: 記録成功マイクロトースト (`_gold_toast` 丸ピル、1.4s dismissable) — 新規vote時のみ
-- Phase 2B: マイルストーントースト (`_milestone_toast` .rpg-window--glow、5s dismissable) — 記録10/100/1000件、連続7/30日、初高設定4-6
-- Phase 3: voter/status 強化 — 相棒＆称号カード (.rpg-window) + 「▶ スコア」窓 (dot_bar 3本: 記録/連続/ゴールド)
-- Phase 3+: 店舗・機種ヘッダーに▶+ font-heading (店舗ヘッダーは .rpg-window 主役化)
-- DESIGN.md 反映済み
-
-### ~~レトロ化 Phase 4~~ ✅ 済 (2026-07-01)
-- Phase 4A: 数字表示の `.score-num` 統一 (ランキングの vote_count, 機種の設置店舗数)
-- Phase 4B: ランキング上位バッジをDotGothic16の色付き大数字化 (🥇🥈🥉絵文字 → 1/2/3 金銀銅色 score-num text-2xl)
-- Phase 4C: 収支カレンダー装飾 (見出しを section_heading、月表示を font-heading、今日セルに ring-2 ring-primary)
-- 過去教訓「小サイズのアイコンをドット絵化しない」に従い、下部ナビや★・小さいバッジは触らない
-- 「レトロ感はフォント＋▶＋配色＋四角ばりで出す」原則を全面適用
+### ~~レトロ化 Phase 1-4 + ドラクエ脱色~~ ✅ 済 (2026-07-01)
+レトロ案 (`ヨミスロ レトロ案.html`) を参考に、UXを損なわない範囲でファミコン／ドラクエ調の世界観を強化。過去教訓「フルドラクエ化やりすぎ」に基づき、フォント/▶/配色/四角ばりでレトロ感を出す原則を全面適用。
+- **Phase 1** (見た目・トークン): ワールドマップ地域タイル (地域固有色▶) / pt→ゴールド統一 / ヒーロー打ち手口調 4種ローテ / dark=ダンジョン(scanlines)+light=そうげん(world-meadow) / `dot_bar` ヘルパー追加
+- **Phase 2A** (記録フィードバック小): `_gold_toast` 丸ピル (1.4s dismissable) — 新規vote時のみ
+- **Phase 2B** (マイルストーン): `_milestone_toast` .rpg-window--glow (5s dismissable) — 記録10/100/1000件、連続7/30日、初高設定4-6
+- **Phase 3** (マイステータス強化): 相棒＆称号カード (.rpg-window) + 「▶ スコア」窓 (dot_bar 3本: 記録/連続/ゴールド)
+- **Phase 3+** (ヘッダー統一): 店舗ヘッダーを .rpg-window 主役化、機種ヘッダーに▶+font-heading
+- **Phase 4** (フォント微調整): score-num統一 / ランキング1/2/3を色付き大数字 / 収支カレンダー装飾
+- **ドラクエ脱色**: ぼうけんのしょ→マイステータス、つよさ→スコア、なまえを→ユーザー名を、深夜ヒーローの「ぼうけんのしょへ」削除。RPG一般用語(Lv./ゴールド/称号)は残す
+- DESIGN.md / feedback_design_system.md 反映済み
 
 ### レトロ化 残候補 (低優先)
 - 記録行 (`_machine_vote_row`) の色味最終調整 (記録動線を絶対に触らない範囲で)
@@ -116,8 +137,8 @@ DMMぱちタウン側で `#anc-slot` セクションがないパチンコ専門�
 ### 機種画像の表示（検討中）
 著作権問題あり。代替案のタイプ別バッジは実装済み。
 
-### クリック計測（Promotion v2）
-`/r/:promotion_id` リダイレクトエンドポイントで `clicks_count` インクリメント。未実装。
+### ~~クリック計測（Promotion v2）~~ ✅ 済 (実装済み)
+`/p/:id` (promotion_click_path) ハンドラで `Promotion#increment_clicks!` 実装済み。ドメイン allowlist (a8.net等6ドメイン) も 2026-07-01 に追加。
 
 ---
 
@@ -236,6 +257,12 @@ Render Basic プランの自動バックアップ有無を確認。なければ 
 
 | タスク | 完了時期 |
 |--------|---------|
+| レトロ化 Phase 1-4 + ドラクエ脱色（世界観強化、UX無影響） | 2026-07-01 |
+| セキュリティ HIGH 4件 全消化（voter_token signed / Open Redirect / Promotion allowlist / Devise lockable） | 2026-07-01 |
+| セキュリティ MED 4件 消化（rack_attack 追加 / CSP nonce / HSTS / プライバシー保持期間） | 2026-07-01 |
+| SEO 機種 Product schema 修正（Article + about:Thing、Rich Results 警告回避） | 2026-07-01 |
+| SEO 県ページ内部リンク導線強化（フッター主要8県 + 機種詳細の県別リンク） | 2026-07-01 |
+| a11y 記録行トグルに aria-pressed + aria-label 追加 | 2026-07-01 |
 | 独自ドメイン yomislo.com 移行（Cloudflare DNS + Render Custom Domain + SSL + 301リダイレクト） | 2026-06-26 |
 | ファビコン・PWAアイコンを相棒ペット(baby)に差し替え、背景透過 | 2026-06-26 |
 | SEO 文言を打ち手目線に刷新（AIっぽい言い回し排除） | 2026-06-26 |
@@ -248,7 +275,7 @@ Render Basic プランの自動バックアップ有無を確認。なければ 
 | 相棒ペット MVP 本番稼働 | 2026-06-23 |
 | 称号・バッジをペットに統合 | 2026-06-23 |
 | UI全体改修（記録ファースト店舗ページ等） | 2026-06 |
-| Promotion 広告システム実装・デプロイ | 2026-05-20 |
+| Promotion 広告システム実装・デプロイ (クリック計測ハンドラ + rel=sponsored 統一含む) | 2026-05-20 |
 | ASP審査用ポリシー4枚整備 | 2026-05 |
 | 交換率ユーザー投稿機能 実装 | 2026-03 |
 | DMMぱちタウン完全一本化 | 2026-04 |
@@ -263,5 +290,5 @@ Render Basic プランの自動バックアップ有無を確認。なければ 
 ## メタ
 
 - 作成: 2026-05-21
-- 最終更新: 2026-06-26
-- 関連: `docs/ROADMAP.md`（フェーズ別計画）、`docs/companion_spec.md`（ペット仕様書）
+- 最終更新: 2026-07-01
+- 関連: `docs/ROADMAP.md`（フェーズ別計画）、`docs/companion_spec.md`（ペット仕様書）、[DESIGN.md](DESIGN.md)（UI規約）
