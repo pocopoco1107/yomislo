@@ -15,10 +15,13 @@ class ExchangeRateReportsController < ApplicationController
     else
       @report.rate_key = new_rate
       unless @report.save
-        # バリデーションエラー時はそのまま現在の状態を再表示
+        # バリデーション失敗時はエラー内容を画面に表示する
+        @error_denomination = report_params[:denomination]
+        @error_rate_key = new_rate
+        @error_message = @report.errors.full_messages.first || "報告できませんでした"
         respond_to do |format|
-          format.turbo_stream
-          format.html { redirect_to shop_path(@shop) }
+          format.turbo_stream { render :create, status: :unprocessable_entity }
+          format.html { redirect_to shop_path(@shop), alert: @error_message }
         end
         return
       end

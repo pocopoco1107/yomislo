@@ -34,6 +34,27 @@ RSpec.describe "ExchangeRateReports", type: :request do
       expect(ExchangeRateReport.last.rate_key).to eq("18.0")
     end
 
+    it "範囲外の値はエラーメッセージを画面に返す(無言で消えない)" do
+      expect {
+        post exchange_rate_reports_path,
+             params: {
+               exchange_rate_report: {
+                 shop_id: shop.id,
+                 denomination: "twenty_yen",
+                 rate_key: "25"
+               }
+             },
+             headers: { "Accept" => "text/vnd.turbo-stream.html" }
+      }.not_to change(ExchangeRateReport, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+      # エラーメッセージが描画されている
+      expect(response.body).to include("1.0〜20.0円/枚")
+      # 入力値が消えず残る
+      expect(response.body).to include('value="25"')
+    end
+
     it "同じ内容を再送すると報告が取り消される(トグル)" do
       cookies[:voter_token] = "toggle_token"
       post exchange_rate_reports_path, params: {

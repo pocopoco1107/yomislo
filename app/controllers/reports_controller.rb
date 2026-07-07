@@ -3,9 +3,16 @@ class ReportsController < ApplicationController
     @report = Report.new(report_params)
     @report.voter_token = voter_token
     if @report.save
+      # コメント/レビューが複数並ぶページでも id が重複しないよう、
+      # 通報対象ごとに一意な report_flash id を対象にする
+      flash_id = "report_flash_#{@report.reportable_type}_#{@report.reportable_id}"
       respond_to do |format|
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("report_flash", html: '<div id="report_flash" class="text-green-600 text-sm">通報しました</div>') }
-        format.html { redirect_back fallback_location: root_path, notice: "通報しました" }
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(flash_id) {
+            helpers.content_tag(:div, "通報を受け付けました", id: flash_id, class: "text-slot-green text-xs")
+          }
+        end
+        format.html { redirect_back fallback_location: root_path, notice: "通報を受け付けました" }
       end
     else
       redirect_back fallback_location: root_path, alert: "通報に失敗しました"

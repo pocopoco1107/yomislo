@@ -1,4 +1,9 @@
 <turbo-frame id="exchange_rates_<%= shop.id %>">
+  <%
+    error_denomination = local_assigns.fetch(:error_denomination, nil)
+    error_rate_key = local_assigns.fetch(:error_rate_key, nil)
+    error_message = local_assigns.fetch(:error_message, nil)
+  %>
   <div class="mt-4 pt-3 border-t border-border/50">
     <div class="flex items-center gap-1.5 mb-2">
       <span class="text-xs text-muted-foreground">交換率</span>
@@ -18,9 +23,13 @@
           summary     = exchange_rate_summaries[denom[:key]]
           user_report = user_reports[denom[:key]]
           user_rate   = user_report&.rate_key
+          denom_error = error_message.present? && error_denomination == denom[:key] ? error_message : nil
         %>
         <div>
           <p class="text-xs font-semibold text-muted-foreground mb-1.5"><%= denom[:label] %></p>
+          <% if denom_error %>
+            <p class="text-xs text-destructive bg-destructive/10 rounded-md px-2 py-1 mb-1.5" role="alert" aria-live="assertive"><%= denom_error %></p>
+          <% end %>
           <div class="flex items-center gap-1.5 flex-wrap">
             <%# 等価ボタン %>
             <%
@@ -41,6 +50,10 @@
             <%
               is_custom = user_rate.present? && user_rate != "touka"
               custom_value = is_custom ? user_rate : ""
+              # バリデーション失敗時は入力値を消さずに残す
+              if denom_error && error_rate_key.present? && error_rate_key != "touka"
+                custom_value = error_rate_key
+              end
             %>
             <%= form_with url: exchange_rate_reports_path, scope: :exchange_rate_report, class: "flex items-center", data: { turbo: true } do |f| %>
               <%= f.hidden_field :shop_id, value: shop.id %>

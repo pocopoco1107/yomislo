@@ -4,6 +4,66 @@ class PlayRecordsController < ApplicationController
 
   def index
     set_meta_tags title: "収支カレンダー", noindex: true
+    load_index_data
+  end
+
+  def create
+    token = voter_token
+
+    if params[:entries].present?
+      create_multiple(token)
+    elsif params[:play_record].present?
+      create_single(token)
+    else
+      redirect_to play_records_path, alert: "不正なパラメータです"
+    end
+  end
+
+  def update
+    if @record.update(play_record_params)
+      redirect_to play_records_path(month: @record.played_on.strftime("%Y-%m")),
+                  notice: "収支を更新しました"
+    else
+      redirect_to play_records_path, alert: @record.errors.full_messages.join(", ")
+    end
+  end
+
+  def destroy
+    month = @record.played_on.strftime("%Y-%m")
+    machine_model_id = @record.machine_model_id
+    shop = @record.shop
+    played_on = @record.played_on
+    # 収支indexからの削除か、店舗詳細ページ(machine_vote_行)からの削除かを区別する。
+    # index には machine_vote_<id> フレームが存在しないため、置換対象が異なる。
+    from_index = params[:context] == "index"
+    @record.destroy
+
+    respond_to do |format|
+      format.turbo_stream do
+        @record = nil # cleared
+        if from_index
+          # 収支index: サマリ+カレンダー+記録リストをまとめた Turbo Frame を再描画する。
+          # これで月間合計・カレンダー・日別合計・空グループが全て正しく更新される。
+          load_index_data
+          render turbo_stream: turbo_stream.replace(
+            "play_records_body",
+            partial: "play_records/index_body"
+          )
+        else
+          # 店舗詳細ページ: 該当機種の vote 行 (machine_vote_<id>) を置換する
+          render_shop_machine_update(shop: shop, machine_model_id: machine_model_id, played_on: played_on)
+        end
+      end
+      format.html do
+        redirect_back fallback_location: play_records_path(month: month), notice: "記録を削除しました"
+      end
+    end
+  end
+
+  private
+
+  # index / destroy 双方から呼ぶ。サマリ・カレンダー・記録リストの表示データを一括ロードする
+  def load_index_data
     token = voter_token
 
     @current_month = if params[:month].present? && params[:month].match?(/\A\d{4}-\d{2}\z/)
@@ -53,47 +113,6 @@ class PlayRecordsController < ApplicationController
     end
   end
 
-  def create
-    token = voter_token
-
-    if params[:entries].present?
-      create_multiple(token)
-    elsif params[:play_record].present?
-      create_single(token)
-    else
-      redirect_to play_records_path, alert: "不正なパラメータです"
-    end
-  end
-
-  def update
-    if @record.update(play_record_params)
-      redirect_to play_records_path(month: @record.played_on.strftime("%Y-%m")),
-                  notice: "収支を更新しました"
-    else
-      redirect_to play_records_path, alert: @record.errors.full_messages.join(", ")
-    end
-  end
-
-  def destroy
-    month = @record.played_on.strftime("%Y-%m")
-    machine_model_id = @record.machine_model_id
-    shop = @record.shop
-    played_on = @record.played_on
-    @record.destroy
-
-    respond_to do |format|
-      format.turbo_stream do
-        @record = nil # cleared
-        render_shop_machine_update(shop: shop, machine_model_id: machine_model_id, played_on: played_on)
-      end
-      format.html do
-        redirect_back fallback_location: play_records_path(month: month), notice: "記録を削除しました"
-      end
-    end
-  end
-
-  private
-
   def create_single(token)
     @record = PlayRecord.new(play_record_params)
     @record.voter_token = token
@@ -139,6 +158,17 @@ class PlayRecordsController < ApplicationController
     played_on = params[:played_on]
     is_public = params[:is_public] != "0"
 
+    # 同一バッチ内で同じ機種を複数行に入れると、DB一意制約 (voter_token + shop_id +
+    # machine_model_id + played_on) に違反する。全レコードが .valid? を通ってから
+    # save! するため、2件目の save! で RecordInvalid が飛びトランザクション全体が
+    # ROLLBACK し有効な1件目も消える。保存前に検出して親切に弾く。
+    # (収支額が異なる可能性があるため黙って合算はしない)
+    machine_ids = entries.filter_map { |e| e[:machine_model_id].presence }
+    if machine_ids.size != machine_ids.uniq.size
+      redirect_to play_records_path, alert: "同じ機種が重複しています。1機種につき1件で記録してください"
+      return
+    end
+
     records = []
     vote_data = []
     errors = []
@@ -177,24 +207,32 @@ class PlayRecordsController < ApplicationController
 
     if errors.empty? && records.any?
       created_votes = 0
-      PlayRecord.transaction do
-        records.each(&:save!)
-        # Save votes alongside play records
-        vote_data.each do |vd|
-          vote = Vote.find_or_initialize_by(
-            voter_token: token,
-            shop_id: shop_id,
-            machine_model_id: vd[:machine_model_id],
-            voted_on: played_on
-          )
-          vote.reset_vote = vd[:reset_vote] if vd[:reset_vote]
-          vote.setting_vote = vd[:setting_vote] if vd[:setting_vote]
-          if vd[:confirmed_setting].any?
-            vote.confirmed_setting = ((vote.confirmed_setting || []) + vd[:confirmed_setting]).uniq
+      begin
+        PlayRecord.transaction do
+          records.each(&:save!)
+          # Save votes alongside play records
+          vote_data.each do |vd|
+            vote = Vote.find_or_initialize_by(
+              voter_token: token,
+              shop_id: shop_id,
+              machine_model_id: vd[:machine_model_id],
+              voted_on: played_on
+            )
+            vote.reset_vote = vd[:reset_vote] if vd[:reset_vote]
+            vote.setting_vote = vd[:setting_vote] if vd[:setting_vote]
+            if vd[:confirmed_setting].any?
+              vote.confirmed_setting = ((vote.confirmed_setting || []) + vd[:confirmed_setting]).uniq
+            end
+            vote.save!
+            created_votes += 1 if vote.previously_new_record?
           end
-          vote.save!
-          created_votes += 1 if vote.previously_new_record?
         end
+      rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => e
+        # 事前チェックをすり抜けた重複・競合 (別タブからの同時記録等)。
+        # 422/500 ではなく alert 付き redirect で graceful に返す。
+        Rails.logger.warn("create_multiple failed: #{e.class}: #{e.message}")
+        redirect_to play_records_path, alert: "記録の保存に失敗しました。時間をおいて再度お試しください"
+        return
       end
       # 新規に作られた収支記録 + Vote の合計件数だけペットを成長させる (同日なので1回呼び出し)
       @pet_result = grow_companion(recorded_on: played_on, count: records.size + created_votes)

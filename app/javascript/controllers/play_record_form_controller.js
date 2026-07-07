@@ -39,6 +39,23 @@ export default class extends Controller {
     })
   }
 
+  // 送信前ガード: 同じ機種を複数の行に選んでいると、サーバ側の一意制約
+  // (voter_token + shop_id + machine_model_id + played_on) に違反する。
+  // サーバ側(create_multiple)でも弾いているが(こちらが主要ガード)、
+  // ここで先に検出してユーザーに即フィードバックする。
+  validateSubmit(event) {
+    const ids = this.entryTargets
+      .map(entry => entry.querySelector("[data-entry-field='machine_model_id']"))
+      .filter(input => input && input.value)
+      .map(input => input.value)
+
+    const hasDuplicate = new Set(ids).size !== ids.length
+    if (hasDuplicate) {
+      event.preventDefault()
+      window.alert("同じ機種が重複しています。1機種につき1件で記録してください。")
+    }
+  }
+
   removeEntry(event) {
     const entry = event.currentTarget.closest("[data-play-record-form-target='entry']")
     if (!entry) return

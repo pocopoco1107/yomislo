@@ -16,6 +16,7 @@ ja:
       feedback: 要望・フィードバック
       promotion: おすすめ案件
       machine_guide_link: 攻略リンク
+      exchange_rate_report: 交換率
     attributes:
       vote:
         voted_on: 投票日
@@ -30,6 +31,9 @@ ja:
         address: 住所
       machine_model:
         name: 機種名
+      exchange_rate_report:
+        rate_key: 交換率
+        denomination: 額種
   errors:
     messages:
       blank: "を入力してください"

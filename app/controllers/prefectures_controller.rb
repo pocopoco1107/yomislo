@@ -88,7 +88,9 @@ class PrefecturesController < ApplicationController
 
   def extract_city(address)
     return nil if address.blank?
-    addr = address.sub(/\A.{2,3}[都道府県]/, "")
+    # 都道府県名を除去。`.{2,3}?` を非貪欲にしないと「東京都府中市」で
+    # 「府」まで [都道府県] に食われ「中市」になる (府中市→中市 バグ)
+    addr = address.sub(/\A.{2,3}?[都道府県]/, "")
     # 政令市の区 (横浜市中区等)
     m = addr.match(/\A(.+?市.+?区)/)
     return m[1] if m

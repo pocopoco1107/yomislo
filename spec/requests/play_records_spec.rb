@@ -151,6 +151,43 @@ RSpec.describe "PlayRecords", type: :request do
       }.to change(PlayRecord, :count).by(1).and change(Vote, :count).by(1)
     end
 
+    it "同一バッチ内で同じ機種が重複しても 500 にならず 有効な記録も消えない" do
+      cookies[:voter_token] = voter_token
+
+      # 同じ機種を2行に入れる → 一意制約違反で全ROLLBACKされていたバグの回帰テスト
+      expect {
+        post play_records_path, params: {
+          shop_id: shop.id,
+          played_on: Date.current.to_s,
+          entries: {
+            "0" => { machine_model_id: machine.id, result_amount: 3000 },
+            "1" => { machine_model_id: machine.id, result_amount: -1000 }
+          }
+        }
+      }.not_to change(PlayRecord, :count)
+
+      expect(response).to redirect_to(play_records_path)
+      expect(flash[:alert]).to include("重複")
+    end
+
+    it "異なる機種2件は今まで通り両方保存できる" do
+      cookies[:voter_token] = voter_token
+      machine2 = create(:machine_model)
+
+      expect {
+        post play_records_path, params: {
+          shop_id: shop.id,
+          played_on: Date.current.to_s,
+          entries: {
+            "0" => { machine_model_id: machine.id, result_amount: 3000 },
+            "1" => { machine_model_id: machine2.id, result_amount: -1000 }
+          }
+        }
+      }.to change(PlayRecord, :count).by(2)
+
+      expect(response).to have_http_status(:redirect)
+    end
+
     it "handles confirmed_setting arriving as a String (name振り直しで[]欠落しても落ちない)" do
       cookies[:voter_token] = voter_token
 
@@ -189,6 +226,46 @@ RSpec.describe "PlayRecords", type: :request do
       }.to change(PlayRecord, :count).by(-1)
 
       expect(response).to have_http_status(:redirect)
+    end
+
+    it "収支indexからの削除(context=index)は play_records_body フレームを再描画する" do
+      cookies[:voter_token] = voter_token
+      machine2 = create(:machine_model, name: "残す機種")
+      deleted = PlayRecord.create!(
+        voter_token: voter_token, shop: shop, machine_model: machine,
+        played_on: Date.current, result_amount: 2000
+      )
+      PlayRecord.create!(
+        voter_token: voter_token, shop: shop, machine_model: machine2,
+        played_on: Date.current, result_amount: -1000
+      )
+
+      delete play_record_path(deleted), params: { context: "index" },
+             headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+      expect(response).to have_http_status(:ok)
+      # machine_vote_ ではなく play_records_body フレームの置換ストリームを返す
+      expect(response.body).to include('target="play_records_body"')
+      # 削除した機種は消え、残した機種は表示される (再描画でリストが最新化)
+      expect(response.body).to include("残す機種")
+      expect(response.body).not_to include(machine.name)
+    end
+
+    it "店舗詳細ページからの削除(contextなし)は machine_vote_ 行を置換する" do
+      cookies[:voter_token] = voter_token
+      record = PlayRecord.create!(
+        voter_token: voter_token,
+        shop: shop,
+        machine_model: machine,
+        played_on: Date.current,
+        result_amount: 2000
+      )
+
+      delete play_record_path(record),
+             headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("machine_vote_#{machine.id}")
     end
 
     it "公開記録を削除すると集計キャッシュからも除外される" do
