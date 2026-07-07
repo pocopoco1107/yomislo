@@ -112,6 +112,16 @@ class MachineModel < ApplicationRecord
     display_type == :smart_slot
   end
 
+  # スマスロだが名前に「スマスロ」の文字を含まない機種か (「L」「Ｌ」表記など) — SEO文言判定用
+  def smart_slot_unlabeled?
+    smart_slot? && !name.include?("スマスロ")
+  end
+
+  # SEO用の表示名。名前に「スマスロ」を含まないスマスロ機は「（スマスロ）」を補って返す
+  def seo_display_name
+    smart_slot_unlabeled? ? "#{name}（スマスロ）" : name
+  end
+
   private
 
   # Aタイプ（ノーマルタイプ）の名前パターン

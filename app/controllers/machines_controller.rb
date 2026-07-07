@@ -4,19 +4,23 @@ class MachinesController < ApplicationController
   def show
     @machine_model = MachineModel.find_by!(slug: params[:slug])
     @installed_shop_count = @machine_model.shop_machine_models.count
+
+    smart_slot_tag = @machine_model.smart_slot_unlabeled?
+
     title_parts = [ @machine_model.name ]
+    title_parts << "スマスロ" if smart_slot_tag
     title_parts << "天井" if @machine_model.ceiling_info.present?
     title_parts << "設定判別"
     title_parts << "リセット恩恵" if @machine_model.reset_info.present?
     seo_title = title_parts.join(" | ")
 
-    meta_desc_parts = [ "#{@machine_model.name}の天井・リセット恩恵・設定判別情報" ]
+    meta_desc_parts = [ "#{@machine_model.seo_display_name}の天井・リセット恩恵・設定判別情報" ]
     meta_desc_parts << "機械割#{@machine_model.payout_rate_display}" if @machine_model.payout_rate_display
     meta_desc_parts << @machine_model.type_detail if @machine_model.type_detail.present?
     meta_desc_parts << "全国#{@installed_shop_count}店舗に設置、打ち手の投稿で設定状況がわかる" if @installed_shop_count > 0
     meta_desc = meta_desc_parts.join("。") + "。"
 
-    seo_keywords = [ @machine_model.name, "天井", "設定判別", "リセット恩恵", "期待値",
+    seo_keywords = [ @machine_model.name, (smart_slot_tag ? "スマスロ" : nil), "天井", "設定判別", "リセット恩恵", "期待値",
                      "パチスロ", @machine_model.maker, @machine_model.generation_label ].compact_blank.join(", ")
     set_meta_tags title: seo_title,
                   description: meta_desc,
