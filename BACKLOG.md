@@ -79,8 +79,12 @@ DESIGN.md と照合してサーフェス階層・余白・カラートークン�
 ### ~~機種ページの商品スニペット構造化データ修正~~ ✅ 済 (2026-07-01)
 `app/views/machines/show.html.erb` の JSON-LD を `Product` 単体 → `Article + about: Thing (additionalType: Product)` に変更。ページ全体は Article として author/publisher/mainEntityOfPage を明示し、機種情報は about 配下の Thing で表現。Search Console の「offers 必須」警告を回避しつつ SEO 効果を維持。数週間後の Search Console 再クロールで警告消失を確認。
 
-### 県ページのインデックス遅延
-2026-06-30 確認、機種ページ・トップ・ランキングは全部登録済みだが、`/prefectures/:slug` 5本は未登録（リクエスト送信済み）。今回は手動投入で対応したが、根本的には県ページへの内部リンク導線が弱い可能性。トップ/ランキング/機種詳細から県ページへの自然な戻り線・関連リンクを増やす検討。
+### ~~県ページのインデックス遅延~~ ✅ 済 (2026-07-01) の一部対応
+- 手動投入で既に登録は完了済 (2026-06-30)
+- 内部リンク導線強化 ✅ 済 (2026-07-01):
+  - **フッターに主要8県ダイレクトリンク**追加 (東京/大阪/愛知/北海道/神奈川/埼玉/千葉/福岡) — 全ページから県ページへの常時アクセス
+  - **機種詳細の県フィルタ選択時に「◯◯県の店舗一覧をすべて見る」リンク**追加 — 機種→県の自然な導線
+- 数週間後の Search Console クロールでインデックス浸透を確認
 
 ### 検索UIの使い勝手改善
 - 設備フィルタの項目数・優先度の見直し
@@ -182,11 +186,11 @@ DMMぱちタウン側で `#anc-slot` セクションがないパチンコ専門�
 - `config/initializers/devise.rb`: `maximum_attempts: 10`, `unlock_in: 30.minutes`, `timeout_in: 12.hours`, `last_attempt_warning: true`
 - `config/initializers/rack_attack.rb`: `admin_sign_in/ip` throttle (5/min/ip)
 
-### [MED] その他
-- rack_attack に `shop_reviews_create/ip` (10/hour) と `shop_autocomplete/ip` (60/min) 追加
-- CSP `script-src` の nonce ジェネレータを session.id ベース → `SecureRandom.base64(16)` に
-- Strict-Transport-Security ヘッダを明示 (`max-age=63072000; includeSubDomains; preload`)
-- プライバシーポリシーに IP/UA 保持期間明記（個人情報保護法）
+### ~~[MED] その他~~ ✅ 済 (2026-07-01)
+- ~~rack_attack に `shop_reviews_create/ip` (10/hour) と `shop_autocomplete/ip` (60/min) 追加~~ ✅ 済
+- ~~CSP `script-src` の nonce ジェネレータを session.id ベース → `SecureRandom.base64(16)` に~~ ✅ 済
+- ~~Strict-Transport-Security ヘッダを明示 (`max-age=63072000; includeSubDomains; preload`)~~ ✅ 済 `config.ssl_options = { hsts: { expires: 2.years.to_i, subdomains: true, preload: true } }` を production.rb に明示
+- ~~プライバシーポリシーに IP/UA 保持期間明記（個人情報保護法）~~ ✅ 済 privacy.html.erb に「1-2. 情報の保持期間」セクションを追加 (IP/UA: 最大90日、Cookie: 1年、投稿データ: サービス継続中、お問い合わせ: 1年)
 
 ---
 

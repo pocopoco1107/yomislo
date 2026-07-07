@@ -14,8 +14,18 @@
       <p class="mb-2">本サイトでは、サービス提供のため以下の情報を取得します。</p>
       <ul class="list-disc list-inside space-y-1 text-muted-foreground">
         <li>Cookie に保存される識別子（<code class="text-xs bg-muted px-1 rounded">voter_token</code>、有効期間1年）</li>
-        <li>サーバーログ（IPアドレス、ブラウザ情報、アクセス日時、参照元URL）</li>
+        <li>サーバーログ（IPアドレス、ブラウザ情報／User-Agent、アクセス日時、参照元URL）</li>
         <li>利用者が任意で投稿した情報（設定推測、収支、コメント、お問い合わせ内容など）</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-foreground mb-2 border-b border-border pb-1">1-2. 情報の保持期間</h2>
+      <ul class="list-disc list-inside space-y-1 text-muted-foreground">
+        <li><strong>IPアドレス・User-Agent</strong>：サーバーアクセスログとして<strong>最大90日</strong>保持。不正利用防止・スパム対策に利用し、期間経過後は自動的に消去します（ホスティング事業者 Render のログ保持ポリシーに準拠）</li>
+        <li><strong>Cookie 識別子（voter_token）</strong>：ブラウザに<strong>1年</strong>保存。利用者自身がブラウザ設定から削除可能</li>
+        <li><strong>投稿データ（設定推測・収支・コメント等）</strong>：サービス継続中は保持。利用者からの削除依頼または本サイト終了時に削除</li>
+        <li><strong>お問い合わせ内容</strong>：回答完了後<strong>1年</strong>保持し、以降削除</li>
       </ul>
     </section>
 

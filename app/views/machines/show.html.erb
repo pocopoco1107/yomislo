@@ -413,6 +413,14 @@
           </select>
         <% end %>
       </div>
+      <% if params[:prefecture].present? && (selected_pref = @available_prefectures.find { |p| p.slug == params[:prefecture] }) %>
+        <div class="mt-2 pt-2 border-t border-border/50 text-xs">
+          <%= link_to prefecture_path(selected_pref.slug), class: "text-primary hover:underline inline-flex items-center gap-1" do %>
+            <span class="text-[0.9em] text-slot-yellow" aria-hidden="true">▶</span>
+            <%= selected_pref.name %>の店舗一覧をすべて見る
+          <% end %>
+        </div>
+      <% end %>
     </div>
 
     <% if @installed_shops.any? %>

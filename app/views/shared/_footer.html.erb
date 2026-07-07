@@ -30,6 +30,25 @@
       </div>
     </div>
 
+    <%# 主要都道府県ダイレクトリンク (SEO 内部リンク導線)。県ページのインデックス遅延対策として
+        トップ + 各ページのフッタから主要8県へのバックリンクを常設。 %>
+    <div class="border-t border-border/30 pt-3">
+      <p class="text-[11px] font-medium text-muted-foreground mb-1.5">主要エリアからさがす</p>
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+        <%
+          major_prefs = {
+            "tokyo" => "東京", "osaka" => "大阪", "aichi" => "愛知",
+            "hokkaido" => "北海道", "kanagawa" => "神奈川",
+            "saitama" => "埼玉", "chiba" => "千葉", "fukuoka" => "福岡"
+          }
+        %>
+        <% major_prefs.each do |slug, label| %>
+          <%= link_to label, prefecture_path(slug),
+                class: "text-muted-foreground hover:text-primary transition-colors" %>
+        <% end %>
+      </div>
+    </div>
+
     <%# Legal Links %>
     <div class="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-[11px] text-muted-foreground/70 border-t border-border/30 pt-3">
       <%= link_to "ヨミスロについて", about_path, class: "hover:text-foreground transition-colors" %>

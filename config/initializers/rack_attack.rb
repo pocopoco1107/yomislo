@@ -46,6 +46,20 @@ class Rack::Attack
     end
   end
 
+  # 店舗レビュー: 荒らし対策 (1店舗×1IP×1時間 に制限しなくても、IP単位で1時間10件まで)
+  throttle("shop_reviews_create/ip", limit: 10, period: 1.hour) do |req|
+    if req.path.match?(%r{\A/shops/[^/]+/reviews\z}) && req.post?
+      req.ip
+    end
+  end
+
+  # 店舗オートコンプリート: スクレイピング対策 (通常ユーザーは1分60回で十分)
+  throttle("shop_autocomplete/ip", limit: 60, period: 1.minute) do |req|
+    if req.path == "/shops/autocomplete" && req.get?
+      req.ip
+    end
+  end
+
   self.throttled_responder = lambda do |req|
     match_data = req.env["rack.attack.match_data"]
     now = Time.now.utc
