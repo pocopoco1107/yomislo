@@ -72,11 +72,11 @@ class PrefecturesController < ApplicationController
     # おすすめ店舗 (県内TOP3)
     @recommendations = RecommendationService.top_for_prefecture(@prefecture, limit: 3)
 
-    desc = "#{@prefecture.name}のパチスロ店舗#{@total_shops_count}件を掲載。打ち手の投稿で、店舗ごとの設定・リセット情報をチェックできる。"
-    seo_title = "#{@prefecture.name}のパチスロ店舗一覧 #{@total_shops_count}件｜設定・リセット情報"
+    desc = "#{@prefecture.name}のスロット店舗#{@total_shops_count}件を掲載。打ち手の投稿で、店舗ごとの設定・リセット情報をチェックできる。"
+    seo_title = "#{@prefecture.name}のスロット店舗一覧 #{@total_shops_count}件｜設定・リセット情報"
     set_meta_tags title: seo_title,
                   description: desc,
-                  keywords: "#{@prefecture.name}, パチスロ, 優良店, 高設定, スロット, 設定, リセット",
+                  keywords: "#{@prefecture.name}, スロット, パチスロ, 優良店, 高設定, 設定, リセット",
                   og: { title: "#{seo_title} | ヨミスロ",
                         description: desc,
                         type: "website",

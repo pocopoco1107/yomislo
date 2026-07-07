@@ -1,4 +1,4 @@
-<% content_for(:title) { "#{@prefecture.name}の店舗一覧 - ヨミスロ" } %>
+<% content_for(:title) { "#{@prefecture.name}のスロット店舗一覧 - ヨミスロ" } %>
 
 <%# JSON-LD structured data %>
 <% content_for(:head) do %>
@@ -6,8 +6,8 @@
     <%= raw({
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      "name": "#{@prefecture.name}のパチスロ店舗一覧",
-      "description": "#{@prefecture.name}のパチスロ店舗#{@total_shops_count}件の設定・リセット記録情報",
+      "name": "#{@prefecture.name}のスロット店舗一覧",
+      "description": "#{@prefecture.name}のスロット店舗#{@total_shops_count}件の設定・リセット記録情報",
       "url": request.original_url.split("?").first,
       "breadcrumb": {
         "@type": "BreadcrumbList",
@@ -42,7 +42,7 @@
 
   <%# ページヘッダー %>
   <div class="flex items-baseline justify-between mb-6">
-    <h1 class="font-heading text-2xl md:text-3xl font-bold tracking-tight text-foreground"><%= @prefecture.name %></h1>
+    <h1 class="font-heading text-2xl md:text-3xl font-bold tracking-tight text-foreground"><%= @prefecture.name %><span class="text-base md:text-lg font-normal text-muted-foreground">のスロット店舗</span></h1>
     <span class="text-sm text-muted-foreground tabular-nums"><%= @total_shops_count %> 店舗</span>
   </div>
 
