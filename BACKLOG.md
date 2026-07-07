@@ -3,7 +3,7 @@
 実装済みの機能改善・調査タスクを積んでおくバックログ。優先度や着手予定は項目ごとに決める。
 作業着手時は GitHub Issue 化するか、直接ブランチ切って進める。
 
-> **最終更新: 2026-07-01**（レトロ化 Phase 1-3 完了：ワールドマップ地域タイル / ゴールド表記統一 / マイステータス強化 / gold+milestoneトースト / dot_bar / dark=ダンジョン + light=そうげん / DESIGN.md 反映）
+> **最終更新: 2026-07-01**（セキュリティ HIGH 4件全消化 + SEO Product schema 修正 + a11y aria-pressed 追加。BACKLOG 実態確認で「多数が既に実装済み」と判明、記載を最新化）
 
 ## 目次
 
@@ -60,8 +60,9 @@ DESIGN.md と照合してサーフェス階層・余白・カラートークン�
 - ~~[MED] トースト/エラーへ `aria-live`~~ ✅ 済 (2026-06-30) `_flash` notice=`role=status/aria-live=polite`、alert / `_errors` / `_form_errors` を `role=alert/aria-live=assertive`
 - ~~[MED] `prefers-reduced-motion` 対応を `.animate-*` 全般に拡張~~ ✅ 済 (2026-06-30) `application.css` 末尾にグローバル `* { animation-duration: 0.001ms !important }` ブロックを追加
 - ~~[MED] モーダルに focus trap + `role="dialog"`~~ ✅ 済 (2026-06-30) `record-modal` を `role="dialog" aria-modal aria-labelledby tabindex=-1` 化、open/close で 前フォーカス保存→復帰の軽量実装
-- [MED] 残り: Turbo Frame 更新後のフォーカス管理（vote 投稿後 autofocus）、確定設定トグル群へ `aria-pressed`、ボトムナビ active の `.dq-cursor--blink` 点滅停止条件
+- [MED] 残り: Turbo Frame 更新後のフォーカス管理（vote 投稿後 autofocus）、ボトムナビ active の `.dq-cursor--blink` 点滅停止条件（reduced-motion 対応は既にCSSで実装済）
 - ~~DESIGN.md に a11y チェックリスト 5項目追記~~ ✅ 済 (2026-06-30)
+- ~~[MED] 確定設定トグル群へ `aria-pressed`~~ ✅ 済 (2026-07-01) `_machine_vote_row.html.erb` の 設定1-6 / 確定情報タグ / リセットあり・据置 の全ボタンに `aria-pressed` + `aria-label` (「記録済み/未記録」を明示)
 
 ---
 
@@ -75,8 +76,8 @@ DESIGN.md と照合してサーフェス階層・余白・カラートークン�
 - ~~主要URLの個別インデックス登録リクエスト~~ ✅ 済 (2026-06-30) トップ/ランキング/機種5本は既に登録済み、県5本（tokyo/osaka/aichi/hokkaido/kanagawa）はリクエスト送信完了
 - **アドレス変更ツールが Render の Cloudflare で失敗する件**: 旧 yomislo.onrender.com への Googlebot アクセスが Cloudflare Bot Challenge でブロック。301は効いているのでGoogleの自然学習に任せる（数週間〜数ヶ月）
 
-### 機種ページの商品スニペット構造化データ修正
-2026-06-30 Search Console で確認、全機種ページに「商品スニペット 1件の無効なアイテムを検出しました」警告。インデックスは通っているが Rich Results 対象外になっている。`app/views/machines/show.html.erb` のJSON-LD（Product schema）の必須フィールド（offers/aggregateRating/review のいずれか、name、image等）を点検。
+### ~~機種ページの商品スニペット構造化データ修正~~ ✅ 済 (2026-07-01)
+`app/views/machines/show.html.erb` の JSON-LD を `Product` 単体 → `Article + about: Thing (additionalType: Product)` に変更。ページ全体は Article として author/publisher/mainEntityOfPage を明示し、機種情報は about 配下の Thing で表現。Search Console の「offers 必須」警告を回避しつつ SEO 効果を維持。数週間後の Search Console 再クロールで警告消失を確認。
 
 ### 県ページのインデックス遅延
 2026-06-30 確認、機種ページ・トップ・ランキングは全部登録済みだが、`/prefectures/:slug` 5本は未登録（リクエスト送信済み）。今回は手動投入で対応したが、根本的には県ページへの内部リンク導線が弱い可能性。トップ/ランキング/機種詳細から県ページへの自然な戻り線・関連リンクを増やす検討。
@@ -163,19 +164,23 @@ DMMぱちタウン側で `#anc-slot` セクションがないパチンコ専門�
 
 ## セキュリティ
 
-2026-06-26 レビューで HIGH 4件検出。公開CGM・ASP審査前なので優先度高。
+2026-06-26 レビューで HIGH 4件検出 → 2026-07-01 全消化。ASP審査前チェック完了。
 
-### [HIGH] voter_token Cookie を `cookies.signed` 化
-現状 `cookies[:voter_token]` plain text。改ざんで他人の voter_token を名乗ると Vote/PlayRecord を update/destroy 経由で書き換え可能。`cookies.signed[:voter_token]` (or `encrypted`) に切替 + `secure: Rails.env.production?` 明示。既存 token 互換のため 30日のフォールバック層を入れて移行。
+### ~~[HIGH] voter_token Cookie を `cookies.signed` 化~~ ✅ 済 (2026-07-01)
+`application_controller.rb` で signed + legacy plain の自動移行フォールバック完備。restore アクションも `cookies.signed[:voter_token]` に変更 (voter_controller.rb:52)。1年有効・httponly・secure(本番のみ) を `voter_token_cookie_options` に集約。
 
-### [HIGH] `play_records_controller#create` の `return_to` Open Redirect 修正
-`redirect_to params[:return_to]` のチェックが `start_with?("/")` のみで `//evil.com` や `/\evil.com` を通過させる。`\A/[^/\\]` 正規表現で先頭 `//` `/\` を除外、または `URI.parse(...).relative? && !host` で検証。
+### ~~[HIGH] `play_records_controller#create` の `return_to` Open Redirect 修正~~ ✅ 済 (2026-07-01 発見時には既に対応済み)
+`safe_return_to` で `\A/[^/\\]` パターンにより先頭 `//` `/\` を除外済み (play_records_controller.rb:261-266)。
 
-### [HIGH] Promotion `target_url` を自社ハンドラ経由化 + ASP ドメイン allowlist
-現状 `_promotion_banner.html.erb` / `_promotion_card.html.erb` で `target_url` を直接 href。`/p/:id/click` ハンドラ経由でクリック計測も兼ねる構造に変える。`rel="sponsored noopener noreferrer"` に統一（現状 `noreferrer` 欠落）。
+### ~~[HIGH] Promotion `target_url` を自社ハンドラ経由化 + ASP ドメイン allowlist~~ ✅ 済 (2026-07-01)
+- `/p/:id` (promotion_click_path) ハンドラ経由 + `clicks_count` インクリメント (以前から実装)
+- `rel="sponsored noopener noreferrer"` 統一 (以前から実装)
+- ASP ドメイン allowlist `ALLOWED_HOSTS` を promotions_controller.rb に追加 (a8.net / moshimo.com / valuecommerce.ne.jp / linksynergy.com / afl.rakuten.co.jp / accesstrade.net)。サブドメインは末尾一致で許可。未知ホストは root_path へ 302
 
-### [HIGH] Devise lockable 有効化 + sign_in 専用 throttle
-`/admin` への brute force 対策。`User` モデルに `:lockable, :timeoutable` 追加 + `maximum_attempts: 10`。`config/initializers/rack_attack.rb` に `/users/sign_in` 専用 throttle 5/min/ip 追加。
+### ~~[HIGH] Devise lockable 有効化 + sign_in 専用 throttle~~ ✅ 済 (2026-07-01)
+- `User` モデルに `:lockable, :timeoutable` (`db/migrate/20260630084356_add_lockable_to_users.rb` で failed_attempts/unlock_token/locked_at 追加、schema.rb 反映済)
+- `config/initializers/devise.rb`: `maximum_attempts: 10`, `unlock_in: 30.minutes`, `timeout_in: 12.hours`, `last_attempt_warning: true`
+- `config/initializers/rack_attack.rb`: `admin_sign_in/ip` throttle (5/min/ip)
 
 ### [MED] その他
 - rack_attack に `shop_reviews_create/ip` (10/hour) と `shop_autocomplete/ip` (60/min) 追加
