@@ -38,6 +38,9 @@
 - **特商法ページの実名化** — 金融系案件開始時に必要 (時期次第)
 - **Cloudflare Proxy 化** — SSL/TLS を "Full (strict)" に切替後、Proxied モードに (CDN/WAF/Bot対策)
 - **UptimeRobot 等アップタイム監視** — アカウント作成 → yomislo.com/up 監視設定
+- **公式X(Twitter)アカウント運用** — 2026-07-08時点でGA4上のSNS流入が0件。「今日の朝イチリセット情報まとめ」等の定期発信でSNS経由の新規流入チャネルを作る（アカウント作成が必要なため対応不可）
+- **GA4のキーイベント設定** — 「投稿する」「収支を記録する」等のコンバージョンをGA4管理画面でキーイベントとして登録し、流入経路別の投稿転換率を追跡できるようにする（GA4アカウント設定変更のため対応不可）
+- **UGCブートストラップ戦略の検討** — 全国5,999店を薄く広くではなく主要エリアに絞ってデータ密度を上げる方針の要否判断（累計投稿9件と少なく、コンテンツの薄さが未インデックス問題の一因）
 
 ### 🟣 大タスク (工数大・要計画)
 - **相棒ペット壮大版** — 6段階×4系統分岐、ご当地ヨミ、ドット絵生成パイプライン (docs/companion_spec.md v0.6)
@@ -96,6 +99,16 @@ DESIGN.md と照合してサーフェス階層・余白・カラートークン�
 - ~~**サイトマップ取得失敗の解消**~~ ✅ 済 (2026-06-26) `https://yomislo.com/sitemap.xml.gz` 送信成功、6,701ページ検出
 - ~~主要URLの個別インデックス登録リクエスト~~ ✅ 済 (2026-06-30) トップ/ランキング/機種5本は既に登録済み、県5本（tokyo/osaka/aichi/hokkaido/kanagawa）はリクエスト送信完了
 - **アドレス変更ツールが Render の Cloudflare で失敗する件**: 旧 yomislo.onrender.com への Googlebot アクセスが Cloudflare Bot Challenge でブロック。301は効いているのでGoogleの自然学習に任せる（数週間〜数ヶ月）
+
+### ~~未インデックスページ6,020件（うち検出-未登録5,717件）への対処~~ ✅ 一部対応 (2026-07-08)
+Search Console 確認で判明: 登録済み1,500件に対し未登録6,020件、大半が「検出-インデックス未登録」。投稿(Vote)が一件もない過去日付ページ（`/shops/:slug/dates/:date`）が空の重複コンテンツとしてクロール評価を下げていると推定。
+- ✅ `ShopsController#load_shop_data` で、過去日付ページかつ該当日の `VoteSummary.total_votes` 合計が0の場合のみ `noindex: true` を設定（当日ページ・投稿ありページは対象外、店舗の基本情報自体に価値があるため canonical な `/shops/:slug` は常にindex維持）
+- ✅ ホームページに `<h1>` が存在しなかった問題を修正（`app/views/home/index.html.erb` のヒーロータグライン `<p>` → `<h1>`）
+- 残: 主要エリア（東京23区/大阪/名古屋等）に絞ったUGC密度向上策の検討、内部リンク強化の追加余地
+
+### ~~記録後のSNSシェア導線がなかった件~~ ✅ 一部対応 (2026-07-08)
+GA4確認でSNS経由の流入が0件だったため、マイルストーン達成（記録10/100/1000件・7/30日連続・高設定初記録）時のトーストに X (Twitter) シェアボタンを追加 (`app/helpers/ui_helper.rb#milestone_share_url`, `app/views/votes/_milestone_toast.html.erb`)。Web Intent URL方式のため追加のAPI連携・認証は不要。個人特定情報（店舗名・機種名等）は文言に含めない設計。
+- 残: 収支記録（PlayRecord）側の「勝ち報告」シェア、投稿結果を画像カード化する案は未着手
 
 ### ~~機種ページの商品スニペット構造化データ修正~~ ✅ 済 (2026-07-01)
 `app/views/machines/show.html.erb` の JSON-LD を `Product` 単体 → `Article + about: Thing (additionalType: Product)` に変更。ページ全体は Article として author/publisher/mainEntityOfPage を明示し、機種情報は about 配下の Thing で表現。Search Console の「offers 必須」警告を回避しつつ SEO 効果を維持。数週間後の Search Console 再クロールで警告消失を確認。

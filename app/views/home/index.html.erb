@@ -21,9 +21,9 @@
      ============================================ -->
 <section class="relative pb-2 pt-3 md:pb-6 md:pt-10 noise-texture world-meadow">
   <div class="flex items-center justify-between gap-4 max-w-6xl mx-auto px-4">
-    <p class="font-heading text-sm text-foreground font-bold md:text-lg">
+    <h1 class="font-heading text-sm text-foreground font-bold md:text-lg">
       <%= hero_tagline_html %>
-    </p>
+    </h1>
     <div class="flex items-center gap-3 text-xs text-muted-foreground shrink-0 md:text-xs">
       <span><span class="score-num text-sm text-slot-red"><%= number_with_delimiter(@today_votes_count) %></span> 今日</span>
       <span><span class="score-num text-sm text-slot-blue"><%= number_with_delimiter(@total_votes_count) %></span> 累計</span>

@@ -44,18 +44,25 @@ module UiHelper
     case milestone[:type]
     when :total_votes
       case milestone[:threshold]
-      when 10   then { emoji: "🎉", title: "デビュー達成！",   desc: "10件 記録した" }
-      when 100  then { emoji: "🎊", title: "100件突破！",       desc: "そろそろ目利きだな" }
-      when 1000 then { emoji: "👑", title: "1000件 到達！",     desc: "伝説の記録者" }
+      when 10   then { emoji: "🎉", title: "デビュー達成！",   desc: "10件 記録した", share_text: "ヨミスロで記録10件達成🎉" }
+      when 100  then { emoji: "🎊", title: "100件突破！",       desc: "そろそろ目利きだな", share_text: "ヨミスロで記録100件突破🎊 もう目利きだわ" }
+      when 1000 then { emoji: "👑", title: "1000件 到達！",     desc: "伝説の記録者", share_text: "ヨミスロで記録1000件到達👑 もう伝説だわ" }
       end
     when :streak
       case milestone[:threshold]
-      when 7  then { emoji: "🔥", title: "7日連続！",           desc: "ストリーク発動中" }
-      when 30 then { emoji: "⚡", title: "30日連続！",           desc: "鋼のリズム" }
+      when 7  then { emoji: "🔥", title: "7日連続！",           desc: "ストリーク発動中", share_text: "ヨミスロで7日連続記録達成🔥 ストリーク発動中" }
+      when 30 then { emoji: "⚡", title: "30日連続！",           desc: "鋼のリズム", share_text: "ヨミスロで30日連続記録達成⚡ 鋼のリズム" }
       end
     when :first_high_setting
-      { emoji: "💥", title: "高設定を 掴んだ！", desc: "設定#{milestone[:setting]}を 初記録" }
+      { emoji: "💥", title: "高設定を 掴んだ！", desc: "設定#{milestone[:setting]}を 初記録", share_text: "ヨミスロで設定#{milestone[:setting]}を初記録💥" }
     end
+  end
+
+  # マイルストーン達成トーストに載せるX(Twitter)共有用URL。
+  # 個人特定情報(店舗名・機種名等)は含めず、達成種別のテキストのみ共有する。
+  def milestone_share_url(share_text)
+    query = { text: "#{share_text} #ヨミスロ #パチスロ", url: root_url }
+    "https://twitter.com/intent/tweet?#{query.to_query}"
   end
 
   DOT_BAR_COLORS = {

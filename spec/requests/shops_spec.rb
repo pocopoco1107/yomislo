@@ -109,6 +109,29 @@ RSpec.describe "Shops", type: :request do
       get date_shop_path("nonexistent-slug", date: Date.current.strftime("%Y-%m-%d"))
       expect(response).to have_http_status(:not_found)
     end
+
+    it "sets noindex when the past date has no votes" do
+      get date_shop_path(shop.slug, date: Date.yesterday.strftime("%Y-%m-%d"))
+      expect(response.body).to include('name="robots" content="noindex"')
+    end
+
+    it "does not set noindex when the past date has votes" do
+      machine = create(:machine_model)
+      ShopMachineModel.create!(shop: shop, machine_model: machine)
+      VoteSummary.create!(shop: shop, machine_model: machine,
+                          target_date: Date.yesterday, total_votes: 2,
+                          reset_yes_count: 1, reset_no_count: 1, setting_avg: 3.0)
+
+      get date_shop_path(shop.slug, date: Date.yesterday.strftime("%Y-%m-%d"))
+      expect(response.body).not_to include('name="robots" content="noindex"')
+    end
+  end
+
+  describe "GET /shops/:slug (canonical page)" do
+    it "does not set noindex even with zero votes today" do
+      get shop_path(shop.slug)
+      expect(response.body).not_to include('name="robots" content="noindex"')
+    end
   end
 
   describe "GET /shops/favorites" do

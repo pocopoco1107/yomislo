@@ -128,17 +128,6 @@ class ShopsController < ApplicationController
     @machine_models = MachineModel.where(id: machine_ids).order(:name).to_a
                         .sort_by { |m| [ m.display_type_sort, m.name ] }
 
-    desc = "#{@shop.name}（#{@shop.prefecture.name}）の設定・リセット情報を、打ち手の投稿でチェック。設置#{@machine_models.size}機種。#{@shop.address}"
-    seo_title = "#{@shop.name}（#{@shop.prefecture.name}）の設定・リセット情報"
-    set_meta_tags title: seo_title,
-                  description: desc,
-                  keywords: "#{@shop.name}, #{@shop.prefecture.name}, パチスロ, 設定, リセット, 出玉, 高設定",
-                  og: { title: "#{seo_title} | ヨミスロ",
-                        description: desc,
-                        type: "website",
-                        url: request.original_url.split("?").first },
-                  twitter: { card: "summary" }
-
     # ShopMachineModel台数マップ (machine_model_id => unit_count)
     @unit_counts = ShopMachineModel.where(shop_id: @shop.id, machine_model_id: machine_ids)
                                     .where.not(unit_count: nil)
@@ -148,6 +137,20 @@ class ShopsController < ApplicationController
     @vote_summaries = @shop.vote_summaries
                            .where(target_date: @date)
                            .index_by(&:machine_model_id)
+
+    desc = "#{@shop.name}（#{@shop.prefecture.name}）の設定・リセット情報を、打ち手の投稿でチェック。設置#{@machine_models.size}機種。#{@shop.address}"
+    seo_title = "#{@shop.name}（#{@shop.prefecture.name}）の設定・リセット情報"
+    # 過去日付ページで投稿が1件もない日は空の重複コンテンツになるためnoindex
+    date_has_no_votes = action_name == "show_date" && @vote_summaries.values.sum(&:total_votes).zero?
+    set_meta_tags title: seo_title,
+                  description: desc,
+                  keywords: "#{@shop.name}, #{@shop.prefecture.name}, パチスロ, 設定, リセット, 出玉, 高設定",
+                  og: { title: "#{seo_title} | ヨミスロ",
+                        description: desc,
+                        type: "website",
+                        url: request.original_url.split("?").first },
+                  twitter: { card: "summary" },
+                  noindex: date_has_no_votes
     @user_votes = Vote.where(voter_token: voter_token, shop_id: @shop.id, voted_on: @date)
                       .index_by(&:machine_model_id)
     @user_play_records = PlayRecord.where(voter_token: voter_token, shop_id: @shop.id, played_on: @date)
