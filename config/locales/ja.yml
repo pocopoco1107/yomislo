@@ -31,12 +31,18 @@ ja:
         address: 住所
       machine_model:
         name: 機種名
+      play_record:
+        shop: 店舗
+        machine_model: 機種
+        played_on: 記録日
+        result_amount: 収支
       exchange_rate_report:
         rate_key: 交換率
         denomination: 額種
   errors:
     messages:
       blank: "を入力してください"
+      required: "を選択してください"
       taken: "はすでに使用されています"
       too_long: "は%{count}文字以内にしてください"
   date:

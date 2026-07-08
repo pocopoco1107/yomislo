@@ -172,6 +172,12 @@ DMMぱちタウン側で `#anc-slot` セクションがないパチンコ専門�
 
 ## バグ調査
 
+### ~~収支記録フォームで店舗未選択のまま送信すると Translation missing になる~~ ✅ 済 (2026-07-08)
+`/play_records` の収支記録モーダルで、店舗名を入力しただけで候補を選択せずに送信すると `belongs_to :shop` の必須バリデーションに引っかかり、`Shop Translation missing...` が表示される不具合。
+- **根本原因1**: `app/views/play_records/index.html.erb` の `shop_id` hidden input に `required` 属性を付けていたが、HTML5仕様上 `type="hidden"` には required 検証が効かず、店舗未選択のまま送信できてしまっていた
+- **根本原因2**: `config/locales/ja.yml` に `errors.messages.required` および `activerecord.attributes.play_record.shop` の翻訳が無く、Railsのデフォルトフォールバックで英語混じりの未翻訳文言が出ていた
+- 対応: `play_record_form_controller.js#validateSubmit` に店舗未選択チェックを追加（送信前にJSでブロック+アラート表示）、ja.ymlに両翻訳キーを追加（サーバー側バリデーションが露出した場合のフォールバックとしても機能）
+
 ### 細かいバグの洗い出し
 - ブラウザコンソールのエラー監視
 - 投稿フローのエッジケース（同日複数投稿、Cookie削除後の再投票）

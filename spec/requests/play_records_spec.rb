@@ -386,6 +386,21 @@ RSpec.describe "PlayRecords", type: :request do
         }
       }.not_to change(PlayRecord, :count)
     end
+
+    it "rejects a missing shop_id with a translated error message (not 'translation missing')" do
+      expect {
+        post play_records_path, params: {
+          play_record: {
+            played_on: Date.current.to_s,
+            result_amount: 1000
+          }
+        }
+      }.not_to change(PlayRecord, :count)
+
+      expect(response).to redirect_to(play_records_path)
+      expect(flash[:alert]).not_to include("translation missing")
+      expect(flash[:alert]).to include("店舗")
+    end
   end
 
   describe "access without voter_token" do

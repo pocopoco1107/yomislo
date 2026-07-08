@@ -39,11 +39,22 @@ export default class extends Controller {
     })
   }
 
-  // 送信前ガード: 同じ機種を複数の行に選んでいると、サーバ側の一意制約
+  // 送信前ガード1: 店舗が未選択(shop_idのhidden inputが空)だと belongs_to :shop の
+  // 必須バリデーションでサーバ側が弾く。hidden inputは required 属性が効かない
+  // (HTML5仕様上ブラウザネイティブ検証の対象外)ため、ここで明示的にチェックする。
+  //
+  // 送信前ガード2: 同じ機種を複数の行に選んでいると、サーバ側の一意制約
   // (voter_token + shop_id + machine_model_id + played_on) に違反する。
   // サーバ側(create_multiple)でも弾いているが(こちらが主要ガード)、
   // ここで先に検出してユーザーに即フィードバックする。
   validateSubmit(event) {
+    const shopIdInput = this.element.querySelector('[data-shop-autocomplete-target="hidden"]')
+    if (!shopIdInput || !shopIdInput.value) {
+      event.preventDefault()
+      window.alert("店舗を検索して選択してください。")
+      return
+    }
+
     const ids = this.entryTargets
       .map(entry => entry.querySelector("[data-entry-field='machine_model_id']"))
       .filter(input => input && input.value)
