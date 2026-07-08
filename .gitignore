@@ -50,3 +50,4 @@
 # Claude Code local-only configs (machine-dependent absolute paths)
 .claude/launch.json
 .claude/settings.local.json
+.claude/CLAUDE.local.md

@@ -287,3 +287,5 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 | rubocop-on-save | .rb 編集後に `bundle exec rubocop -a` 自動実行 |
 | auto-scraping-snapshot | `rake ptown:*` 実行前に scraping-verify snapshot を自動取得 |
 | auto-design-check | .erb / .html / .css 編集後に design-check を実行（違反時のみ通知） |
+
+@.claude/CLAUDE.local.md
