@@ -43,7 +43,7 @@
   <%# ページヘッダー %>
   <div class="flex items-baseline justify-between mb-6">
     <h1 class="font-heading text-2xl md:text-3xl font-bold tracking-tight text-foreground"><%= @prefecture.name %><span class="text-base md:text-lg font-normal text-muted-foreground">のスロット店舗</span></h1>
-    <span class="text-sm text-muted-foreground tabular-nums"><%= @total_shops_count %> 店舗</span>
+    <span class="text-sm text-muted-foreground tabular-nums" data-machine-filter-target="count"><%= @total_shops_count %> 店舗</span>
   </div>
 
   <%# おすすめ店舗 %>
@@ -189,7 +189,7 @@
 
     <%# 店舗一覧 %>
     <% if @grouped_shops.any? %>
-      <div data-machine-filter-target="list" class="space-y-3">
+      <div data-machine-filter-target="list" data-machine-filter-total-value="<%= @total_shops_count %>" class="space-y-3">
         <% @grouped_shops.each_with_index do |(city, shops), idx| %>
           <div data-controller="accordion" data-city-group>
             <button type="button" data-action="click->accordion#toggle"
@@ -247,6 +247,7 @@
           </div>
         <% end %>
       </div>
+      <p data-machine-filter-target="empty" class="hidden text-sm text-muted-foreground text-center py-6">該当する店舗が見つかりませんでした</p>
     <% else %>
       <div class="bg-card rounded-lg border-b border-border/50 p-8 text-center mt-4">
         <p class="text-muted-foreground">この県の店舗はまだありません。</p>

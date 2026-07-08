@@ -19,8 +19,9 @@ export default class extends Controller {
       .then(html => {
         if (!this.element.isConnected) return
         const list = this.containerTarget.querySelector("[data-favorites-list]")
-        if (list && html.trim()) {
-          list.innerHTML = html
+        if (!list) return
+        list.innerHTML = html
+        if (list.children.length > 0) {
           this.containerTarget.style.display = ""
         }
       })

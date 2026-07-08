@@ -26,7 +26,7 @@
       <%# Theme Toggle %>
       <div data-controller="theme">
         <button data-action="click->theme#toggle"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                class="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                 title="テーマ切替">
           <span data-theme-target="icon">
             <%= icon_monitor("w-4 h-4") %>
@@ -37,7 +37,7 @@
 
       <%# Mobile hamburger (md以下で表示) %>
       <button data-action="click->mobile-nav#toggle"
-              class="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden"
+              class="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden"
               aria-label="メニューを開く">
         <%= icon_menu("w-5 h-5") %>
       </button>
@@ -58,7 +58,7 @@
   <div class="flex items-center justify-between p-4 border-b border-border">
     <span class="text-sm font-semibold text-foreground">メニュー</span>
     <button data-action="click->mobile-nav#close"
-            class="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            class="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             aria-label="メニューを閉じる">
       <%= icon_x("w-5 h-5") %>
     </button>

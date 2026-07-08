@@ -1,6 +1,6 @@
 class ShopRequestsController < ApplicationController
   def new
-    set_meta_tags noindex: true
+    set_meta_tags title: "店舗の追加リクエスト", noindex: true
     @shop_request = ShopRequest.new
     @prefectures = Prefecture.order(:id)
   end

@@ -35,6 +35,7 @@ class VotesController < ApplicationController
       @machine_model = MachineModel.find(@vote.machine_model_id)
       @vote_summary = VoteSummary.find_by(shop_id: @vote.shop_id, machine_model_id: @vote.machine_model_id, target_date: @vote.voted_on)
       @vote = Vote.new(shop_id: @shop.id, machine_model_id: @machine_model.id, voted_on: vote_params[:voted_on])
+      @daily_summary_locals = build_daily_summary_locals(@shop, @vote.voted_on)
       respond_to do |format|
         format.turbo_stream { render :create }
         format.html { redirect_to shop_path(@shop) }
@@ -52,6 +53,7 @@ class VotesController < ApplicationController
         @gold_gain = compute_gold_gain(@vote)
         @milestones = detect_milestones(@vote)
       end
+      @daily_summary_locals = build_daily_summary_locals(@shop, @vote.voted_on)
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to shop_path(@shop) }
@@ -78,6 +80,7 @@ class VotesController < ApplicationController
       @shop = @vote.shop
       @machine_model = @vote.machine_model
       @vote_summary = @vote.cached_vote_summary
+      @daily_summary_locals = build_daily_summary_locals(@shop, @vote.voted_on)
       respond_to do |format|
         format.turbo_stream { render :create }
         format.html { redirect_to shop_path(@shop) }
@@ -94,6 +97,19 @@ class VotesController < ApplicationController
 
   def vote_params
     params.require(:vote).permit(:shop_id, :machine_model_id, :voted_on, :reset_vote, :setting_vote, :confirmed_setting)
+  end
+
+  # "今日の記録一覧" (daily-summary) を turbo_stream で再描画するための locals を組み立てる。
+  # shops_controller#show_date と同じ形（machine_model_id をキーにしたハッシュ群）に揃える。
+  def build_daily_summary_locals(shop, date)
+    vote_summaries = shop.vote_summaries.where(target_date: date).index_by(&:machine_model_id)
+    models_by_id = MachineModel.where(id: vote_summaries.keys).index_by(&:id)
+    {
+      vote_summaries: vote_summaries,
+      machine_names: models_by_id.transform_values(&:name),
+      machine_slugs: models_by_id.transform_values(&:slug),
+      date: date
+    }
   end
 
   # 新規vote作成時に加算されるゴールド (=VoterProfile.pts の増分)。

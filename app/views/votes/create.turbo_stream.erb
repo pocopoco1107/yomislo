@@ -26,3 +26,7 @@
     <%= render "pets/evolution_toast", pet: @pet_result.pet %>
   <% end %>
 <% end %>
+
+<%= turbo_stream.replace "daily-summary" do %>
+  <%= render "shops/daily_summary", **@daily_summary_locals %>
+<% end %>

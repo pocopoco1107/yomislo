@@ -1,6 +1,6 @@
 class FeedbacksController < ApplicationController
   def new
-    set_meta_tags noindex: true
+    set_meta_tags title: "ご意見・不具合報告", noindex: true
     @feedback = Feedback.new
   end
 

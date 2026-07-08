@@ -129,7 +129,7 @@
                   <%= f.hidden_field :voted_on, value: date %>
                   <%= f.hidden_field :reset_vote, value: 1 %>
                   <button type="submit"
-                          class="<%= has_reset_yes ? 'bg-vote-yes text-gray-900 ring-1 ring-vote-yes/50' : 'bg-vote-yes/10 text-vote-yes hover:bg-vote-yes/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
+                          class="<%= has_reset_yes ? 'bg-vote-yes text-gray-900 ring-1 ring-vote-yes/50' : 'bg-vote-yes/10 text-vote-yes hover:bg-vote-yes/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[44px]"
                           data-action="click->vote#submit"
                           data-vote-target="button"
                           aria-pressed="<%= has_reset_yes %>"
@@ -143,7 +143,7 @@
                   <%= f.hidden_field :voted_on, value: date %>
                   <%= f.hidden_field :reset_vote, value: 0 %>
                   <button type="submit"
-                          class="<%= has_reset_no ? 'bg-vote-no text-gray-900 ring-1 ring-vote-no/50' : 'bg-vote-no/10 text-vote-no hover:bg-vote-no/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
+                          class="<%= has_reset_no ? 'bg-vote-no text-gray-900 ring-1 ring-vote-no/50' : 'bg-vote-no/10 text-vote-no hover:bg-vote-no/20' %> rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[44px]"
                           data-action="click->vote#submit"
                           data-vote-target="button"
                           aria-pressed="<%= has_reset_no %>"
@@ -191,7 +191,7 @@
                     <%= f.hidden_field :voted_on, value: date %>
                     <%= f.hidden_field :setting_vote, value: setting %>
                     <button type="submit"
-                            class="<%= color_class %> rounded-lg w-10 h-10 text-sm font-bold active:scale-90 transition-all duration-150"
+                            class="<%= color_class %> rounded-lg w-11 h-11 text-sm font-bold active:scale-90 transition-all duration-150"
                             data-action="click->vote#submit"
                             data-vote-target="button"
                             aria-pressed="<%= is_selected %>"
@@ -233,7 +233,7 @@
                   <%= f.hidden_field :voted_on, value: date %>
                   <%= f.hidden_field :confirmed_setting, value: tag %>
                   <button type="submit"
-                          class="<%= btn_class %> rounded-md px-3 py-1.5 text-[11px] font-bold active:scale-95 transition-all duration-150 min-h-[36px]"
+                          class="<%= btn_class %> rounded-md px-3 py-1.5 text-[11px] font-bold active:scale-95 transition-all duration-150 min-h-[44px]"
                           data-action="click->vote#submit"
                           data-vote-target="button"
                           aria-pressed="<%= is_selected %>"
@@ -283,7 +283,7 @@
                 <input type="hidden" name="play_record[machine_model_id]" value="<%= machine_model.id %>">
                 <input type="hidden" name="play_record[played_on]" value="<%= date %>">
                 <button type="button" data-action="click->result-input#toggleSign"
-                        class="shrink-0 w-9 h-9 flex items-center justify-center rounded-md border border-border bg-background text-sm font-bold transition-colors hover:bg-secondary">
+                        class="shrink-0 w-11 h-11 flex items-center justify-center rounded-md border border-border bg-background text-sm font-bold transition-colors hover:bg-secondary">
                   <span data-result-input-target="sign" class="text-primary">+</span>
                 </button>
                 <input type="number" min="0" max="999999" placeholder="収支(枚)" inputmode="numeric"
@@ -294,7 +294,7 @@
                 <input type="hidden" name="play_record[result_amount]" value="0"
                        data-result-input-target="hidden">
                 <button type="submit"
-                        class="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-xs font-medium hover:bg-primary/90 active:scale-95 transition-all duration-150 min-h-[36px]">
+                        class="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-xs font-medium hover:bg-primary/90 active:scale-95 transition-all duration-150 min-h-[44px]">
                   記録
                 </button>
               <% end %>

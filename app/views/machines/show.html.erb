@@ -148,8 +148,14 @@
           <p class="text-[10px] text-muted-foreground">記録日数</p>
         </div>
         <% if @all_time_reset_rate %>
+          <% reset_rate_low_sample = @all_time_votes.to_i < 5 %>
           <div class="bg-secondary rounded-lg p-3 text-center">
-            <p class="text-xl font-bold tabular-nums <%= @all_time_reset_rate >= 50 ? 'text-vote-yes' : 'text-vote-no' %>"><%= @all_time_reset_rate %>%</p>
+            <p class="text-xl font-bold tabular-nums <%= reset_rate_low_sample ? 'text-muted-foreground' : (@all_time_reset_rate >= 50 ? 'text-vote-yes' : 'text-vote-no') %>">
+              <%= @all_time_reset_rate %>%
+              <% if reset_rate_low_sample %>
+                <span class="text-[10px] font-normal">(<%= @all_time_votes %>件)</span>
+              <% end %>
+            </p>
             <p class="text-[10px] text-muted-foreground">リセット率</p>
           </div>
         <% end %>
@@ -281,13 +287,19 @@
 
       <%# 記録データからのリセット率統計 %>
       <% if @all_time_reset_rate %>
+        <% reset_rate_low_sample = @all_time_votes.to_i < 5 %>
         <div class="mt-3 border-t border-border pt-3">
           <p class="text-xs text-muted-foreground mb-2">記録データによるリセット率 (全期間)</p>
           <div class="flex items-center gap-3">
             <div class="flex-1 bg-secondary rounded-full h-3 overflow-hidden">
-              <div class="h-full bg-vote-yes rounded-full transition-all" style="width: <%= @all_time_reset_rate %>%"></div>
+              <div class="h-full <%= reset_rate_low_sample ? 'bg-muted-foreground' : 'bg-vote-yes' %> rounded-full transition-all" style="width: <%= @all_time_reset_rate %>%"></div>
             </div>
-            <span class="text-sm font-bold tabular-nums <%= @all_time_reset_rate >= 50 ? 'text-vote-yes' : 'text-vote-no' %>"><%= @all_time_reset_rate %>%</span>
+            <span class="text-sm font-bold tabular-nums <%= reset_rate_low_sample ? 'text-muted-foreground' : (@all_time_reset_rate >= 50 ? 'text-vote-yes' : 'text-vote-no') %>">
+              <%= @all_time_reset_rate %>%
+              <% if reset_rate_low_sample %>
+                <span class="text-[10px]">(<%= @all_time_votes %>件)</span>
+              <% end %>
+            </span>
           </div>
           <p class="text-[10px] text-muted-foreground mt-1">※ ユーザー記録に基づく統計です。<%= @all_time_votes %>件の記録データから算出。</p>
         </div>
@@ -417,7 +429,7 @@
         <div class="mt-2 pt-2 border-t border-border/50 text-xs">
           <%= link_to prefecture_path(selected_pref.slug), class: "text-primary hover:underline inline-flex items-center gap-1" do %>
             <span class="text-[0.9em] text-slot-yellow" aria-hidden="true">▶</span>
-            <%= selected_pref.name %>の店舗一覧をすべて見る
+            <%= selected_pref.name %>の全店舗を見る（全機種）
           <% end %>
         </div>
       <% end %>

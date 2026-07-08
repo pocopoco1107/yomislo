@@ -81,6 +81,10 @@
                   <span class="font-bold text-foreground"><%= summary.consensus_label %></span>
                   (<%= summary.total_reports %>人が報告)
                 </span>
+              <% elsif summary.total_reports == 1 %>
+                <span class="text-[10px] text-muted-foreground">
+                  <%= summary.total_reports %>人が報告
+                </span>
               <% else %>
                 <span class="text-[10px] text-muted-foreground">
                   <%= summary.total_reports %>人が報告（意見が分かれています）

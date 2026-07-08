@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["entriesContainer", "template", "entry"]
+  static targets = ["entriesContainer", "template", "entry", "formError"]
 
   addEntry() {
     const template = this.templateTarget
@@ -51,7 +51,7 @@ export default class extends Controller {
     const shopIdInput = this.element.querySelector('[data-shop-autocomplete-target="hidden"]')
     if (!shopIdInput || !shopIdInput.value) {
       event.preventDefault()
-      window.alert("店舗を検索して選択してください。")
+      this.showError("店舗を検索して選択してください。")
       return
     }
 
@@ -63,7 +63,26 @@ export default class extends Controller {
     const hasDuplicate = new Set(ids).size !== ids.length
     if (hasDuplicate) {
       event.preventDefault()
-      window.alert("同じ機種が重複しています。1機種につき1件で記録してください。")
+      this.showError("同じ機種が重複しています。1機種につき1件で記録してください。")
+      return
+    }
+
+    this.hideError()
+  }
+
+  // フォーム内インラインエラー表示。target未定義の環境向けに alert へフォールバック
+  showError(message) {
+    if (this.hasFormErrorTarget) {
+      this.formErrorTarget.textContent = message
+      this.formErrorTarget.classList.remove("hidden")
+    } else {
+      window.alert(message)
+    }
+  }
+
+  hideError() {
+    if (this.hasFormErrorTarget) {
+      this.formErrorTarget.classList.add("hidden")
     }
   }
 

@@ -177,6 +177,11 @@ class ShopsController < ApplicationController
     # 7-day trend data + weekly summary
     @trend_data = build_trend_data(@shop.vote_summaries)
     @weekly_summary = build_weekly_summary(@shop)
+
+    # Reviews
+    @reviews = @shop.shop_reviews.recent
+    @average_rating = ShopReview.average_rating_for(@shop.id)
+    @existing_review = @shop.shop_reviews.find_by(voter_token: voter_token)
   end
 
   def build_calendar_data(shop, month)
