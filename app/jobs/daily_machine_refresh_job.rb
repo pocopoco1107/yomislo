@@ -10,7 +10,9 @@ class DailyMachineRefreshJob < ApplicationJob
   queue_as :default
 
   def perform
-    return if Date.current.day == 1
+    # yomislo-monthly は1〜5日に再実行されうる（都道府県単位のチェックポイント再開のため）。
+    # その期間中に月次サイクルが未完了なら、DMMぱちタウンへの同時アクセスを避けるためdailyを休止する。
+    return if (1..5).cover?(Date.current.day) && !MonthlySyncProgress.current_cycle.completed?
 
     $stdout.sync = true
     Rails.application.load_tasks if Rake::Task.tasks.empty?

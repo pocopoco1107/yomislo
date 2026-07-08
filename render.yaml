@@ -88,7 +88,7 @@ services:
     region: singapore
     runtime: ruby
     plan: starter
-    schedule: "0 18 1 * *"
+    schedule: "0 18 1-5 * *"
     buildCommand: bundle install
     startCommand: bundle exec rails runner "MonthlyShopDetailsJob.perform_now"
     envVars: *batch-env

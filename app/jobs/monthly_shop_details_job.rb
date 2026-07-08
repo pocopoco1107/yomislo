@@ -3,54 +3,83 @@
 require "rake"
 
 # Monthly job to fully sync shops, machines, and details from DMMぱちタウン.
+# sync_shop_machines フェーズが47都道府県を1回のジョブ実行時間内に処理しきれないため、
+# MonthlySyncProgress で都道府県単位の進捗を永続化し、cron の複数日実行
+# (render.yaml: 毎月1〜5日) にまたがって再開できるようにしている。
 # Each step runs independently — a failure in one step doesn't block the next.
 class MonthlyShopDetailsJob < ApplicationJob
   include StepRunner
 
   queue_as :default
 
+  SYNC_SHOP_MACHINES_TIME_BUDGET = 10.hours
+
   def perform
     $stdout.sync = true
     Rails.application.load_tasks if Rake::Task.tasks.empty?
 
-    run_step("import_shops") do
-      Rake::Task["ptown:import_shops"].invoke
-      Rake::Task["ptown:import_shops"].reenable
+    progress = MonthlySyncProgress.current_cycle
+
+    if progress.completed?
+      Rails.logger.info("[#{log_prefix}] #{progress.cycle_month} は既に同期完了済みのためスキップ")
+      return
     end
 
-    run_step("import_machines") do
-      Rake::Task["ptown:import_machines"].invoke
-      Rake::Task["ptown:import_machines"].reenable
+    unless progress.shops_imported?
+      run_step("import_shops") do
+        Rake::Task["ptown:import_shops"].invoke
+        Rake::Task["ptown:import_shops"].reenable
+      end
+      progress.update!(shops_imported: true)
     end
 
-    run_step("import_details") do
-      Rake::Task["ptown:import_details"].invoke
-      Rake::Task["ptown:import_details"].reenable
+    unless progress.machines_imported?
+      run_step("import_machines") do
+        Rake::Task["ptown:import_machines"].invoke
+        Rake::Task["ptown:import_machines"].reenable
+      end
+      progress.update!(machines_imported: true)
     end
 
+    unless progress.details_imported?
+      run_step("import_details") do
+        Rake::Task["ptown:import_details"].invoke
+        Rake::Task["ptown:import_details"].reenable
+      end
+      progress.update!(details_imported: true)
+    end
+
+    deadline = Time.current + SYNC_SHOP_MACHINES_TIME_BUDGET
     run_step("sync_shop_machines") do
       ENV["FORCE"] = "1"
-      Rake::Task["ptown:sync_shop_machines"].invoke
-      Rake::Task["ptown:sync_shop_machines"].reenable
+      progress.remaining_prefectures.each do |pref|
+        break if Time.current > deadline
+
+        Rake::Task["ptown:sync_shop_machines"].invoke(pref.slug)
+        Rake::Task["ptown:sync_shop_machines"].reenable
+        progress.update!(last_synced_prefecture_id: pref.id)
+      end
       ENV.delete("FORCE")
     end
 
-    # 新規店舗（lat/lng が NULL）を GSI + Nominatim でジオコード。
-    # Monthly は新店追加が一気に走るため、ここで埋めておかないと「現在地から探す」に
-    # 1ヶ月間出てこない期間が生じる。Daily にも同等のステップが入っており冗長安全策。
-    run_step("geocode_shops") do
-      Rake::Task["geocode:shops"].invoke
-      Rake::Task["geocode:shops"].reenable
+    if progress.remaining_prefectures.empty?
+      run_step("geocode_shops") do
+        Rake::Task["geocode:shops"].invoke
+        Rake::Task["geocode:shops"].reenable
+      end
+
+      run_step("merge_duplicates") do
+        Rake::Task["ptown:merge_duplicates"].invoke
+        Rake::Task["ptown:merge_duplicates"].reenable
+      end
+
+      run_step("cleanup") { deactivate_orphan_machines }
+
+      progress.update!(completed: true)
+      log_summary
+    else
+      Rails.logger.info("[#{log_prefix}] #{progress.remaining_prefectures.count}都道府県が未処理。次回cron実行で継続")
     end
-
-    run_step("merge_duplicates") do
-      Rake::Task["ptown:merge_duplicates"].invoke
-      Rake::Task["ptown:merge_duplicates"].reenable
-    end
-
-    run_step("cleanup") { deactivate_orphan_machines }
-
-    log_summary
   end
 
   private

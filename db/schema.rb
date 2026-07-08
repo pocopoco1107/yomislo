@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_30_084356) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_094306) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -94,6 +94,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_30_084356) do
     t.index ["status"], name: "index_machine_guide_links_on_status"
   end
 
+  create_table "machine_model_redirects", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "machine_model_id", null: false
+    t.string "old_slug", null: false
+    t.datetime "updated_at", null: false
+    t.index ["machine_model_id"], name: "index_machine_model_redirects_on_machine_model_id"
+    t.index ["old_slug"], name: "index_machine_model_redirects_on_old_slug", unique: true
+  end
+
   create_table "machine_models", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.jsonb "ceiling_info", default: {}
@@ -115,6 +124,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_30_084356) do
     t.index ["active"], name: "index_machine_models_on_active"
     t.index ["ptown_id"], name: "index_machine_models_on_ptown_id", unique: true, where: "(ptown_id IS NOT NULL)"
     t.index ["slug"], name: "index_machine_models_on_slug", unique: true
+  end
+
+  create_table "monthly_sync_progresses", force: :cascade do |t|
+    t.boolean "completed", default: false, null: false
+    t.datetime "created_at", null: false
+    t.date "cycle_month", null: false
+    t.boolean "details_imported", default: false, null: false
+    t.bigint "last_synced_prefecture_id"
+    t.boolean "machines_imported", default: false, null: false
+    t.boolean "shops_imported", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.index ["cycle_month"], name: "index_monthly_sync_progresses_on_cycle_month", unique: true
   end
 
   create_table "pets", force: :cascade do |t|
@@ -421,6 +442,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_30_084356) do
   add_foreign_key "exchange_rate_reports", "shops"
   add_foreign_key "exchange_rate_summaries", "shops"
   add_foreign_key "machine_guide_links", "machine_models"
+  add_foreign_key "machine_model_redirects", "machine_models"
   add_foreign_key "play_records", "machine_models"
   add_foreign_key "play_records", "shops"
   add_foreign_key "shop_contributions", "shops"
