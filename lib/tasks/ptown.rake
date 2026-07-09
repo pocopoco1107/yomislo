@@ -1155,20 +1155,16 @@ namespace :ptown do
     $stdout.sync = true
     puts "=== 重複機種マージ ==="
 
-    # 既にマージ済み(active:false)かつ設置機種/記録/収支のいずれも持たないレコードは
-    # 再検出しても実害がなく毎月同じペアをログに積み上げるだけなので、グループ化前に除外する
-    inactive_ids = MachineModel.where(active: false).pluck(:id)
-    referenced_inactive_ids = Set.new
-    referenced_inactive_ids.merge(ShopMachineModel.where(machine_model_id: inactive_ids).distinct.pluck(:machine_model_id))
-    referenced_inactive_ids.merge(Vote.where(machine_model_id: inactive_ids).distinct.pluck(:machine_model_id))
-    referenced_inactive_ids.merge(PlayRecord.where(machine_model_id: inactive_ids).distinct.pluck(:machine_model_id))
-    empty_inactive_ids = Set.new(inactive_ids) - referenced_inactive_ids
-
-    # core_nameでグループ化 (inactiveなゴーストレコードも検出対象に含めるが、上記の空ゴーストは除く)
+    # core_nameでグループ化 (inactiveなゴーストレコードも検出対象に含める)
+    #
+    # 過去に「active:falseかつ設置機種/記録/収支のいずれも持たないレコードは
+    # 既にマージ済みとみなして事前除外する」フィルタを入れていたが、これは
+    # 一度もマージされていない自然発生のゴースト（例: 設置0店のまま放置された
+    # レコード）まで誤って除外してしまい、本来検出すべき重複が core_name
+    # グループに1件しか残らず永久にスキップされる不具合があった。
+    # ログの再検出ノイズよりも検出漏れの方が実害が大きいため、事前除外はしない。
     groups = {}
     MachineModel.find_each do |m|
-      next if empty_inactive_ids.include?(m.id)
-
       cn = PtownScraper.core_name(m.name)
       next if cn.blank? || cn.size < 2
       (groups[cn] ||= []) << m
