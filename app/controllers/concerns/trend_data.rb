@@ -57,28 +57,28 @@ module TrendData
     # Top 3 machines by reset rate this week
     top_reset = shop.vote_summaries
                     .where(target_date: week_start..week_end)
-                    .where("reset_yes_count + reset_no_count >= 3")
+                    .where("reset_yes_count + reset_no_count >= 1")
                     .select(
                       "machine_model_id",
                       "SUM(reset_yes_count) as total_yes",
                       "SUM(reset_yes_count + reset_no_count) as total_reset"
                     )
                     .group(:machine_model_id)
-                    .having("SUM(reset_yes_count + reset_no_count) >= 3")
+                    .having("SUM(reset_yes_count + reset_no_count) >= 1")
                     .order(Arel.sql("SUM(reset_yes_count)::float / NULLIF(SUM(reset_yes_count + reset_no_count), 0) DESC"))
                     .limit(3)
 
     # Top 3 machines by setting average this week
     top_setting = shop.vote_summaries
                       .where(target_date: week_start..week_end)
-                      .where("setting_avg IS NOT NULL AND total_votes >= 3")
+                      .where("setting_avg IS NOT NULL AND total_votes >= 1")
                       .select(
                         "machine_model_id",
                         "SUM(setting_avg * total_votes) / NULLIF(SUM(total_votes), 0) as weighted_avg",
                         "SUM(total_votes) as total_v"
                       )
                       .group(:machine_model_id)
-                      .having("SUM(total_votes) >= 3")
+                      .having("SUM(total_votes) >= 1")
                       .order(Arel.sql("SUM(setting_avg * total_votes) / NULLIF(SUM(total_votes), 0) DESC"))
                       .limit(3)
 
@@ -134,7 +134,7 @@ module TrendData
 
       h[date] = {
         votes: total_votes,
-        reset_rate: total_reset >= 3 ? (reset_yes.to_f / total_reset * 100).round(1) : nil,
+        reset_rate: total_reset >= 1 ? (reset_yes.to_f / total_reset * 100).round(1) : nil,
         setting_avg: weighted_count > 0 ? (weighted_sum / weighted_count).round(1) : nil
       }
     end

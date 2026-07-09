@@ -298,7 +298,9 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     /* 本文ベースを 500 に。ダークモードで 400 だと文字が痩せて見えるため */
     font-weight: 500;
-    overflow-x: hidden;
+    /* overflow-x は html 側の指定のみにする。bodyにも付けるとposition: stickyの
+       基準スクロールコンテナがbodyになり、実際のスクロールはhtml側で発生するため
+       sticky要素(ヘッダー等)が全く固定されなくなる */
   }
 
   /* スムーズスクロール + 横スクロール防止 */

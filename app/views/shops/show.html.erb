@@ -186,19 +186,21 @@
     rec_can_record   = @date >= Date.current - 1
     rec_wday         = %w[日 月 火 水 木 金 土][@date.wday]
   %>
-  <div class="flex items-center justify-between gap-2 bg-primary/10 border border-primary/30 rounded-lg px-4 py-2.5 mb-3">
+  <div class="sticky top-14 z-30 flex items-center justify-between gap-2 rounded-lg px-4 py-3 mb-3 border bg-primary border-primary shadow-md">
     <div class="flex items-center gap-2 min-w-0">
-      <svg class="w-4 h-4 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-      <span class="font-bold text-foreground text-sm tabular-nums"><%= @date.strftime("%-m月%-d日") %>(<%= rec_wday %>)</span>
+      <svg class="w-5 h-5 shrink-0 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      <span class="font-bold tabular-nums text-primary-foreground text-lg"><%= @date.strftime("%-m月%-d日") %>(<%= rec_wday %>)</span>
       <% if rec_is_today %>
-        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary text-primary-foreground shrink-0">今日</span>
+        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-foreground text-primary shrink-0">今日</span>
       <% elsif rec_is_yesterday %>
-        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-secondary text-foreground shrink-0">昨日</span>
+        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-foreground text-primary shrink-0">昨日</span>
+      <% else %>
+        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-foreground text-primary shrink-0">過去の記録</span>
       <% end %>
-      <span class="text-xs text-muted-foreground shrink-0">の記録</span>
+      <span class="text-xs shrink-0 text-primary-foreground/80">の記録</span>
     </div>
     <% unless rec_is_today %>
-      <%= link_to shop_path(@shop), class: "inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium shrink-0" do %>
+      <%= link_to shop_path(@shop), class: "inline-flex items-center gap-1 text-xs font-bold shrink-0 text-primary-foreground hover:underline" do %>
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
         今日に戻る
       <% end %>
@@ -207,6 +209,13 @@
   <% unless rec_can_record %>
     <p class="text-[11px] text-muted-foreground -mt-1.5 mb-3 px-1">※ 設定・リセットの記録は前日までです（収支は90日以内なら記録できます）。</p>
   <% end %>
+
+  <%# === Daily Summary（この日の記録一覧・日付直下で目立たせる） === %>
+  <%= render "shops/daily_summary",
+      vote_summaries: @vote_summaries,
+      machine_names: @machine_names,
+      machine_slugs: @machine_slugs,
+      date: @date %>
 
   <%# === Vote Errors === %>
   <div id="vote_errors"></div>
@@ -271,13 +280,6 @@
       <p class="text-xs text-muted-foreground mt-2 px-1">この店舗の設置機種はまだ登録されていません。機種名で検索して記録できます。</p>
     </div>
   <% end %>
-
-  <%# === Daily Summary（今日の記録一覧） === %>
-  <%= render "shops/daily_summary",
-      vote_summaries: @vote_summaries,
-      machine_names: @machine_names,
-      machine_slugs: @machine_slugs,
-      date: @date %>
 
   <%= render_promotion :shop_detail_bottom, variant: :card %>
 
