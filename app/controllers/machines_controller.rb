@@ -2,7 +2,14 @@ class MachinesController < ApplicationController
   include TrendData
 
   def show
-    @machine_model = MachineModel.find_by!(slug: params[:slug])
+    @machine_model = MachineModel.find_by(slug: params[:slug])
+    if @machine_model.nil?
+      redirect_record = MachineModelRedirect.find_by(old_slug: params[:slug])
+      if redirect_record
+        redirect_to machine_path(redirect_record.machine_model.slug), status: :moved_permanently and return
+      end
+      raise ActiveRecord::RecordNotFound
+    end
     @installed_shop_count = @machine_model.shop_machine_models.count
 
     smart_slot_tag = @machine_model.smart_slot_unlabeled?

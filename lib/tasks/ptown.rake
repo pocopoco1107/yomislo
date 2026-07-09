@@ -534,12 +534,15 @@ namespace :ptown do
     created = 0
     updated = 0
     skipped = 0
+    errors = 0
 
     # Build in-memory lookups to avoid N+1 queries
     all_models = MachineModel.select(:id, :name, :slug, :ptown_id, :maker, :payout_rate_min, :payout_rate_max,
                                      :introduced_on, :image_url, :is_smart_slot, :active).to_a
     ptown_id_lookup = all_models.select(&:ptown_id).index_by(&:ptown_id)
-    slug_lookup = all_models.index_by(&:slug)
+    # inactiveなゴーストレコードが正規化済みslugを握り続けるのを防ぐため、slugマッチングはactiveのみ対象
+    active_models = all_models.select(&:active?)
+    slug_lookup = active_models.index_by(&:slug)
     existing_ptown_ids = Set.new(ptown_id_lookup.keys)
     existing_slugs = Set.new(slug_lookup.keys)
 
@@ -599,8 +602,13 @@ namespace :ptown do
         attrs[:active] = true unless machine.active?
 
         if attrs.any?
-          machine.update!(attrs)
-          updated += 1
+          begin
+            machine.update!(attrs)
+            updated += 1
+          rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
+            errors += 1
+            puts "\n  → ERROR (update: #{data[:name]}): #{e.message}"
+          end
         else
           skipped += 1
         end
@@ -610,19 +618,24 @@ namespace :ptown do
           skipped += 1
           next
         end
-        MachineModel.create!(
-          name: data[:name],
-          slug: slug,
-          maker: data[:maker],
-          payout_rate_min: data[:payout_rate_min],
-          payout_rate_max: data[:payout_rate_max],
-          introduced_on: data[:introduced_on],
-          image_url: data[:image_url],
-          ptown_id: data[:ptown_id],
-          is_smart_slot: is_smart,
-          active: true
-        )
-        created += 1
+        begin
+          MachineModel.create!(
+            name: data[:name],
+            slug: slug,
+            maker: data[:maker],
+            payout_rate_min: data[:payout_rate_min],
+            payout_rate_max: data[:payout_rate_max],
+            introduced_on: data[:introduced_on],
+            image_url: data[:image_url],
+            ptown_id: data[:ptown_id],
+            is_smart_slot: is_smart,
+            active: true
+          )
+          created += 1
+        rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
+          errors += 1
+          puts "\n  → ERROR (create: #{data[:name]}): #{e.message}"
+        end
       end
 
       print "\r  処理中: #{i + 1}/#{all_machines.size}" if (i + 1) % 50 == 0
@@ -632,6 +645,7 @@ namespace :ptown do
     puts "新規作成: #{created}"
     puts "更新: #{updated}"
     puts "スキップ: #{skipped}"
+    puts "エラー: #{errors}"
     puts "合計: #{MachineModel.active.count} 件 (アクティブ)"
 
     # 検証
@@ -1141,9 +1155,20 @@ namespace :ptown do
     $stdout.sync = true
     puts "=== 重複機種マージ ==="
 
-    # core_nameでグループ化
+    # 既にマージ済み(active:false)かつ設置機種/記録/収支のいずれも持たないレコードは
+    # 再検出しても実害がなく毎月同じペアをログに積み上げるだけなので、グループ化前に除外する
+    inactive_ids = MachineModel.where(active: false).pluck(:id)
+    referenced_inactive_ids = Set.new
+    referenced_inactive_ids.merge(ShopMachineModel.where(machine_model_id: inactive_ids).distinct.pluck(:machine_model_id))
+    referenced_inactive_ids.merge(Vote.where(machine_model_id: inactive_ids).distinct.pluck(:machine_model_id))
+    referenced_inactive_ids.merge(PlayRecord.where(machine_model_id: inactive_ids).distinct.pluck(:machine_model_id))
+    empty_inactive_ids = Set.new(inactive_ids) - referenced_inactive_ids
+
+    # core_nameでグループ化 (inactiveなゴーストレコードも検出対象に含めるが、上記の空ゴーストは除く)
     groups = {}
-    MachineModel.active.find_each do |m|
+    MachineModel.find_each do |m|
+      next if empty_inactive_ids.include?(m.id)
+
       cn = PtownScraper.core_name(m.name)
       next if cn.blank? || cn.size < 2
       (groups[cn] ||= []) << m
@@ -1158,17 +1183,28 @@ namespace :ptown do
 
     merged = 0
     moved_smms = 0
+    slug_swaps = 0
+    redirects_moved = 0
 
     duplicates.each do |cn, machines|
-      # 優先: ptown_id有り > image_url有り > shop_machine_models数 > id小さい(古い)
+      # 優先: active > ptown_id有り > image_url有り > shop_machine_models数 > id小さい(古い)
       keeper = machines.sort_by { |m|
         [
+          m.active? ? 0 : 1,
           m.ptown_id.present? ? 0 : 1,
           m.image_url.present? ? 0 : 1,
           -(smm_counts[m.id] || 0),
           m.id
         ]
       }.first
+
+      # sort_byでactiveを最優先にしていれば発生しないはずだが、
+      # 「dup側にactiveなレコードがあるのにkeeperがinactiveのまま」という状態を二重に防ぐガード
+      if machines.any?(&:active?) && !keeper.active?
+        keeper.update!(active: true)
+      end
+
+      keeper_normalized_slug = PtownScraper.normalize_slug(keeper.name)
 
       machines.each do |dup|
         next if dup.id == keeper.id
@@ -1195,6 +1231,9 @@ namespace :ptown do
           VoteSummary.where(machine_model_id: dup.id).update_all(machine_model_id: keeper.id)
           PlayRecord.where(machine_model_id: dup.id).update_all(machine_model_id: keeper.id)
 
+          # dupを指していた既存の301リダイレクトもkeeperへ引き継ぐ
+          redirects_moved += MachineModelRedirect.where(machine_model_id: dup.id).update_all(machine_model_id: keeper.id)
+
           # keeperにない属性を補完
           attrs = %i[maker ptown_id image_url type_detail payout_rate_min payout_rate_max
                      introduced_on ceiling_info reset_info].each_with_object({}) do |attr, h|
@@ -1202,6 +1241,23 @@ namespace :ptown do
           end
           attrs[:is_smart_slot] = true if dup.is_smart_slot? && !keeper.is_smart_slot?
           keeper.update!(attrs) if attrs.any?
+
+          # dupがkeeperの正規化済みslugを握っている場合、keeperへ引き渡して301リダイレクトを記録
+          if dup.slug == keeper_normalized_slug && keeper.slug != dup.slug
+            old_keeper_slug = keeper.slug
+            dup_original_slug = dup.slug
+            # 先にdup側のslugを解放してからでないとkeeperのslug更新がunique制約違反になる
+            dup.update!(slug: "#{dup_original_slug}-legacy-#{dup.id}")
+            keeper.update!(slug: dup_original_slug)
+            if old_keeper_slug != keeper.slug
+              # old_keeper_slugが既に別レコードのold_slugとして存在する場合、
+              # find_or_create_by!だとブロックが実行されず古いmachine_modelのまま残ってしまうため
+              # find_or_initialize_by + 明示updateでどちらの場合もkeeperを指すよう更新する
+              redirect = MachineModelRedirect.find_or_initialize_by(old_slug: old_keeper_slug)
+              redirect.update!(machine_model: keeper)
+              slug_swaps += 1
+            end
+          end
 
           # 重複を非アクティブ化
           dup.update_column(:active, false)
@@ -1212,6 +1268,8 @@ namespace :ptown do
 
     puts "マージ完了: #{merged}件の重複を統合"
     puts "移行したShopMachineModel: #{moved_smms}件"
+    puts "引き継いだ既存リダイレクト: #{redirects_moved}件"
+    puts "slug入れ替え(301リダイレクト記録): #{slug_swaps}件"
     puts "アクティブ機種: #{MachineModel.active.count}件"
   end
 
