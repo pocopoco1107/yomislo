@@ -134,6 +134,32 @@ RSpec.describe "Shops", type: :request do
     end
   end
 
+  describe "GET /shops/:slug/calendar" do
+    it "renders the calendar partial for the current month" do
+      get calendar_shop_path(shop.slug, month: Date.current.strftime("%Y-%m"))
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "renders the calendar partial for an adjacent month" do
+      get calendar_shop_path(shop.slug, month: (Date.current - 1.month).strftime("%Y-%m"))
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "renders vote counts when votes exist in the month" do
+      machine = create(:machine_model)
+      ShopMachineModel.create!(shop: shop, machine_model: machine)
+      create(:vote, shop: shop, machine_model: machine, voted_on: Date.current, reset_vote: 1)
+
+      get calendar_shop_path(shop.slug, month: Date.current.strftime("%Y-%m"))
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "returns 404 for invalid slug" do
+      get calendar_shop_path("nonexistent-slug-999", month: Date.current.strftime("%Y-%m"))
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe "GET /shops/favorites" do
     it "returns favorite shops" do
       get favorites_shops_path, params: { slugs: shop.slug }

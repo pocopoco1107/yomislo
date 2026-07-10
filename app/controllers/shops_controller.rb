@@ -23,7 +23,12 @@ class ShopsController < ApplicationController
     @calendar_month = parse_calendar_month(params[:month])
     @calendar_data = build_calendar_data(@shop, @calendar_month)
     @date = Date.current
-    render partial: "shops/calendar", layout: false
+    render partial: "shops/calendar", layout: false, locals: {
+      shop: @shop,
+      calendar_month: @calendar_month,
+      calendar_data: @calendar_data,
+      current_date: @date
+    }
   end
 
   def trend_data
