@@ -25,12 +25,8 @@
     <% end %>
 
     <!-- 相棒 & 称号カード (rpg-window — マイステータス画面の主役1枚だけ許容) -->
-    <%
-      # レベル = pet stage index + 1 (卵=Lv.1, 幼年期=Lv.2, 成長期=Lv.3, 成熟期=Lv.4)
-      pet_level = @pet ? (Pet::STAGE_ORDER.index(@pet.stage.to_sym) || 0) + 1 : 1
-      next_evo = @pet&.next_evolution
-    %>
-    <div class="rpg-window p-4 mb-6 mt-2" data-controller="pet" data-pet-evolved-value="false">
+    <% next_evo = @pet&.next_evolution %>
+    <div class="rpg-window p-4 mb-6 mt-2" data-controller="pet display-name-modal" data-pet-evolved-value="false">
       <div class="flex items-center gap-4">
         <% if @pet %>
           <span class="pet pet--idle shrink-0 cursor-pointer" data-pet-target="sprite" data-action="click->pet#hop">
@@ -38,17 +34,13 @@
           </span>
         <% end %>
         <div class="min-w-0 flex-1">
-          <div class="flex items-baseline gap-2 flex-wrap">
-            <p class="font-heading text-base text-foreground truncate"><%= @voter_label %></p>
-            <span class="font-heading text-xs text-slot-green tabular-nums shrink-0">Lv.<%= pet_level %></span>
-          </div>
+          <p class="font-heading text-base text-foreground truncate"><%= @voter_label %></p>
           <p class="font-heading text-[11px] text-slot-yellow mt-0.5">称号 ･ <%= @profile.rank_title %></p>
-          <p class="text-[11px] text-muted-foreground mt-0.5">ID: <%= voter_token&.last(4) %></p>
         </div>
-        <div class="flex flex-col items-end shrink-0">
-          <span class="score-num text-xl text-slot-yellow leading-none"><%= @profile.points %></span>
-          <span class="text-[10px] text-muted-foreground mt-1">ゴールド</span>
-        </div>
+        <button type="button" data-action="click->display-name-modal#open"
+                class="shrink-0 bg-secondary text-secondary-foreground px-3 py-2 rounded-md text-xs font-medium hover:bg-secondary/80 active:scale-95 transition-all min-h-[40px]">
+          <%= @profile.display_name.present? ? "名前を変更" : "ユーザー名を設定" %>
+        </button>
       </div>
 
       <%# 相棒メッセージ (小さめのRPG風フキダシではなく border でシンプルに) %>
@@ -70,17 +62,49 @@
         </div>
       <% end %>
 
-      <!-- Display Name Form (相棒カード内に統合) -->
-      <div class="mt-3 border-t border-border/50 pt-3">
-        <%= form_tag voter_display_name_path, method: :patch, class: "flex items-center gap-2" do %>
-          <input type="text" name="display_name" value="<%= @profile.display_name %>"
-                 placeholder="ユーザー名を設定 (+<%= VoterProfile::POINT_RULES[:display_name_set] %>ゴールド)"
-                 maxlength="20"
-                 class="flex-1 min-w-0 border border-input bg-background text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground min-h-[40px]">
-          <button type="submit" class="shrink-0 bg-secondary text-secondary-foreground px-3 py-2 rounded-md text-xs font-medium hover:bg-secondary/80 active:scale-95 transition-all min-h-[40px]">
-            保存
+      <!-- Display Name Modal -->
+      <div data-display-name-modal-target="backdrop"
+           data-action="click->display-name-modal#backdropClose"
+           style="display: none"
+           class="fixed inset-0 bg-black/50 z-40 opacity-0 transition-opacity duration-300"></div>
+
+      <div data-display-name-modal-target="panel"
+           style="display: none"
+           role="dialog"
+           aria-modal="true"
+           aria-labelledby="display-name-modal-title"
+           tabindex="-1"
+           class="fixed z-50 flex flex-col bg-card
+                  inset-x-0 bottom-0 rounded-t-2xl border-t border-border w-full
+                  sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:right-auto sm:max-w-sm sm:w-[calc(100%-2rem)]
+                  sm:rounded-2xl sm:border sm:shadow-xl">
+        <div class="sm:hidden flex justify-center pt-2 pb-1">
+          <div class="w-10 h-1 bg-muted-foreground/30 rounded-full"></div>
+        </div>
+
+        <div class="flex items-center justify-between px-4 py-3 border-b border-border">
+          <h2 id="display-name-modal-title" class="text-base font-semibold text-foreground">ユーザー名を設定</h2>
+          <button type="button" data-action="click->display-name-modal#close"
+                  class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-secondary transition-colors min-w-[44px] min-h-[44px]"
+                  aria-label="閉じる">
+            <svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </button>
-        <% end %>
+        </div>
+
+        <div class="px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          <%= form_tag voter_display_name_path, method: :patch, class: "flex items-center gap-2" do %>
+            <input type="text" name="display_name" value="<%= @profile.display_name %>"
+                   placeholder="ニックネーム (+<%= VoterProfile::POINT_RULES[:display_name_set] %>ゴールド)"
+                   maxlength="20"
+                   data-display-name-modal-target="input"
+                   class="flex-1 min-w-0 border border-input bg-background text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground min-h-[44px]">
+            <button type="submit" class="shrink-0 bg-primary text-primary-foreground px-4 py-2.5 rounded-md text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all min-h-[44px]">
+              保存
+            </button>
+          <% end %>
+        </div>
       </div>
     </div>
 
@@ -95,7 +119,8 @@
       vote_target = [ 10, 100, 1000 ].find { |t| @total_votes_count < t } || @total_votes_count
     %>
     <div class="bg-card rounded-lg border border-border/60 p-4 mb-4">
-      <%= section_heading "スコア", accent: :yellow, extra: "mb-3" %>
+      <%= section_heading "スコア", accent: :yellow, extra: "mb-1" %>
+      <p class="text-[11px] text-muted-foreground mb-3">ゴールドが貯まると称号がランクアップする</p>
       <div class="space-y-2.5">
         <%= dot_bar @total_votes_count, vote_target, color: :green, segments: 12, height: :sm, label: "記録", value: "#{@total_votes_count}件" %>
         <%= dot_bar @profile.current_streak || 0, 30, color: :blue, segments: 12, height: :sm, label: "連続", value: "#{@profile.current_streak || 0}日" %>
