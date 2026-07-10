@@ -5,12 +5,20 @@ export default class extends Controller {
 
   connect() {
     this.reEnableTimer = null
+    this.element.addEventListener("turbo:submit-end", this.trackSubmit)
   }
 
   disconnect() {
     if (this.reEnableTimer) {
       clearTimeout(this.reEnableTimer)
       this.reEnableTimer = null
+    }
+    this.element.removeEventListener("turbo:submit-end", this.trackSubmit)
+  }
+
+  trackSubmit = (event) => {
+    if (event.detail.success && typeof gtag === "function") {
+      gtag("event", "vote_submit")
     }
   }
 

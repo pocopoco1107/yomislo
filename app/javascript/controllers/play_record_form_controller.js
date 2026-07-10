@@ -3,6 +3,20 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["entriesContainer", "template", "entry", "formError"]
 
+  connect() {
+    this.element.addEventListener("turbo:submit-end", this.trackSubmit)
+  }
+
+  disconnect() {
+    this.element.removeEventListener("turbo:submit-end", this.trackSubmit)
+  }
+
+  trackSubmit = (event) => {
+    if (event.detail.success && typeof gtag === "function") {
+      gtag("event", "play_record_submit")
+    }
+  }
+
   addEntry() {
     const template = this.templateTarget
     const clone = template.content.cloneNode(true)
