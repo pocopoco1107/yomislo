@@ -64,10 +64,7 @@ class PrefecturesController < ApplicationController
     @machine_counts = ShopMachineModel.where(shop_id: shop_ids)
                                        .group(:shop_id)
                                        .count
-    @review_averages = ShopReview.where(shop_id: shop_ids)
-                                  .group(:shop_id)
-                                  .average(:rating)
-                                  .transform_values { |v| v.round(1) }
+    @review_averages = Comment.average_rating_for_shops(shop_ids)
 
     # おすすめ店舗 (県内TOP3)
     @recommendations = RecommendationService.top_for_prefecture(@prefecture, limit: 3)

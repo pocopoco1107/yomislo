@@ -43,9 +43,9 @@ RSpec.describe Vote, type: :model do
       expect(vote).not_to be_valid
     end
 
-    it "prevents votes older than yesterday" do
+    it "allows votes for past dates (no lower bound)" do
       vote = build(:vote, voted_on: Date.current - 2)
-      expect(vote).not_to be_valid
+      expect(vote).to be_valid
     end
 
     it "enforces one vote per voter_token per shop per machine per day" do
@@ -195,15 +195,14 @@ RSpec.describe Vote, type: :model do
       expect(vote.errors[:voted_on]).to include("は未来の日付にできません")
     end
 
-    it "rejects two days ago" do
+    it "allows two days ago" do
       vote = build(:vote, voted_on: Date.current - 2)
-      expect(vote).not_to be_valid
-      expect(vote.errors[:voted_on]).to include("は前日までしか記録できません")
+      expect(vote).to be_valid
     end
 
-    it "rejects a date far in the past" do
+    it "allows a date far in the past" do
       vote = build(:vote, voted_on: Date.new(2020, 1, 1))
-      expect(vote).not_to be_valid
+      expect(vote).to be_valid
     end
 
     it "rejects a date far in the future" do

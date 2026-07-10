@@ -86,94 +86,118 @@
         / <%= @shop.address %>
       <% end %>
     </p>
-    <div class="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-      <% if @shop.phone_number.present? %>
-        <a href="tel:<%= @shop.phone_number %>" class="hover:text-primary transition-colors inline-flex items-center gap-1 min-h-[44px]">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-          <%= @shop.phone_number %>
-        </a>
-      <% end %>
-      <% if @shop.access_info.present? %>
+    <% if @shop.access_info.present? %>
+      <div class="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-muted-foreground">
         <span class="inline-flex items-center gap-1">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           <%= @shop.access_info %>
         </span>
-      <% end %>
+      </div>
+    <% end %>
+
+    <%# === Shop Info（折りたたみ・来店前情報。店舗名の枠の中に内包） === %>
+    <details class="bg-card rounded-lg mt-3 border border-border/50 group">
+      <summary class="list-none cursor-pointer select-none px-4 py-3 flex items-center justify-between min-h-[44px] hover:bg-secondary/30 transition-colors rounded-lg">
+        <%= section_heading "店舗情報・設備" %>
+        <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </summary>
+      <div class="px-4 pb-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
+          <% if @shop.phone_number.present? %>
+            <div>
+              <span class="text-xs text-muted-foreground block">電話番号</span>
+              <a href="tel:<%= @shop.phone_number %>" class="font-medium text-foreground hover:text-primary transition-colors inline-flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                <%= @shop.phone_number %>
+              </a>
+            </div>
+          <% end %>
+          <div>
+            <span class="text-xs text-muted-foreground block">スロット台数</span>
+            <span class="font-medium text-foreground"><%= @shop.slot_machines || "未設定" %><%= "台" if @shop.slot_machines %></span>
+          </div>
+          <div>
+            <span class="text-xs text-muted-foreground block">総台数</span>
+            <span class="font-medium text-foreground"><%= @shop.total_machines || "未設定" %><%= "台" if @shop.total_machines %></span>
+          </div>
+          <div>
+            <span class="text-xs text-muted-foreground block">営業時間</span>
+            <span class="font-medium text-foreground"><%= @shop.business_hours || "未設定" %></span>
+          </div>
+          <% if @shop.parking_spaces.present? %>
+            <div>
+              <span class="text-xs text-muted-foreground block">駐車場</span>
+              <span class="font-medium text-foreground"><%= @shop.parking_spaces %>台</span>
+            </div>
+          <% end %>
+          <% if @shop.opened_on.present? %>
+            <div>
+              <span class="text-xs text-muted-foreground block">オープン日</span>
+              <span class="font-medium text-foreground"><%= @shop.opened_on.strftime("%Y年%m月%d日") %></span>
+            </div>
+          <% end %>
+          <% if @shop.entry_method.present? || @shop.morning_entry.present? %>
+            <div class="col-span-2 sm:col-span-3">
+              <span class="text-xs text-muted-foreground block">朝の入場</span>
+              <span class="font-medium text-primary">
+                <% case @shop.entry_method
+                   when "lottery" %>抽選<%
+                   when "queue" %>並び順<%
+                   when "other" %>その他<%
+                   end %>
+                <% if @shop.morning_entry.present? %>
+                  <span class="text-xs text-muted-foreground"><%= @shop.morning_entry %></span>
+                <% end %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+
+        <% facility_badges = shop_facility_badges(@shop) %>
+        <% if facility_badges.any? %>
+          <div class="mt-4 pt-3 border-t border-border/50">
+            <span class="text-xs text-muted-foreground block mb-2">設備・サービス</span>
+            <div class="flex flex-wrap gap-1.5">
+              <% facility_badges.each do |badge| %>
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium bg-secondary text-foreground border border-border/50">
+                  <%= badge %>
+                </span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <%# === 交換率（来店前情報・タップで報告） === %>
+        <%= render "shops/exchange_rate_section",
+            shop: @shop,
+            exchange_rate_summaries: @exchange_rate_summaries || {},
+            user_reports: @user_exchange_rate_reports || {} %>
+      </div>
+    </details>
+
+    <%# === イベント / クチコミ（主張弱めのモーダルトリガー。件数はここで確認できる） === %>
+    <% event_count = @upcoming_events.size + @past_events.size %>
+    <div class="grid grid-cols-2 max-[360px]:grid-cols-1 gap-2 mt-3">
+      <%= render "shared/modal",
+          id: "events",
+          title: "イベント・取材情報",
+          label: "イベント",
+          count: (event_count if event_count > 0),
+          icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+          body: render("shops/events_body", shop: @shop, upcoming_events: @upcoming_events, past_events: @past_events) %>
+
+      <%= render "shared/modal",
+          id: "kuchikomi",
+          title: "クチコミ",
+          label: "クチコミ",
+          count: (@comments.size if @comments.any?),
+          sublabel: (@average_rating.present? ? "★#{@average_rating}" : nil),
+          icon: "M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 20l1.3-3.9A7.96 7.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",
+          body: render("shops/comments_thread", shop: @shop, comments: @comments, commenter_profiles: @commenter_profiles) %>
     </div>
   </div>
 
   <%= render_promotion :shop_detail_top, variant: :banner %>
-
-  <%# === Shop Info（折りたたみ・来店前情報） === %>
-  <details class="bg-card rounded-lg mb-4 border-b border-border/50 group">
-    <summary class="list-none cursor-pointer select-none px-4 py-3 flex items-center justify-between min-h-[44px] hover:bg-secondary/30 transition-colors rounded-lg">
-      <%= section_heading "店舗情報・設備" %>
-      <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-    </summary>
-    <div class="px-4 pb-4">
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
-        <div>
-          <span class="text-xs text-muted-foreground block">スロット台数</span>
-          <span class="font-medium text-foreground"><%= @shop.slot_machines || "未設定" %><%= "台" if @shop.slot_machines %></span>
-        </div>
-        <div>
-          <span class="text-xs text-muted-foreground block">総台数</span>
-          <span class="font-medium text-foreground"><%= @shop.total_machines || "未設定" %><%= "台" if @shop.total_machines %></span>
-        </div>
-        <div>
-          <span class="text-xs text-muted-foreground block">営業時間</span>
-          <span class="font-medium text-foreground"><%= @shop.business_hours || "未設定" %></span>
-        </div>
-        <% if @shop.parking_spaces.present? %>
-          <div>
-            <span class="text-xs text-muted-foreground block">駐車場</span>
-            <span class="font-medium text-foreground"><%= @shop.parking_spaces %>台</span>
-          </div>
-        <% end %>
-        <% if @shop.opened_on.present? %>
-          <div>
-            <span class="text-xs text-muted-foreground block">オープン日</span>
-            <span class="font-medium text-foreground"><%= @shop.opened_on.strftime("%Y年%m月%d日") %></span>
-          </div>
-        <% end %>
-        <% if @shop.entry_method.present? || @shop.morning_entry.present? %>
-          <div class="col-span-2 sm:col-span-3">
-            <span class="text-xs text-muted-foreground block">朝の入場</span>
-            <span class="font-medium text-primary">
-              <% case @shop.entry_method
-                 when "lottery" %>抽選<%
-                 when "queue" %>並び順<%
-                 when "other" %>その他<%
-                 end %>
-              <% if @shop.morning_entry.present? %>
-                <span class="text-xs text-muted-foreground"><%= @shop.morning_entry %></span>
-              <% end %>
-            </span>
-          </div>
-        <% end %>
-      </div>
-
-      <% facility_badges = shop_facility_badges(@shop) %>
-      <% if facility_badges.any? %>
-        <div class="mt-4 pt-3 border-t border-border/50">
-          <span class="text-xs text-muted-foreground block mb-2">設備・サービス</span>
-          <div class="flex flex-wrap gap-1.5">
-            <% facility_badges.each do |badge| %>
-              <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium bg-secondary text-foreground border border-border/50">
-                <%= badge %>
-              </span>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-
-      <%# === 交換率（来店前情報・タップで報告） === %>
-      <%= render "shops/exchange_rate_section",
-          shop: @shop,
-          exchange_rate_summaries: @exchange_rate_summaries || {},
-          user_reports: @user_exchange_rate_reports || {} %>
-    </div>
-  </details>
 
   <%# ============================================================
       記録ブロック（最優先）— 記録対象日 → エラー → 絞り込み/記録グリッド
@@ -183,32 +207,69 @@
   <%
     rec_is_today     = @date == Date.current
     rec_is_yesterday = @date == Date.current - 1
-    rec_can_record   = @date >= Date.current - 1
     rec_wday         = %w[日 月 火 水 木 金 土][@date.wday]
   %>
-  <div class="sticky top-14 z-30 flex items-center justify-between gap-2 rounded-lg px-4 py-3 mb-3 border bg-primary border-primary shadow-md">
-    <div class="flex items-center gap-2 min-w-0">
-      <svg class="w-5 h-5 shrink-0 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-      <span class="font-bold tabular-nums text-primary-foreground text-lg"><%= @date.strftime("%-m月%-d日") %>(<%= rec_wday %>)</span>
-      <% if rec_is_today %>
-        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-foreground text-primary shrink-0">今日</span>
-      <% elsif rec_is_yesterday %>
-        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-foreground text-primary shrink-0">昨日</span>
-      <% else %>
-        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-foreground text-primary shrink-0">過去の記録</span>
-      <% end %>
-      <span class="text-xs shrink-0 text-primary-foreground/80">の記録</span>
+  <%# display:contents で sticky の包含ブロックを section のままにする（wrapで固定が効かなくなるのを防ぐ） %>
+  <div data-controller="modal" class="contents">
+    <div class="sticky top-14 z-30 flex items-center justify-between gap-2 rounded-lg px-4 py-3 mb-3 border bg-primary border-primary shadow-md">
+      <%# タップでカレンダーを開き、ほかの日付へ移動できる %>
+      <button type="button" data-action="click->modal#open" aria-haspopup="dialog"
+              class="flex items-center gap-2 min-w-0 flex-1 text-left rounded-md -mx-1 px-1 py-0.5 active:scale-[0.99] transition-transform">
+        <span class="font-bold tabular-nums text-primary-foreground text-lg truncate"><%= @date.strftime("%-m月%-d日") %>(<%= rec_wday %>)</span>
+        <% if rec_is_today %>
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-foreground text-primary shrink-0">今日</span>
+        <% elsif rec_is_yesterday %>
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-foreground text-primary shrink-0">昨日</span>
+        <% end %>
+        <%# ほかの日付へ切り替えられることを明示するアフォーダンス（アイコン→文字の順） %>
+        <span class="ml-auto inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full bg-primary-foreground/15 text-primary-foreground border border-primary-foreground/40 shrink-0">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          ほかの日付
+        </span>
+      </button>
     </div>
-    <% unless rec_is_today %>
-      <%= link_to shop_path(@shop), class: "inline-flex items-center gap-1 text-xs font-bold shrink-0 text-primary-foreground hover:underline" do %>
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-        今日に戻る
-      <% end %>
-    <% end %>
+
+    <%# === カレンダーモーダル（緑バーから開いて別の日付へ移動） === %>
+    <div data-modal-target="backdrop"
+         data-action="click->modal#backdropClose"
+         style="display: none"
+         class="fixed inset-0 bg-black/50 z-40 opacity-0 transition-opacity duration-300"></div>
+    <div data-modal-target="panel"
+         style="display: none"
+         role="dialog" aria-modal="true" aria-labelledby="modal-title-calendar" tabindex="-1"
+         class="fixed z-50 max-h-[85vh] flex flex-col bg-card
+                inset-x-0 bottom-0 rounded-t-2xl border-t border-border w-full
+                sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:right-auto sm:max-w-md sm:w-[calc(100%-2rem)]
+                sm:rounded-2xl sm:border sm:shadow-xl">
+      <div class="sm:hidden flex justify-center pt-2 pb-1">
+        <div class="w-10 h-1 bg-muted-foreground/30 rounded-full"></div>
+      </div>
+      <div class="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-card z-10 rounded-t-2xl">
+        <h2 id="modal-title-calendar" class="font-heading text-base text-foreground flex items-center gap-1.5">
+          <span class="text-[0.7em] text-primary" aria-hidden="true">▶</span>
+          日付を選ぶ
+        </h2>
+        <button type="button" data-action="click->modal#close"
+                class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-secondary transition-colors min-w-[44px] min-h-[44px]"
+                aria-label="閉じる">
+          <svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div class="px-4 py-4 overflow-y-auto overscroll-contain flex-1">
+        <% unless rec_is_today %>
+          <%= link_to shop_path(@shop), data: { turbo_frame: "_top" },
+              class: "flex items-center justify-center gap-1.5 mb-3 rounded-lg border border-primary/40 bg-primary/10 text-primary px-4 py-2.5 text-sm font-bold hover:bg-primary/15 active:scale-[0.98] transition-all min-h-[44px]" do %>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            今日に戻る
+          <% end %>
+        <% end %>
+        <turbo-frame id="shop_calendar">
+          <%= render "shops/calendar", shop: @shop, calendar_month: @calendar_month,
+                     calendar_data: @calendar_data, current_date: @date %>
+        </turbo-frame>
+      </div>
+    </div>
   </div>
-  <% unless rec_can_record %>
-    <p class="text-[11px] text-muted-foreground -mt-1.5 mb-3 px-1">※ 設定・リセットの記録は前日までです（収支は90日以内なら記録できます）。</p>
-  <% end %>
 
   <%# === Daily Summary（この日の記録一覧・日付直下で目立たせる） === %>
   <%= render "shops/daily_summary",
@@ -223,13 +284,14 @@
   <% if @machine_models.any? %>
     <%# === 設置機種の絞り込み + 記録グリッド === %>
     <div class="mb-6" data-controller="machine-filter">
-      <div class="flex items-center gap-2 flex-wrap">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         <input type="text" placeholder="設置機種を絞り込み"
                id="shop_machine_filter"
                data-machine-filter-target="input"
                data-action="input->machine-filter#filter"
                aria-label="機種名で絞り込み"
-               class="flex-1 min-w-[160px] border border-input bg-background text-foreground rounded-md px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground">
+               class="w-full min-h-[44px] border border-input bg-background text-foreground rounded-lg pl-10 pr-3 py-2 text-sm shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent placeholder:text-muted-foreground">
       </div>
 
       <div class="mt-3" data-machine-filter-target="list">
@@ -328,19 +390,8 @@
     </div>
   <% end %>
 
-  <%# === Monthly Calendar === %>
-  <div class="bg-card rounded-lg p-3 mb-4 border-b border-border/50">
-    <turbo-frame id="shop_calendar">
-      <%= render "shops/calendar", shop: @shop, calendar_month: @calendar_month,
-                 calendar_data: @calendar_data, current_date: @date %>
-    </turbo-frame>
-  </div>
-
-  <%# === Events === %>
-  <%= render "shops/events", shop: @shop, upcoming_events: @upcoming_events, past_events: @past_events %>
-
-  <%# === Comments === %>
-  <%= render "shops/comments", shop: @shop, comments: @comments, date: @date %>
+  <%# イベント・取材情報 / クチコミ（星付きコメント）は店舗名の枠内のモーダルへ移設。
+      カレンダーは緑の記録日バーから開くモーダルへ移設。 %>
 
   <%# === Trend Section (charts + weekly summary) === %>
   <% if @trend_data&.any? { |d| d[:votes] > 0 } || @weekly_summary&.dig(:total_votes).to_i > 0 %>
@@ -349,8 +400,5 @@
         trend_data: @trend_data || [],
         weekly_summary: @weekly_summary || {} %>
   <% end %>
-
-  <%# === Reviews === %>
-  <%= render "shops/reviews", shop: @shop, reviews: @reviews, average_rating: @average_rating, existing_review: @existing_review %>
 
 </section>

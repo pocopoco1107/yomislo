@@ -5,14 +5,16 @@
     trend_data - Array of trend hashes (7-day default)
     weekly_summary - Hash with weekly summary data
 %>
-<div class="mt-8">
-  <div class="bg-card border border-border rounded-lg p-4 mb-4">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
-        <span class="w-1 h-4 bg-chart-1 rounded-full"></span>
-        記録トレンド
-      </h2>
-
+<details id="shop_trend" class="bg-card border border-border rounded-lg mt-8 group" open>
+  <summary class="list-none cursor-pointer select-none p-4 flex items-center justify-between min-h-[44px] hover:bg-secondary/30 transition-colors rounded-lg">
+    <h2 class="font-heading text-sm text-foreground flex items-center gap-1.5">
+      <span class="text-[0.7em] text-primary" aria-hidden="true">▶</span>
+      記録トレンド
+    </h2>
+    <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+  </summary>
+  <div class="px-4 pb-4">
+    <div class="flex items-center justify-end mb-3">
       <%# Period tabs %>
       <div data-controller="trend-tab"
            data-trend-tab-url-value="<%= trend_data_shop_path(shop.slug) %>"
@@ -39,10 +41,12 @@
         trend_data: trend_data,
         period: "7",
         shop: shop %>
-  </div>
 
-  <%# === Weekly Summary === %>
-  <% if weekly_summary[:total_votes].to_i > 0 %>
-    <%= render "shops/weekly_summary", summary: weekly_summary %>
-  <% end %>
-</div>
+    <%# === Weekly Summary === %>
+    <% if weekly_summary[:total_votes].to_i > 0 %>
+      <div class="mt-4">
+        <%= render "shops/weekly_summary", summary: weekly_summary %>
+      </div>
+    <% end %>
+  </div>
+</details>

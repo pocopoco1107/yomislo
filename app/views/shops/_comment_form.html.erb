@@ -1,0 +1,40 @@
+<%#
+  クチコミ投稿フォーム（コメント＋任意の星評価）。
+  turbo_stream で再描画するため comment_form frame 内から単独 render できるよう分離。
+  locals: shop
+%>
+<div class="bg-secondary/40 border border-border rounded-lg p-3">
+  <%= form_with model: Comment.new, url: comments_path, data: { turbo: true } do |f| %>
+    <%= f.hidden_field :commentable_type, value: "Shop" %>
+    <%= f.hidden_field :commentable_id, value: shop.id %>
+
+    <%# 星評価（任意）%>
+    <div class="mb-2" data-controller="star-rating">
+      <label class="text-xs text-muted-foreground block mb-1">星評価（任意）</label>
+      <%= f.hidden_field :rating, data: { star_rating_target: "input" } %>
+      <div class="flex gap-1" data-action="mouseleave->star-rating#reset">
+        <% 5.times do |i| %>
+          <button type="button"
+                  data-star-rating-target="star"
+                  data-value="<%= i + 1 %>"
+                  data-action="click->star-rating#select mouseenter->star-rating#hover"
+                  class="text-2xl cursor-pointer hover:scale-110 transition-transform text-muted-foreground min-w-[44px] min-h-[44px] inline-flex items-center justify-center">
+            &#9734;
+          </button>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mb-2">
+      <%= f.text_field :commenter_name, placeholder: "名前（任意）", "aria-label": "投稿者名",
+          class: "w-full border border-input bg-background text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent placeholder:text-muted-foreground" %>
+    </div>
+    <div class="flex gap-2">
+      <%= f.text_area :body, placeholder: "この店どうだった？", rows: 2, "aria-label": "クチコミ本文",
+          class: "flex-1 border border-input bg-background text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none placeholder:text-muted-foreground" %>
+      <button type="submit" class="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors self-end min-h-[44px]">
+        投稿
+      </button>
+    </div>
+  <% end %>
+</div>

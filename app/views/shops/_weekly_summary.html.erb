@@ -4,33 +4,24 @@
     summary - Hash: { total_votes:, prev_week_votes:, vote_change:, top_reset_machines:, top_setting_machines: }
 %>
 <div class="bg-card border border-border rounded-lg p-4">
-  <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-    <span class="w-1 h-4 bg-chart-3 rounded-full"></span>
+  <h2 class="font-heading text-sm text-foreground mb-3 flex items-center gap-1.5">
+    <span class="text-[0.7em] text-primary" aria-hidden="true">▶</span>
     今週のまとめ
   </h2>
 
-  <%# Total votes + week-over-week change %>
-  <div class="flex items-center gap-4 mb-4">
-    <div>
-      <span class="text-xs text-muted-foreground block">今週の総記録数</span>
-      <span class="text-2xl font-bold text-foreground tabular-nums"><%= summary[:total_votes] %></span>
-      <span class="text-xs text-muted-foreground">件</span>
-    </div>
+  <%# Total votes + week-over-week change（記録数は主役ではないので控えめに1行で） %>
+  <p class="text-xs text-muted-foreground mb-4">
+    今週の記録 <span class="font-semibold text-foreground tabular-nums"><%= summary[:total_votes] %></span> 件
     <% if summary[:prev_week_votes] > 0 || summary[:vote_change] != 0 %>
-      <div class="flex items-center gap-1">
-        <% if summary[:vote_change] > 0 %>
-          <svg class="w-4 h-4 text-vote-yes" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-          <span class="text-sm font-semibold text-vote-yes tabular-nums">+<%= summary[:vote_change] %></span>
-        <% elsif summary[:vote_change] < 0 %>
-          <svg class="w-4 h-4 text-vote-no" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-          <span class="text-sm font-semibold text-vote-no tabular-nums"><%= summary[:vote_change] %></span>
-        <% else %>
-          <span class="text-sm text-muted-foreground">+-0</span>
-        <% end %>
-        <span class="text-[10px] text-muted-foreground">前週比</span>
-      </div>
+      <% if summary[:vote_change] > 0 %>
+        <span class="text-vote-yes tabular-nums">（前週比 +<%= summary[:vote_change] %>）</span>
+      <% elsif summary[:vote_change] < 0 %>
+        <span class="text-vote-no tabular-nums">（前週比 <%= summary[:vote_change] %>）</span>
+      <% else %>
+        <span class="tabular-nums">（前週比 ±0）</span>
+      <% end %>
     <% end %>
-  </div>
+  </p>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <%# Top Reset Rate Machines %>

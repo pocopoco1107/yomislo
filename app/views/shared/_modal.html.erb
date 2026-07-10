@@ -1,0 +1,76 @@
+<%#
+  汎用モーダル (トリガーボタン + ボトムシート/中央ダイアログ)
+  locals:
+    id        - 一意なキー (aria/ID 用)
+    title     - モーダル見出し
+    label     - トリガーの主ラベル
+    count     - トリガー右に出す件数バッジ (任意)
+    sublabel  - トリガー右の補足 (例: ★4.2、任意)
+    icon      - トリガー左の SVG path の d 属性 (任意)
+    body      - モーダル本文 (html_safe な描画済み文字列)
+    panel_class - パネル追加クラス (任意)
+%>
+<div data-controller="modal" class="flex-1">
+  <button type="button"
+          data-action="click->modal#open"
+          class="w-full inline-flex items-center justify-between gap-1 rounded-md border border-border/50 bg-secondary/30 px-2 py-1.5 min-h-[44px] hover:bg-secondary/60 active:scale-[0.98] transition-all"
+          aria-haspopup="dialog">
+    <span class="inline-flex items-center gap-1 font-heading text-xs text-muted-foreground whitespace-nowrap">
+      <% if local_assigns[:icon].present? %>
+        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<%= icon %>"/></svg>
+      <% end %>
+      <%= label %>
+    </span>
+    <span class="inline-flex items-center gap-1 shrink-0">
+      <% if local_assigns[:sublabel].present? %>
+        <span class="text-[11px] text-slot-yellow font-bold tabular-nums"><%= sublabel %></span>
+      <% end %>
+      <% if local_assigns[:count].present? %>
+        <span class="text-[11px] font-bold tabular-nums px-1.5 py-0.5 rounded-full bg-primary/15 text-primary"><%= count %></span>
+      <% else %>
+        <svg class="w-3.5 h-3.5 text-muted-foreground shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <% end %>
+    </span>
+  </button>
+
+  <%# Backdrop %>
+  <div data-modal-target="backdrop"
+       data-action="click->modal#backdropClose"
+       style="display: none"
+       class="fixed inset-0 bg-black/50 z-40 opacity-0 transition-opacity duration-300"></div>
+
+  <%# Panel %>
+  <div data-modal-target="panel"
+       style="display: none"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="modal-title-<%= id %>"
+       tabindex="-1"
+       class="fixed z-50 max-h-[85vh] sm:max-h-[85vh] flex flex-col bg-card
+              inset-x-0 bottom-0 rounded-t-2xl border-t border-border w-full
+              sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:right-auto sm:max-w-lg sm:w-[calc(100%-2rem)]
+              sm:rounded-2xl sm:border sm:shadow-xl <%= local_assigns[:panel_class] %>">
+    <%# Handle bar (mobile) %>
+    <div class="sm:hidden flex justify-center pt-2 pb-1">
+      <div class="w-10 h-1 bg-muted-foreground/30 rounded-full"></div>
+    </div>
+
+    <%# Header %>
+    <div class="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-card z-10 rounded-t-2xl">
+      <h2 id="modal-title-<%= id %>" class="font-heading text-base text-foreground flex items-center gap-1.5">
+        <span class="text-[0.7em] text-primary" aria-hidden="true">▶</span>
+        <%= title %>
+      </h2>
+      <button type="button" data-action="click->modal#close"
+              class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-secondary transition-colors min-w-[44px] min-h-[44px]"
+              aria-label="閉じる">
+        <svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <%# Body %>
+    <div class="px-4 py-4 overflow-y-auto overscroll-contain flex-1">
+      <%= body %>
+    </div>
+  </div>
+</div>

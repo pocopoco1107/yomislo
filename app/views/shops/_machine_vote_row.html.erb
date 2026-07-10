@@ -52,9 +52,9 @@
       (vote_summary ? vote_summary.reset_yes_count + vote_summary.reset_no_count : 0)
 
     # 記録可否（モデルのバリデーションと一致させる）
-    # 設定・リセット記録: 前日まで (Vote#voted_on_not_too_old) / 収支: 90日以内 (PlayRecord#played_on_within_range)
-    can_record      = date >= Date.current - 1
-    can_play_record = date <= Date.current && date >= 90.days.ago.to_date
+    # 過去日はすべて記録可。未来日のみ不可 (Vote#voted_on_not_future / PlayRecord#played_on_within_range)
+    can_record      = date <= Date.current
+    can_play_record = date <= Date.current
 
     # 集計表示データ（過去日でも結果サマリは表示する）
     reset_has_data = vote_summary && (vote_summary.reset_yes_count + vote_summary.reset_no_count) > 0
@@ -110,9 +110,6 @@
             class: "text-[10px] text-primary hover:underline",
             data: { turbo_frame: "_top" } do %>
           機種ページへ →
-        <% end %>
-        <% unless can_record %>
-          <span class="text-[10px] text-muted-foreground shrink-0">設定・リセットの記録は前日まで</span>
         <% end %>
       </div>
 

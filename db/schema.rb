@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_094306) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_10_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -34,6 +34,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_094306) do
     t.string "commentable_type", null: false
     t.string "commenter_name", default: "名無し"
     t.datetime "created_at", null: false
+    t.integer "rating"
     t.date "target_date"
     t.datetime "updated_at", null: false
     t.bigint "user_id"

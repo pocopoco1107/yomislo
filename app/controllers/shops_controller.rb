@@ -165,7 +165,12 @@ class ShopsController < ApplicationController
     models_by_id = @machine_models.index_by(&:id)
     @machine_names = models_by_id.transform_values(&:name)
     @machine_slugs = models_by_id.transform_values(&:slug)
-    @comments = @shop.comments.for_date(@date).includes(:user).recent.limit(50)
+    # クチコミ（コメント＋任意の星）は日付に紐付けず店舗単位でまとめて表示
+    @comments = @shop.comments.recent.limit(50)
+    # VoterProfile は voter_token 紐づけ（association ではない）ため一括ロードして N+1 を回避
+    @commenter_profiles = VoterProfile.where(voter_token: @comments.map(&:voter_token).compact.uniq)
+                                       .index_by(&:voter_token)
+    @average_rating = @shop.comments.where.not(rating: nil).average(:rating)&.round(1)
 
     # Exchange rate data
     @exchange_rate_summaries = ExchangeRateSummary.where(shop_id: @shop.id).index_by(&:denomination)
@@ -182,11 +187,6 @@ class ShopsController < ApplicationController
     # 7-day trend data + weekly summary
     @trend_data = build_trend_data(@shop.vote_summaries)
     @weekly_summary = build_weekly_summary(@shop)
-
-    # Reviews
-    @reviews = @shop.shop_reviews.recent
-    @average_rating = ShopReview.average_rating_for(@shop.id)
-    @existing_review = @shop.shop_reviews.find_by(voter_token: voter_token)
   end
 
   def build_calendar_data(shop, month)

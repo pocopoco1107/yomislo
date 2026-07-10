@@ -6,11 +6,11 @@
 %>
 
 <div id="daily-summary" class="bg-card border border-border rounded-lg p-4 mb-4 scroll-mt-4">
-  <h2 class="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-    <span class="w-1 h-4 bg-primary rounded-full"></span>
-    <%= date.strftime("%-m/%-d") %>(<%= %w[日 月 火 水 木 金 土][date.wday] %>) の記録
+  <h2 class="font-heading text-sm text-foreground mb-3 flex items-center gap-1.5">
+    <span class="text-[0.7em] text-primary" aria-hidden="true">▶</span>
+    履歴
     <% if recorded.any? %>
-      <span class="text-xs font-normal text-muted-foreground"><%= recorded.size %>機種</span>
+      <span class="font-sans text-xs font-normal text-muted-foreground"><%= recorded.size %>機種</span>
     <% end %>
   </h2>
 

@@ -54,24 +54,18 @@ RSpec.describe PlayRecord, type: :model do
         expect(record.errors[:played_on]).to include("は未来の日付にできません")
       end
 
-      it "rejects dates older than 90 days" do
+      it "accepts dates older than 90 days (no lower bound)" do
         record = build(:play_record, played_on: 91.days.ago.to_date)
-        expect(record).not_to be_valid
-        expect(record.errors[:played_on]).to include("は過去90日以内のみ記録できます")
+        expect(record).to be_valid
       end
 
-      it "accepts exactly 90 days ago" do
-        record = build(:play_record, played_on: 90.days.ago.to_date)
+      it "accepts a date far in the past" do
+        record = build(:play_record, played_on: Date.new(2020, 1, 1))
         expect(record).to be_valid
       end
 
       it "accepts today" do
         record = build(:play_record, played_on: Date.current)
-        expect(record).to be_valid
-      end
-
-      it "accepts 89 days ago" do
-        record = build(:play_record, played_on: 89.days.ago.to_date)
         expect(record).to be_valid
       end
     end

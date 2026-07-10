@@ -6,8 +6,11 @@
   %>
   <div class="mt-4 pt-3 border-t border-border/50">
     <div class="flex items-center gap-1.5 mb-2">
-      <span class="text-xs text-muted-foreground">交換率</span>
-      <span class="text-[10px] font-normal text-muted-foreground">タップで報告</span>
+      <span class="font-heading text-sm text-foreground flex items-center gap-1.5">
+        <span class="text-[0.7em] text-primary" aria-hidden="true">▶</span>
+        交換率
+      </span>
+      <span class="text-xs font-medium text-primary">タップで報告</span>
     </div>
 
     <%
@@ -55,43 +58,44 @@
                 custom_value = error_rate_key
               end
             %>
-            <%= form_with url: exchange_rate_reports_path, scope: :exchange_rate_report, class: "flex items-center", data: { turbo: true } do |f| %>
+            <%= form_with url: exchange_rate_reports_path, scope: :exchange_rate_report, class: "flex items-center gap-1.5", data: { turbo: true } do |f| %>
               <%= f.hidden_field :shop_id, value: shop.id %>
               <%= f.hidden_field :denomination, value: denom[:key] %>
-              <div class="flex items-center rounded-lg overflow-hidden <%= is_custom ? 'ring-2 ring-primary/40' : '' %>">
+              <div class="flex items-center rounded-lg overflow-hidden border border-border/50 <%= is_custom ? 'ring-2 ring-primary/40' : '' %>">
                 <%= f.number_field :rate_key,
                     value: custom_value,
                     placeholder: denom[:placeholder],
                     step: denom[:step],
                     min: denom[:min],
                     max: denom[:max],
-                    class: "w-20 px-2 py-2 text-xs bg-muted/50 text-foreground border-0 focus:outline-none focus:ring-0 min-h-[44px] text-center #{is_custom ? 'bg-primary/10 font-bold' : ''}",
-                    "aria-label": "交換率を入力" %>
-                <%= f.submit denom[:unit],
-                    class: "bg-muted/50 text-muted-foreground hover:bg-muted px-2 py-2 text-xs font-bold min-h-[44px] cursor-pointer border-l border-border/50 whitespace-nowrap #{is_custom ? 'bg-primary text-primary-foreground' : ''}" %>
+                    required: true,
+                    class: "w-16 px-2 py-2 text-xs bg-muted/50 text-foreground border-0 focus:outline-none focus:ring-0 min-h-[44px] text-center #{is_custom ? 'bg-primary/10 font-bold' : ''}",
+                    "aria-label": "交換率を入力（例: #{denom[:placeholder].sub('例: ', '')}）" %>
+                <span class="px-2 py-2 text-xs text-muted-foreground bg-muted/50 border-l border-border/50 whitespace-nowrap"><%= denom[:unit] %></span>
               </div>
+              <%= f.submit(is_custom ? "更新" : "報告",
+                  class: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-3 py-2 text-xs font-bold active:scale-95 transition-all duration-150 min-h-[44px] cursor-pointer whitespace-nowrap") %>
             <% end %>
           </div>
 
-          <%# コンセンサス結果 %>
+          <%# 報告された交換率の内訳（実際の値を見せる） %>
           <div class="mt-1.5">
             <% if summary && summary.total_reports > 0 %>
-              <% if summary.consensus_rate.present? %>
-                <span class="text-[10px] text-muted-foreground">
-                  <span class="font-bold text-foreground"><%= summary.consensus_label %></span>
-                  (<%= summary.total_reports %>人が報告)
-                </span>
-              <% elsif summary.total_reports == 1 %>
-                <span class="text-[10px] text-muted-foreground">
-                  <%= summary.total_reports %>人が報告
-                </span>
-              <% else %>
-                <span class="text-[10px] text-muted-foreground">
-                  <%= summary.total_reports %>人が報告（意見が分かれています）
-                </span>
+              <% distribution = (summary.rate_distribution || {}).sort_by { |_, c| -c.to_i } %>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <% distribution.each do |rate_key, count| %>
+                  <% is_consensus = summary.consensus_rate.present? && rate_key == summary.consensus_rate %>
+                  <span class="inline-flex items-center gap-1 text-xs rounded-md px-1.5 py-0.5 <%= is_consensus ? 'bg-primary/15 text-primary font-bold' : 'bg-muted/60 text-muted-foreground' %>">
+                    <%= ExchangeRateSummary.rate_label(rate_key, denom[:key]) %>
+                    <span class="tabular-nums"><%= count %>人</span>
+                  </span>
+                <% end %>
+              </div>
+              <% if summary.consensus_rate.blank? && summary.total_reports >= 2 %>
+                <p class="text-xs text-muted-foreground mt-1">まだ意見が分かれています</p>
               <% end %>
             <% else %>
-              <span class="text-[10px] text-muted-foreground">まだ報告がありません</span>
+              <span class="text-xs text-muted-foreground">まだ報告がありません</span>
             <% end %>
           </div>
         </div>

@@ -11,7 +11,6 @@ class Vote < ApplicationRecord
   validates :reset_vote, inclusion: { in: [ 0, 1 ], allow_nil: true }
   validates :setting_vote, inclusion: { in: 1..6, allow_nil: true }
   validate :voted_on_not_future
-  validate :voted_on_not_too_old
   validate :confirmed_setting_tags_valid
 
   attr_reader :cached_vote_summary
@@ -25,12 +24,6 @@ class Vote < ApplicationRecord
   def voted_on_not_future
     if voted_on.present? && voted_on > Date.current
       errors.add(:voted_on, "は未来の日付にできません")
-    end
-  end
-
-  def voted_on_not_too_old
-    if voted_on.present? && voted_on < Date.current - 1
-      errors.add(:voted_on, "は前日までしか記録できません")
     end
   end
 

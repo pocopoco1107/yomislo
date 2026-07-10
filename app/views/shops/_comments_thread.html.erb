@@ -1,0 +1,21 @@
+<%#
+  クチコミ（コメント＋任意の星評価）の本文。モーダル内で使用。
+  日付には紐付けず店舗単位で表示する。
+  locals: shop, comments, commenter_profiles (任意: voter_token => VoterProfile)
+%>
+<% commenter_profiles = local_assigns[:commenter_profiles] || {} %>
+<%# === 投稿フォーム === %>
+<turbo-frame id="comment_form">
+  <%= render "shops/comment_form", shop: shop %>
+</turbo-frame>
+
+<%# === クチコミ一覧 === %>
+<div id="comments_list" class="space-y-2 mt-4">
+  <% if comments.any? %>
+    <% comments.each do |comment| %>
+      <%= render "shops/comment", comment: comment, commenter_profiles: commenter_profiles %>
+    <% end %>
+  <% else %>
+    <p class="text-sm text-muted-foreground text-center py-4" id="no_comments">まだクチコミはありません。最初のひと言をどうぞ。</p>
+  <% end %>
+</div>

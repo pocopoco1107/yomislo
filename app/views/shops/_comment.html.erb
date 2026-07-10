@@ -1,14 +1,18 @@
 <div class="bg-card border border-border rounded-lg p-3" id="<%= dom_id(comment) %>">
   <div class="flex items-center justify-between mb-1">
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
       <span class="text-sm font-medium text-foreground"><%= comment.display_name %></span>
+      <% if comment.rating.present? %>
+        <span class="text-yellow-400 text-sm" aria-label="星<%= comment.rating %>"><%= render_stars(comment.rating) %></span>
+      <% end %>
       <% if comment.voter_token.present? %>
-        <% commenter_profile = VoterProfile.find_by(voter_token: comment.voter_token) %>
+        <%# 一覧描画時は commenter_profiles(index_by) から引いて N+1 を避ける。単発 render 時は find_by にフォールバック %>
+        <% commenter_profile = local_assigns.key?(:commenter_profiles) ? commenter_profiles[comment.voter_token] : VoterProfile.find_by(voter_token: comment.voter_token) %>
         <% if commenter_profile && commenter_profile.rank_title != "見習い" %>
           <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slot-yellow/10 text-slot-yellow"><%= commenter_profile.rank_title %></span>
         <% end %>
       <% end %>
-      <span class="text-xs text-muted-foreground"><%= comment.created_at.strftime("%-H:%M") %></span>
+      <span class="text-xs text-muted-foreground tabular-nums"><%= comment.created_at.strftime("%-m/%-d %-H:%M") %></span>
     </div>
     <div id="report_flash_Comment_<%= comment.id %>">
       <%= button_to reports_path, params: { report: { reportable_type: "Comment", reportable_id: comment.id, reason: "inappropriate" } },

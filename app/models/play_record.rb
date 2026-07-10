@@ -52,8 +52,6 @@ class PlayRecord < ApplicationRecord
     return if played_on.blank?
     if played_on > Date.current
       errors.add(:played_on, "は未来の日付にできません")
-    elsif played_on < 90.days.ago.to_date
-      errors.add(:played_on, "は過去90日以内のみ記録できます")
     end
   end
 

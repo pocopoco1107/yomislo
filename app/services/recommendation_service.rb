@@ -139,15 +139,8 @@ class RecommendationService
   end
 
   def fetch_review_stats(shop_ids)
-    return {} unless defined?(ShopReview)
-
-    ShopReview
-      .where(shop_id: shop_ids)
-      .group(:shop_id)
-      .pluck(Arel.sql("shop_id"), Arel.sql("AVG(rating)"))
-      .each_with_object({}) do |(shop_id, avg), hash|
-        hash[shop_id] = avg&.to_f&.round(1)
-      end
+    # クチコミ（コメント＋任意の星）の平均評価。星付きコメントのみ対象。
+    Comment.average_rating_for_shops(shop_ids)
   rescue StandardError
     {}
   end
