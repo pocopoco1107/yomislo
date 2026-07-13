@@ -34,7 +34,7 @@ cd /Users/kasedashouta/develop/yomislo && .claude/skills/before-deploy-render/ch
 | 1 | render.yaml | YAML構文・cronジョブ数・cron buildが軽量か・Day1衝突回避 |
 | 2 | マイグレーション | `db:migrate:status` で未適用がないか・新規マイグレ未コミット |
 | 3 | bin/render-build.sh | errexit / bundle install / assets:precompile / db:migrate / yarn build |
-| 4 | Solid Queue/Cache/Cable | Gemfile で無効・コード参照が無いか（Render Starter 512MB方針） |
+| 4 | Solid Queue/Cache/Cable | solid_cache は有効 (primary DB backed で :solid_cache_store)。solid_queue/cable は無効。SolidQueue コード参照が無いか |
 | 5 | ENV vars | RAILS_MASTER_KEY / ADMIN_EMAIL / ADMIN_PASSWORD が render.yaml で宣言済 + config/master.key 存在 |
 | 6 | Brakeman | Security Warnings = 0 |
 | 7 | RSpec | 前回実行ログ（tmp/rspec_status.txt）の参照 |
@@ -76,7 +76,8 @@ cron サービスの `buildCommand` で `db:migrate` を呼ぶと、web の buil
 |-----------|------|
 | YAML 構文エラー | render.yaml の indent / アンカー記法を確認 |
 | 未コミット新規マイグレ | `git add db/migrate/* && git commit` |
-| solid_queue 有効 | Gemfile でコメントアウト |
+| solid_queue / solid_cable 有効 | Gemfile でコメントアウト |
+| solid_cache が別DB (database: cache) | config/cache.yml の `database: cache` 行を削除し primary DB を使う |
 | ENV 宣言なし | render.yaml に `key: XXX` を追加し、Render dashboardで値設定 |
 | Brakeman warnings | `bin/brakeman --no-pager` で詳細確認 |
 | Day1 衝突 | DailyMachineRefreshJob に `return if Date.current.day == 1` |

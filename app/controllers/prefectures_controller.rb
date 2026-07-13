@@ -2,12 +2,14 @@ class PrefecturesController < ApplicationController
   def show
     @prefecture = Prefecture.find_by!(slug: params[:slug])
 
-    # Single query: load all shops with columns needed for stats + display
+    # Single query: load all shops with ONLY the columns the stats loop and the
+    # view actually reference. Trimming unused columns (slot_machines,
+    # total_machines, phone_number, features, prefecture_id) shrinks each AR
+    # object — meaningful when a large prefecture loads hundreds of rows per
+    # request under crawler traffic.
     all_shops = @prefecture.shops.listed
                   .select(:id, :name, :slug, :address,
-                          :business_hours, :parking_spaces, :morning_entry,
-                          :prefecture_id, :slot_machines, :total_machines, :phone_number,
-                          :features)
+                          :business_hours, :parking_spaces, :morning_entry)
                   .order(:address, :name)
                   .to_a
 

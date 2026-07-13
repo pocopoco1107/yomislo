@@ -80,15 +80,34 @@ else
   grep -q 'yarn build:css:admin' bin/render-build.sh && ok "ActiveAdmin Tailwind ビルドあり" || warn "yarn build:css:admin が無い"
 fi
 
-# --- 4. Solid Queue/Cache/Cable 未使用の確認 ---
-section "4. Solid Queue/Cache/Cable (Render Starter 512MBで使わない方針)"
-for gem in solid_queue solid_cache solid_cable; do
+# --- 4. Solid Queue/Cache/Cable の方針確認 ---
+# solid_cache は 512MB Web のメモリを空けるため primary DB backed で採用済み。
+# solid_queue / solid_cable は引き続き未使用 (:async ジョブ運用)。
+section "4. Solid Queue/Cache/Cable"
+for gem in solid_queue solid_cable; do
   if grep -qE "^\s*gem [\"']${gem}[\"']" Gemfile 2>/dev/null; then
     fail "$gem が有効化されている (コメントアウト必須)"
   else
     ok "$gem 無効"
   fi
 done
+
+# solid_cache は「有効化 + :solid_cache_store + primary DB」であることを確認
+if grep -qE "^\s*gem [\"']solid_cache[\"']" Gemfile 2>/dev/null; then
+  ok "solid_cache 有効 (キャッシュをプロセス外へ退避)"
+  if grep -qE "cache_store\s*=\s*:solid_cache_store" config/environments/production.rb 2>/dev/null; then
+    ok "production.rb は :solid_cache_store"
+  else
+    fail "solid_cache gem はあるが production.rb が :solid_cache_store でない"
+  fi
+  if grep -qE "^\s*database:\s*cache" config/cache.yml 2>/dev/null; then
+    fail "config/cache.yml が別DB (database: cache) 指定。512MB構成では primary DB を使う (database: 行を削除)"
+  else
+    ok "config/cache.yml は primary DB 利用 (別 cache DB 未指定)"
+  fi
+else
+  warn "solid_cache 無効 (:memory_store 運用。Web がプロセス内キャッシュでメモリを消費)"
+fi
 
 # Solid Queue の参照が app/ にないか
 if grep -rE "SolidQueue::|Solid::Queue" app/ config/ 2>/dev/null | grep -v "^Binary" | grep -v 'queue_schema.rb' >/dev/null; then

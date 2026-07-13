@@ -2,7 +2,7 @@ default: &default
   store_options:
     # Cap age of oldest cache entry to fulfill retention policies
     # max_age: <%= 60.days.to_i %>
-    max_size: <%= 256.megabytes %>
+    max_size: <%= 128.megabytes %>
     namespace: <%= Rails.env %>
 
 development:
@@ -11,6 +11,8 @@ development:
 test:
   <<: *default
 
+# No `database:` key → Solid Cache uses the primary Postgres connection.
+# The 512MB Render Starter instance has no room for a dedicated cache DB, and
+# the primary DB (Postgres Basic) easily absorbs the small working set.
 production:
-  database: cache
   <<: *default

@@ -30,6 +30,11 @@ services:
       # Starter plan has 512MB RAM — run Puma in single mode (threads only).
       - key: WEB_CONCURRENCY
         value: "0"
+      # Cap glibc malloc arenas (default is 8 × CPU cores). Multi-threaded
+      # Ruby fragments RSS across arenas; limiting to 2 curbs memory growth
+      # and prevents OOM restarts on the 512MB instance.
+      - key: MALLOC_ARENA_MAX
+        value: "2"
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD

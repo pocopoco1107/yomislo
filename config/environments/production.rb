@@ -56,9 +56,9 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Use memory store for caching (single-dyno setup on Render free tier).
-  # Upgrade to :solid_cache_store with dedicated DB when scaling.
-  config.cache_store = :memory_store, { size: 64.megabytes }
+  # DB-backed cache (Solid Cache, primary Postgres). Keeps the cache out of the
+  # Puma process so it doesn't consume the 512MB web instance's memory budget.
+  config.cache_store = :solid_cache_store
 
   # Use async adapter for background jobs (single-dyno, no separate worker).
   # Upgrade to :solid_queue with dedicated DB when scaling.

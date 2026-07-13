@@ -31,7 +31,11 @@ class HomeController < ApplicationController
                   twitter: { card: "summary" }
 
     # AI おすすめ店舗 (全国TOP5)
-    @recommendations = RecommendationService.top_nationwide(limit: 5)
+    # 全店舗 ID のスキャン + 集計を含むため、他の統計と同様にキャッシュして
+    # 毎リクエストでのフルロードを避ける
+    @recommendations = Rails.cache.fetch("home/recommendations", expires_in: 30.minutes) do
+      RecommendationService.top_nationwide(limit: 5)
+    end
 
     # Play records count for pillar card
     @play_records_count = Rails.cache.fetch("home/play_records_count", expires_in: 10.minutes) { PlayRecord.count }

@@ -23,10 +23,12 @@ gem "tailwindcss-rails"
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Database-backed adapters — not used on Render Starter plan (512MB).
-# Using :memory_store for cache and :async for jobs instead.
+# DB-backed cache (primary Postgres). Moves the cache out of the Puma
+# process to free the 512MB web instance from the in-process :memory_store.
+gem "solid_cache"
+
+# Not used on Render Starter plan (512MB). Using :async for jobs instead.
 # Uncomment when scaling to a larger plan with dedicated Redis/DB.
-# gem "solid_cache"
 # gem "solid_queue"
 # gem "solid_cable"
 
