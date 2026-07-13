@@ -64,6 +64,10 @@ services:
         value: production
       - key: RAILS_LOG_TO_STDOUT
         value: "1"
+      # Cap glibc malloc arenas on the batch jobs too — the ~5h scraping runs
+      # (Nokogiri parsing per page) accumulate RSS on the same 512MB instance.
+      - key: MALLOC_ARENA_MAX
+        value: "2"
       - key: SENTRY_DSN
         sync: false
 
