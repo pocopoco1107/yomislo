@@ -17,6 +17,10 @@ class Shop < ApplicationRecord
   scope :listed, -> { where(ptown_delisted_at: nil) }
   scope :delisted, -> { where.not(ptown_delisted_at: nil) }
 
+  # 記録カレンダー・日付ページで遡れる下限。運用開始前の日付は記録が存在せず、
+  # 際限なく過去へたどれるとクローラの無限クロール空間になるため範囲外として扱う。
+  EARLIEST_RECORD_DATE = Date.new(2026, 1, 1)
+
   include PgSearch::Model
   pg_search_scope :search_by_name, against: :name, using: { tsearch: { prefix: true } }
 

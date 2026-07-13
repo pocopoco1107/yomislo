@@ -8,12 +8,17 @@ class ShopsController < ApplicationController
   end
 
   def show_date
-    @shop = Shop.includes(:prefecture).find_by!(slug: params[:slug])
-    begin
-      @date = Date.parse(params[:date])
+    @date = begin
+      Date.parse(params[:date])
     rescue Date::Error
-      redirect_to shop_path(@shop), alert: "無効な日付です" and return
+      nil
     end
+    # 運用開始前・未来の日付は記録が存在しない。重い load_shop_data を実行せず
+    # 404 を返し、無限に増える過去日付URLへのクロール負荷を遮断する。
+    if @date.nil? || @date < Shop::EARLIEST_RECORD_DATE || @date > Date.current
+      raise ActiveRecord::RecordNotFound
+    end
+    @shop = Shop.includes(:prefecture).find_by!(slug: params[:slug])
     load_shop_data
     render :show
   end

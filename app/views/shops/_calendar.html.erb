@@ -7,14 +7,21 @@
   prev_month = calendar_month - 1.month
   next_month = calendar_month + 1.month
   today = Date.current
+  min_month = Shop::EARLIEST_RECORD_DATE.beginning_of_month
 %>
 
 <%# Month Navigation %>
 <div class="flex items-center justify-center gap-4 mb-3">
-  <%= link_to calendar_shop_path(shop.slug, month: prev_month.strftime("%Y-%m")),
-      data: { turbo_frame: "shop_calendar" },
-      class: "inline-flex items-center justify-center border border-border bg-background rounded-md w-10 h-10 text-foreground hover:bg-secondary active:scale-95 transition-all duration-150" do %>
-    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+  <% if prev_month.beginning_of_month >= min_month %>
+    <%= link_to calendar_shop_path(shop.slug, month: prev_month.strftime("%Y-%m")),
+        data: { turbo_frame: "shop_calendar" },
+        class: "inline-flex items-center justify-center border border-border bg-background rounded-md w-10 h-10 text-foreground hover:bg-secondary active:scale-95 transition-all duration-150" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    <% end %>
+  <% else %>
+    <span class="inline-flex items-center justify-center border border-border bg-background rounded-md w-10 h-10 text-muted-foreground opacity-40">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </span>
   <% end %>
   <span class="font-bold text-foreground text-base tabular-nums">
     <%= calendar_month.strftime("%Y年%-m月") %>

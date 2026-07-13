@@ -110,6 +110,16 @@ RSpec.describe "Shops", type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
+    it "returns 404 for a date before the site launch (blocks infinite crawl space)" do
+      get date_shop_path(shop.slug, date: "1962-12-02")
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns 404 for a future date" do
+      get date_shop_path(shop.slug, date: Date.tomorrow.strftime("%Y-%m-%d"))
+      expect(response).to have_http_status(:not_found)
+    end
+
     it "sets noindex when the past date has no votes" do
       get date_shop_path(shop.slug, date: Date.yesterday.strftime("%Y-%m-%d"))
       expect(response.body).to include('name="robots" content="noindex"')

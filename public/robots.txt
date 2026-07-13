@@ -5,5 +5,7 @@ Disallow: /admin_auth
 Disallow: /voter/
 Disallow: /feedbacks/
 Disallow: /shop_requests/
+Disallow: /shops/*/dates/
+Disallow: /shops/*/calendar
 
 Sitemap: https://yomislo.com/sitemap.xml.gz
