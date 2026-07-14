@@ -17,7 +17,10 @@ Rails.application.routes.draw do
     member do
       get "dates/:date", action: :show_date, as: :date, constraints: { date: /\d{4}-\d{2}-\d{2}/ }
       get :trend_data
+      get :trend_section
       get :calendar
+      get :events_body
+      get :comments_body
     end
     resources :shop_reviews, only: [ :create ], path: "reviews"
     resources :shop_events, only: [ :create ], path: "events"

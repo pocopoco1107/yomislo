@@ -29,6 +29,15 @@ export default class extends Controller {
     backdrop.style.display = "block"
     panel.style.display = "flex"
 
+    // パネル内の lazy turbo-frame を開いたタイミングでロードする。
+    // display:none 中は IntersectionObserver が発火せず loading=lazy が読み込まれないため、
+    // 可視化と同時に eager 化して取得をトリガーする。
+    // (未フェッチでも frame.complete が true を返すため complete では分岐せず、
+    //  loading=lazy の frame をそのまま eager 化する。ロード済みなら再取得は起きない)
+    panel.querySelectorAll('turbo-frame[loading="lazy"]').forEach((frame) => {
+      frame.loading = "eager"
+    })
+
     backdrop.style.transition = "opacity 300ms ease"
     backdrop.style.opacity = "0"
 

@@ -175,25 +175,28 @@
       </div>
     </details>
 
-    <%# === イベント / クチコミ（主張弱めのモーダルトリガー。件数はここで確認できる） === %>
-    <% event_count = @upcoming_events.size + @past_events.size %>
+    <%# === イベント / クチコミ（主張弱めのモーダルトリガー。本文は開いた時に lazy ロード） === %>
     <div class="grid grid-cols-2 max-[360px]:grid-cols-1 gap-2 mt-3">
       <%= render "shared/modal",
           id: "events",
           title: "イベント・取材情報",
           label: "イベント",
-          count: (event_count if event_count > 0),
+          count: (@event_count if @event_count > 0),
           icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
-          body: render("shops/events_body", shop: @shop, upcoming_events: @upcoming_events, past_events: @past_events) %>
+          body: turbo_frame_tag("events_body_frame", src: events_body_shop_path(@shop.slug), loading: :lazy) {
+            tag.p("読み込み中…", class: "text-sm text-muted-foreground text-center py-8")
+          } %>
 
       <%= render "shared/modal",
           id: "kuchikomi",
           title: "クチコミ",
           label: "クチコミ",
-          count: (@comments.size if @comments.any?),
+          count: (@comment_count if @comment_count > 0),
           sublabel: (@average_rating.present? ? "★#{@average_rating}" : nil),
           icon: "M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 20l1.3-3.9A7.96 7.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",
-          body: render("shops/comments_thread", shop: @shop, comments: @comments, commenter_profiles: @commenter_profiles) %>
+          body: turbo_frame_tag("comments_body_frame", src: comments_body_shop_path(@shop.slug), loading: :lazy) {
+            tag.p("読み込み中…", class: "text-sm text-muted-foreground text-center py-8")
+          } %>
     </div>
   </div>
 
@@ -263,9 +266,10 @@
             今日に戻る
           <% end %>
         <% end %>
-        <turbo-frame id="shop_calendar">
-          <%= render "shops/calendar", shop: @shop, calendar_month: @calendar_month,
-                     calendar_data: @calendar_data, current_date: @date %>
+        <turbo-frame id="shop_calendar"
+                     src="<%= calendar_shop_path(@shop.slug, month: @date.beginning_of_month.strftime("%Y-%m"), date: @date.strftime("%Y-%m-%d")) %>"
+                     loading="lazy">
+          <p class="text-sm text-muted-foreground text-center py-8">カレンダーを読み込み中…</p>
         </turbo-frame>
       </div>
     </div>
@@ -393,12 +397,13 @@
   <%# イベント・取材情報 / クチコミ（星付きコメント）は店舗名の枠内のモーダルへ移設。
       カレンダーは緑の記録日バーから開くモーダルへ移設。 %>
 
-  <%# === Trend Section (charts + weekly summary) === %>
-  <% if @trend_data&.any? { |d| d[:votes] > 0 } || @weekly_summary&.dig(:total_votes).to_i > 0 %>
-    <%= render "shops/trend_section",
-        shop: @shop,
-        trend_data: @trend_data || [],
-        weekly_summary: @weekly_summary || {} %>
+  <%# === Trend Section (charts + weekly summary) — lazy ロード === %>
+  <% if @has_vote_summaries %>
+    <%= turbo_frame_tag "trend_section_frame", src: trend_section_shop_path(@shop.slug), loading: :lazy do %>
+      <div class="bg-card border border-border rounded-lg mt-8 p-4 text-sm text-muted-foreground text-center">
+        記録トレンドを読み込み中…
+      </div>
+    <% end %>
   <% end %>
 
 </section>

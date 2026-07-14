@@ -1,0 +1,4 @@
+<%# モーダルを開いた時に lazy ロードされるイベント本文。frame id で置換されるようラップ %>
+<%= turbo_frame_tag "events_body_frame" do %>
+  <%= render "shops/events_body", shop: @shop, upcoming_events: @upcoming_events, past_events: @past_events %>
+<% end %>

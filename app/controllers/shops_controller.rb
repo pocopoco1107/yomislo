@@ -27,13 +27,33 @@ class ShopsController < ApplicationController
     @shop = Shop.find_by!(slug: params[:slug])
     @calendar_month = parse_calendar_month(params[:month])
     @calendar_data = build_calendar_data(@shop, @calendar_month)
-    @date = Date.current
-    render partial: "shops/calendar", layout: false, locals: {
-      shop: @shop,
-      calendar_month: @calendar_month,
-      calendar_data: @calendar_data,
-      current_date: @date
-    }
+    @date = params[:date].present? ? (Date.parse(params[:date]) rescue Date.current) : Date.current
+    render layout: false
+  end
+
+  # モーダル本文・トレンドは lazy turbo-frame で遅延ロードし、店舗詳細の初期応答から
+  # 重い実体化・描画（events/comments/trend）を切り離す。ボットは lazy frame を追わない。
+  # 各アクションのビューは対応する turbo-frame id でラップする（lazy src の置換に必須）。
+  def events_body
+    @shop = Shop.find_by!(slug: params[:slug])
+    @upcoming_events = @shop.shop_events.visible.upcoming.limit(10)
+    @past_events = @shop.shop_events.visible.past.limit(5)
+    render layout: false
+  end
+
+  def comments_body
+    @shop = Shop.find_by!(slug: params[:slug])
+    @comments = @shop.comments.recent.limit(50)
+    @commenter_profiles = VoterProfile.where(voter_token: @comments.map(&:voter_token).compact.uniq)
+                                      .index_by(&:voter_token)
+    render layout: false
+  end
+
+  def trend_section
+    @shop = Shop.find_by!(slug: params[:slug])
+    @trend_data = build_trend_data(@shop.vote_summaries)
+    @weekly_summary = build_weekly_summary(@shop)
+    render layout: false
   end
 
   def trend_data
@@ -129,20 +149,17 @@ class ShopsController < ApplicationController
   private
 
   def load_shop_data
-    # Show machines registered to this shop (join table) + machines with votes today
-    registered_ids = @shop.shop_machine_models.pluck(:machine_model_id)
+    # Show machines registered to this shop (join table) + machines with votes today.
+    # 台数マップも同じ pluck から作り、shop_machine_models の二重走査を避ける。
+    registered = @shop.shop_machine_models.pluck(:machine_model_id, :unit_count)
+    registered_ids = registered.map(&:first)
+    @unit_counts = registered.to_h.compact
     voted_ids = Vote.where(shop_id: @shop.id, voted_on: @date)
                     .distinct.pluck(:machine_model_id)
     machine_ids = (registered_ids + voted_ids).uniq
 
     @machine_models = MachineModel.where(id: machine_ids).order(:name).to_a
                         .sort_by { |m| [ m.display_type_sort, m.name ] }
-
-    # ShopMachineModel台数マップ (machine_model_id => unit_count)
-    @unit_counts = ShopMachineModel.where(shop_id: @shop.id, machine_model_id: machine_ids)
-                                    .where.not(unit_count: nil)
-                                    .pluck(:machine_model_id, :unit_count)
-                                    .to_h
 
     @vote_summaries = @shop.vote_summaries
                            .where(target_date: @date)
@@ -170,28 +187,18 @@ class ShopsController < ApplicationController
     models_by_id = @machine_models.index_by(&:id)
     @machine_names = models_by_id.transform_values(&:name)
     @machine_slugs = models_by_id.transform_values(&:slug)
-    # クチコミ（コメント＋任意の星）は日付に紐付けず店舗単位でまとめて表示
-    @comments = @shop.comments.recent.limit(50)
-    # VoterProfile は voter_token 紐づけ（association ではない）ため一括ロードして N+1 を回避
-    @commenter_profiles = VoterProfile.where(voter_token: @comments.map(&:voter_token).compact.uniq)
-                                       .index_by(&:voter_token)
-    @average_rating = @shop.comments.where.not(rating: nil).average(:rating)&.round(1)
 
-    # Exchange rate data
+    # 交換率（店舗情報 details 内・軽量）
     @exchange_rate_summaries = ExchangeRateSummary.where(shop_id: @shop.id).index_by(&:denomination)
     @user_exchange_rate_reports = ExchangeRateReport.where(voter_token: voter_token, shop_id: @shop.id).index_by(&:denomination)
 
-    # Events (approved only)
-    @upcoming_events = @shop.shop_events.visible.upcoming.limit(10)
-    @past_events = @shop.shop_events.visible.past.limit(5)
+    # モーダルトリガーの件数バッジ（軽量 COUNT / AVG。本文の実体化・描画は lazy turbo-frame へ）
+    @event_count = @shop.shop_events.visible.count
+    @comment_count = @shop.comments.count
+    @average_rating = @shop.comments.where.not(rating: nil).average(:rating)&.round(1)
 
-    # Calendar data for the month containing @date
-    @calendar_month = @date.beginning_of_month
-    @calendar_data = build_calendar_data(@shop, @calendar_month)
-
-    # 7-day trend data + weekly summary
-    @trend_data = build_trend_data(@shop.vote_summaries)
-    @weekly_summary = build_weekly_summary(@shop)
+    # トレンドセクションの出し分け判定（本体は lazy turbo-frame でロード）
+    @has_vote_summaries = @shop.vote_summaries.exists?
   end
 
   def build_calendar_data(shop, month)

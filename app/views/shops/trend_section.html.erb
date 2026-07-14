@@ -1,0 +1,4 @@
+<%# スクロールで lazy ロードされるトレンドセクション。frame id で置換されるようラップ %>
+<%= turbo_frame_tag "trend_section_frame" do %>
+  <%= render "shops/trend_section", shop: @shop, trend_data: @trend_data, weekly_summary: @weekly_summary %>
+<% end %>

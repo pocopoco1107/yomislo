@@ -1,0 +1,4 @@
+<%# モーダルを開いた時に lazy ロードされるクチコミ本文。frame id で置換されるようラップ %>
+<%= turbo_frame_tag "comments_body_frame" do %>
+  <%= render "shops/comments_thread", shop: @shop, comments: @comments, commenter_profiles: @commenter_profiles %>
+<% end %>

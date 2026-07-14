@@ -1,0 +1,5 @@
+<%# lazy turbo-frame / 月ナビ両対応。レスポンスを shop_calendar frame でラップする %>
+<%= turbo_frame_tag "shop_calendar" do %>
+  <%= render "shops/calendar", shop: @shop, calendar_month: @calendar_month,
+             calendar_data: @calendar_data, current_date: @date %>
+<% end %>
