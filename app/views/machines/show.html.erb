@@ -2,8 +2,9 @@
 
 <%# JSON-LD structured data
     パチスロ機種は Product ではなく Thing として扱う (このサイトで販売しておらず offers/price を
-    持たない)。Search Console の「商品スニペット 無効なアイテム」警告を回避しつつ、additionalType で
-    Product の意味合いを補足。ページ全体は Article でラップして author/publisher を明示する。 %>
+    持たない)。schema.org/Product を additionalType に指定すると Google が Product と解釈し、
+    offers/review/aggregateRating 不足で「商品スニペット 無効なアイテム」になるため付与しない。
+    ページ全体は Article でラップして author/publisher を明示する。 %>
 <% content_for(:head) do %>
   <script type="application/ld+json">
     <%= raw({
@@ -19,7 +20,6 @@
       "image": @machine_model.image_url.presence || image_url("logo.png"),
       "about": {
         "@type": "Thing",
-        "additionalType": "https://schema.org/Product",
         "name": @machine_model.name,
         "description": [@machine_model.type_detail, @machine_model.payout_rate_display ? "機械割#{@machine_model.payout_rate_display}" : nil].compact.join(" / ").presence || "パチスロ機種",
         "brand": @machine_model.maker.present? ? { "@type": "Brand", "name": @machine_model.maker } : nil,

@@ -13,7 +13,7 @@
 - Devise (管理者認証のみ) / ActiveAdmin
 - pg_search / kaminari / rack-attack / meta-tags / sitemap_generator
 - RSpec + FactoryBot + Faker
-- デプロイ先: **Render.com（本番運用中: https://yomislo.onrender.com ）**
+- デプロイ先: **Render.com（本番運用中: https://yomislo.com ）**
 
 ## 環境セットアップ
 ```bash
@@ -135,7 +135,7 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 | Cron | `yomislo-monthly` | crn-d863tqlckfvc73ec34eg | Starter | Singapore |
 | Postgres | `yomislo-db` (v18) | dpg-d863th5ckfvc73ec2t3g-a | Basic ($6/mo) | Singapore |
 
-- Web URL: https://yomislo.onrender.com
+- Web URL: https://yomislo.com （旧 yomislo.onrender.com は 301 リダイレクトで維持）
 - ヘルスチェック: `/up`
 - auto-deploy: `main` ブランチ commit トリガー
 - ビルド: `./bin/render-build.sh`、起動: `bundle exec puma -C config/puma.rb`
