@@ -17,6 +17,13 @@
         </div>
       <% end %>
 
+      <%# スパムボット用のトラップ。人間には見えないので入力されたら弾く %>
+      <div class="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+        <label for="website">Webサイト（入力しないでください）</label>
+        <%= text_field_tag :website, nil, tabindex: -1, autocomplete: "off" %>
+      </div>
+      <%= hidden_field_tag :form_loaded_at, @form_token %>
+
       <div>
         <label class="block text-sm font-medium text-foreground mb-1">カテゴリ <span class="text-destructive">*</span></label>
         <%= f.select :category,
