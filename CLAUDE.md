@@ -271,6 +271,7 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 | `before-deploy-render` | git push 直前、render.yaml/migration 編集、「デプロイする」発言 |
 | `wrap-up` | 「振り返り」「まとめ」「終わり」 |
 | `handoff` | 「引き継ぎ」「ハンドオフ」「新セッション」発言 or 会話の散らかり兆候を自動検出 |
+| `daily-health-check` | 毎朝8:00に launchd (`com.yomislo.daily-health-check`) から自動起動 or 「ヘルスチェック」「今日の状況」「アクセス状況」発言時。GSC/GA4/Render/DBを横断確認し Cowork チップを発行 |
 
 ### サブエージェント（`.claude/agents/`）
 
