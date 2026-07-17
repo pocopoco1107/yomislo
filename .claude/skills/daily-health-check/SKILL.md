@@ -75,6 +75,7 @@ URL: `https://dashboard.render.com/`
 取得項目:
 - Web Service `yomislo` 直近 Deploy: Success / Failure / 時刻
 - 3 cron の直近24h実行結果: `daily-refresh` / `daily-aggregation` / `monthly`
+- **Web Service 再起動回数(24h)**: Metrics タブの Event timeline から `Instance failed:` の件数を数える。4件以上でOOM再発の異常チップを発行
 - メモリ使用率スパイク (Metrics タブ、直近24h)
 
 対象URL:
@@ -85,9 +86,10 @@ URL: `https://dashboard.render.com/`
 - Cron 3: `https://dashboard.render.com/cron/crn-d863tqlckfvc73ec34eg` (monthly)
 
 操作:
-1. `navigate` → `read_page` の順で各URLを巡回
+1. `navigate` → `read_page` (または `get_page_text`) の順で各URLを巡回
 2. Deploy一覧の「Live」「Failed」ステータスと時刻を抽出
 3. cron の Events タブから直近実行の Exit Code を抽出
+4. Metrics ページの `Event timeline` セクションを `get_page_text` で取得し、`Instance failed:` の出現回数を過去24hで数える (4件以上で異常チップ発行)
 
 ### Step 4: DB (postgres MCP)
 
@@ -137,6 +139,7 @@ SELECT voted_on, COUNT(*) FROM votes
 | GSC 表示回数(3日集計) | 前週比 -20%以内 | -20〜-40% | -40%超減 |
 | GSC 未登録件数 | 前日比 ±50 | ±50〜100 | ±100超 |
 | Render Deploy(24h) | 失敗0件 | - | 1件以上 |
+| Render Web 再起動(24h) | 0件 | 1〜3件 | 4件以上（OOM再発シグナル） |
 | Render cron(24h) | 3本すべて成功 | - | 1本でも失敗 |
 | DB Feedback未対応 | 5件以下 | 6〜10件 | 10件超 |
 
@@ -148,7 +151,7 @@ SELECT voted_on, COUNT(*) FROM votes
 mcp__ccd_session__spawn_task({
   title: `ヘルスチェック ${TODAY}`,
   tldr: "新規X人 / GSCクリックY件 / 異常Z件",  // 1〜2文
-  prompt: `# ヘルスチェック ${TODAY}\n\n## 1. Search Console\n- インデックス: 登録済み{N}/未登録{M} (前日比 {±X})\n- パフォーマンス3日: クリック{C}/表示{I}/CTR{R}%/順位{P} (前週比 {±X}%)\n- 商品スニペット無効: {N}件\n- 新規検出クエリTop5: {list}\n\n## 2. GA4\n- 新規/継続: {N}/{M}人 (前日比 {±X}%)\n- 平均エンゲージメント: {T}秒\n- 流入経路: 直接{P}%/オーガニック{P}%/SNS{P}%/参照{P}%\n- キーイベント設定: {設定済み/未設定}\n\n## 3. Render\n- Web直近Deploy: {Success/Failed} at {timestamp}\n- Cron結果24h: daily-refresh={status} / daily-aggregation={status} / monthly={status}\n- メモリピーク: {N}MB\n\n## 4. DB\n- Feedback未対応: {N}件\n- 昨日のVote: {V}件 / PlayRecord: {P}件 / ユニーク投稿者: {U}人\n- 累計 Vote: {N}件 / PlayRecord: {N}件\n- 過去7日推移: {list}\n\n## 5. 今日の発見\n- BACKLOG上位3件: {list}\n- 改善提案: {AI proposal}\n\n---\n\n気になる観点があれば深掘りしましょう。異常項目は別チップで届いています。`
+  prompt: `# ヘルスチェック ${TODAY}\n\n## 1. Search Console\n- インデックス: 登録済み{N}/未登録{M} (前日比 {±X})\n- パフォーマンス3日: クリック{C}/表示{I}/CTR{R}%/順位{P} (前週比 {±X}%)\n- 商品スニペット無効: {N}件\n- 新規検出クエリTop5: {list}\n\n## 2. GA4\n- 新規/継続: {N}/{M}人 (前日比 {±X}%)\n- 平均エンゲージメント: {T}秒\n- 流入経路: 直接{P}%/オーガニック{P}%/SNS{P}%/参照{P}%\n- キーイベント設定: {設定済み/未設定}\n\n## 3. Render\n- Web直近Deploy: {Success/Failed} at {timestamp}\n- Web再起動(24h): {N}回 (4件以上でOOM再発シグナル、異常チップ発行)\n- Cron結果24h: daily-refresh={status} / daily-aggregation={status} / monthly={status}\n- メモリピーク: {N}MB\n\n## 4. DB\n- Feedback未対応: {N}件\n- 昨日のVote: {V}件 / PlayRecord: {P}件 / ユニーク投稿者: {U}人\n- 累計 Vote: {N}件 / PlayRecord: {N}件\n- 過去7日推移: {list}\n\n## 5. 今日の発見\n- BACKLOG上位3件: {list}\n- 改善提案: {AI proposal}\n\n---\n\n気になる観点があれば深掘りしましょう。異常項目は別チップで届いています。`
 })
 ```
 

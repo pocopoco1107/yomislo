@@ -33,9 +33,10 @@ rel="${path#$project_root/}"
 command -v bundle >/dev/null 2>&1 || exit 0
 bundle exec brakeman --version >/dev/null 2>&1 || exit 0
 
-echo "🔒 brakeman --only-files $rel" >&2
-# --quiet で進捗を抑制、--no-progress、--format plain で軽量
-output=$(bundle exec brakeman --only-files "$rel" --quiet --no-progress --format plain 2>&1 || true)
+echo "🔒 brakeman ($rel 編集検知、全体スキャン)" >&2
+# --only-files は config/brakeman.ignore との相互作用で false positive を出すため全体スキャン。
+# 全体でも 1〜2 秒で完了する。
+output=$(bundle exec brakeman --quiet --no-progress --format plain 2>&1 || true)
 
 # "No warnings" or "0 warnings" を検知
 if printf '%s' "$output" | grep -qiE 'no warnings found|0 security warnings|No warnings'; then

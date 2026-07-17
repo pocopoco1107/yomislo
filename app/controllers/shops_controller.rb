@@ -19,6 +19,11 @@ class ShopsController < ApplicationController
       raise ActiveRecord::RecordNotFound
     end
     @shop = Shop.includes(:prefecture).find_by!(slug: params[:slug])
+    # 投稿ゼロの過去日は空の重複コンテンツ。load_shop_data(17クエリ・Views 300〜700ms)を
+    # 実行せず 404 を返し、ここを大量に叩く分散ボットの負荷を遮断する（当日は記録UIのため対象外）。
+    if @date < Date.current && !@shop.vote_summaries.where(target_date: @date).exists?
+      raise ActiveRecord::RecordNotFound
+    end
     load_shop_data
     render :show
   end

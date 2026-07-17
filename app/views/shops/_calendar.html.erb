@@ -62,6 +62,9 @@
       is_today = date == today
       is_selected = defined?(current_date) && date == current_date
       is_future = date > today
+      # 投稿ゼロの過去日は show_date が 404 を返すため、リンク化せず人を空ページに送らない
+      # （当日は投稿ゼロでも記録UIとしてリンクを維持）。
+      is_empty_past = date < today && votes == 0
 
       # Background intensity based on vote count
       bg_class = if votes > 0 && !is_future
@@ -75,7 +78,7 @@
       end
     %>
 
-    <% if is_future %>
+    <% if is_future || is_empty_past %>
       <div class="aspect-square flex flex-col items-center justify-center rounded-md opacity-30">
         <span class="text-[11px] tabular-nums leading-none
           <%= case date.wday when 0 then 'text-destructive' when 6 then 'text-chart-1' else 'text-muted-foreground' end %>">
@@ -89,9 +92,7 @@
                   hover:bg-secondary active:bg-primary/10
                   #{bg_class}
                   #{'ring-2 ring-primary rounded-md' if is_today}
-                  #{'ring-2 ring-primary bg-primary/25 font-bold' if is_selected && !is_today}
-                  #{'bg-destructive/5' if date.wday == 0 && !is_selected && votes == 0}
-                  #{'bg-chart-1/5' if date.wday == 6 && !is_selected && votes == 0}" do %>
+                  #{'ring-2 ring-primary bg-primary/25 font-bold' if is_selected && !is_today}" do %>
         <span class="text-[11px] tabular-nums leading-none
           <%= case date.wday when 0 then 'text-destructive' when 6 then 'text-chart-1' else 'text-muted-foreground' end %>
           <%= 'font-bold !text-primary' if is_today %>">

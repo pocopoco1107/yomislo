@@ -85,9 +85,9 @@ RSpec.describe "Shops", type: :request do
   end
 
   describe "GET /shops/:slug/dates/:date" do
-    it "renders past date data" do
+    it "returns 404 for a past date with no votes (blocks empty-page bot crawl)" do
       get date_shop_path(shop.slug, date: Date.yesterday.strftime("%Y-%m-%d"))
-      expect(response).to have_http_status(:ok)
+      expect(response).to have_http_status(:not_found)
     end
 
     it "renders current date data" do
@@ -118,11 +118,6 @@ RSpec.describe "Shops", type: :request do
     it "returns 404 for a future date" do
       get date_shop_path(shop.slug, date: Date.tomorrow.strftime("%Y-%m-%d"))
       expect(response).to have_http_status(:not_found)
-    end
-
-    it "sets noindex when the past date has no votes" do
-      get date_shop_path(shop.slug, date: Date.yesterday.strftime("%Y-%m-%d"))
-      expect(response.body).to include('name="robots" content="noindex"')
     end
 
     it "does not set noindex when the past date has votes" do
