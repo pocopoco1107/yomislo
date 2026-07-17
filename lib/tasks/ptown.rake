@@ -249,7 +249,8 @@ module PtownScraper
       doc.css("a[href*='/shops/#{pref_slug}/area/']").each do |link|
         href = link["href"]
         next unless href.match?(%r{/area/\d+})
-        text = link.text.strip
+        # DMMぱちタウンのエリアリンクが「札幌市（80）」（全角括弧）表記のため NFKC で半角化してからパース
+        text = link.text.strip.unicode_normalize(:nfkc)
         # "千代田区(5)" → name: "千代田区", count: 5
         name = text.sub(/\(\d+\)$/, "").strip
         count = text.match(/\((\d+)\)/)&.[](1)&.to_i || 0
