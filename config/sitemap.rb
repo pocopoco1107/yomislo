@@ -7,13 +7,13 @@ SitemapGenerator::Sitemap.create do
     add prefecture_path(prefecture.slug), changefreq: "daily", priority: 0.8
   end
 
-  # 掲載終了(delisted)店舗と設置機種0の店舗を除外。薄いページをクロールバジェットから外し、
-  # 記録がある/設置機種がある店舗にクロールを集中させる。
-  Shop.listed
-      .joins(:shop_machine_models)
-      .distinct
-      .find_each do |shop|
-    add shop_path(shop.slug), changefreq: "daily", priority: 0.9
+  # 掲載終了(delisted)店舗は listed スコープで除外。
+  # DMMぱちタウン側で機種情報が非掲載の店舗（パチンコ専門店・小規模店 ~1,000件）は
+  # 完全除外せず priority を下げる。住所・地図等の店舗情報は存在するため。
+  shop_machine_counts = ShopMachineModel.group(:shop_id).count
+  Shop.listed.find_each do |shop|
+    priority = shop_machine_counts[shop.id].to_i.zero? ? 0.3 : 0.9
+    add shop_path(shop.slug), changefreq: "daily", priority: priority
   end
 
   # 機種は設置店舗数でpriorityを差別化。Googleに「重要な機種はどれか」を明示する。
