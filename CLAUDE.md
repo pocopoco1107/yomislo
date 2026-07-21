@@ -272,6 +272,10 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 | `wrap-up` | 「振り返り」「まとめ」「終わり」 |
 | `handoff` | 「引き継ぎ」「ハンドオフ」「新セッション」発言 or 会話の散らかり兆候を自動検出 |
 | `daily-health-check` | 毎朝8:00に launchd (`com.yomislo.daily-health-check`) から自動起動 or 「ヘルスチェック」「今日の状況」「アクセス状況」発言時。GSC/GA4/Render/DBを横断確認し Cowork チップを発行 |
+| `i18n-key-check` | app/views/**/*.erb・app/controllers/**/*.rb で t(".key") 追加、config/locales/*.yml 編集時。translation missing の未然防止 |
+| `migration-safety-check` | db/migrate/*.rb 新規作成・編集時。NOT NULL 追加・大規模 index・破壊的な column 削除/rename・enum 並び替え・DDL transaction 漏れを検出 |
+| `stimulus-check` | app/javascript/controllers/*.js 追加・編集、または app/views で data-controller / data-*-target / data-action を追加した直後。命名規則・targets/values/classes の齟齬を検出 |
+| `vote-integrity-check` | votes_controller.rb / vote*.rb / voter_*.rb / vote 関連 migration の編集後に「投票整合性チェック」等で明示発火。ユニーク制約・匿名性 (IP/UA非保存)・cookie 設計を確認 |
 
 ### サブエージェント（`.claude/agents/`）
 
@@ -279,6 +283,10 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 |-------------|-------------|
 | `scraping-reviewer` | lib/tasks/ptown.rake / pworld_supplement.rake / PtownScraper 編集後 |
 | `copy-reviewer` | app/views/*.erb / config/locales/*.yml の文言追加・変更 |
+| `migration-reviewer` | db/migrate/*.rb / db/schema.rb 編集後。本番安全性 (Render Basic Postgres) の観点 |
+| `rails-perf-reviewer` | app/controllers/*.rb / app/models/*.rb / app/views/**/*.erb (shops/home/rankings/machine_models/voter 系) 編集後。N+1・preload 漏れ・キャッシュキー |
+| `ranking-logic-reviewer` | vote*.rb / voter_*.rb / play_record*.rb / rankings_controller.rb / lib/tasks/ranking.rake 編集後。Vote→Summary→Ranking→Profile 集計チェーン整合性 |
+| `seo-reviewer` | config/sitemap.rb / config/initializers/meta_tags.rb / public/robots.txt / set_meta_tags を含む view/controller 編集後。sitemap priority・noindex・canonical・OG image |
 
 ### Hooks（`.claude/hooks/`）— 自動実行
 
@@ -288,5 +296,18 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 | rubocop-on-save | .rb 編集後に `bundle exec rubocop -a` 自動実行 |
 | auto-scraping-snapshot | `rake ptown:*` 実行前に scraping-verify snapshot を自動取得 |
 | auto-design-check | .erb / .html / .css 編集後に design-check を実行（違反時のみ通知） |
+| brakeman-on-controller-edit | app/controllers・models・services・helpers 編集後に brakeman を軽量実行 |
+| rspec-on-spec-edit | *_spec.rb 編集後にその spec 1本だけ即座に実行 (fail-fast) |
+| bundle-install-on-gemfile | Gemfile 編集後に bundle install を自動実行し、Gemfile.lock 差分を通知 |
+| render-yaml-validate | render.yaml 編集後に YAML 構文・cron スケジュール衝突・startCommand 妥当性を検査 |
+
+### MCP サーバー（`.mcp.json`）
+
+| サーバー | 用途 | 認証 |
+|---------|------|------|
+| `context7` | 最新ライブラリドキュメント (React/Rails/Tailwind/pg_search 等) | 不要 |
+| `postgres` | ローカル yomislo_development DB への直接クエリ | 不要 |
+| `sentry` | 本番エラーの検索・確認 (mcp.sentry.dev) | OAuth 必要 (`/mcp` で認証) |
+| `github` | PR/Issue/Actions 操作 (api.githubcopilot.com) | OAuth 必要 (`/mcp` で認証) |
 
 @.claude/CLAUDE.local.md

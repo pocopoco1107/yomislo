@@ -46,6 +46,16 @@
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/brakeman-on-controller-edit.sh",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/bundle-install-on-gemfile.sh",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/render-yaml-validate.sh",
+            "timeout": 15
           }
         ]
       }
