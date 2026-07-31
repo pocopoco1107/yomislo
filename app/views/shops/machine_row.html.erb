@@ -1,0 +1,10 @@
+<%# lazy src の置換にはレスポンス側にも同じ frame id が必要 %>
+<%= turbo_frame_tag "machine_vote_body_#{@machine_model.id}" do %>
+  <%= render "shops/machine_vote_body",
+      machine_model: @machine_model,
+      vote_summary: @vote_summary,
+      user_vote: @user_vote,
+      user_play_record: @user_play_record,
+      shop: @shop,
+      date: @date %>
+<% end %>

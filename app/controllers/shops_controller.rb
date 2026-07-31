@@ -29,10 +29,38 @@ class ShopsController < ApplicationController
   end
 
   def calendar
-    @shop = Shop.find_by!(slug: params[:slug])
     @calendar_month = parse_calendar_month(params[:month])
+    # 運用開始前・未来の月には記録が存在しない。店舗クエリも発行せず 404 を返し、
+    # month パラメータで無限に増える月URLへのクロール負荷を遮断する
+    # （カレンダーの前月/翌月リンク自体は範囲内でしか生成されない）。
+    raise ActiveRecord::RecordNotFound if @calendar_month.nil?
+    @shop = Shop.find_by!(slug: params[:slug])
     @calendar_data = build_calendar_data(@shop, @calendar_month)
     @date = params[:date].present? ? (Date.parse(params[:date]) rescue Date.current) : Date.current
+    render layout: false
+  end
+
+  # 機種行の記録UI。details を開いた時だけ取得され、初期応答には summary だけを載せる。
+  # 閉じた行の記録フォーム（1機種16個 × 設置機種数）は誰にも見られないまま描画されており、
+  # 大型店では HTML の 9 割超・描画コストの大半をこれが占めていた。
+  def machine_row
+    @date = parse_row_date(params[:date])
+    # 範囲外の日付は show_date と同様に 404。日付ごとに無限に増えるURLを作らない。
+    raise ActiveRecord::RecordNotFound if @date.nil?
+
+    @shop = Shop.find_by!(slug: params[:slug])
+    @machine_model = MachineModel.find(params[:machine_model_id])
+    @vote_summary = VoteSummary.find_by(shop_id: @shop.id, machine_model_id: @machine_model.id, target_date: @date)
+
+    # 副作用なし版を使う。記録UIを見るだけの訪問者に cookie を発行しない
+    # （記録が無ければ nil でも描画結果は同じ）。
+    if (token = existing_voter_token)
+      @user_vote = Vote.find_by(voter_token: token, shop_id: @shop.id,
+                                machine_model_id: @machine_model.id, voted_on: @date)
+      @user_play_record = PlayRecord.find_by(voter_token: token, shop_id: @shop.id,
+                                             machine_model_id: @machine_model.id, played_on: @date)
+    end
+
     render layout: false
   end
 
@@ -229,10 +257,24 @@ class ShopsController < ApplicationController
         .limit(limit)
   end
 
+  # 機種行の日付。範囲外（運用開始前・未来）とパース不能な値は nil を返し、呼び出し側で 404 にする。
+  def parse_row_date(param)
+    return Date.current if param.blank?
+    date = Date.parse(param)
+    return nil if date < Shop::EARLIEST_RECORD_DATE || date > Date.current
+    date
+  rescue Date::Error
+    nil
+  end
+
+  # 範囲外（運用開始前・未来）とパース不能な月は nil を返し、呼び出し側で 404 にする。
   def parse_calendar_month(param)
     return Date.current.beginning_of_month if param.blank?
-    Date.parse("#{param}-01").beginning_of_month
+    month = Date.parse("#{param}-01").beginning_of_month
+    return nil if month < Shop::EARLIEST_RECORD_DATE.beginning_of_month
+    return nil if month > Date.current.beginning_of_month
+    month
   rescue Date::Error
-    Date.current.beginning_of_month
+    nil
   end
 end

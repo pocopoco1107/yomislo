@@ -16,6 +16,8 @@ Rails.application.routes.draw do
     end
     member do
       get "dates/:date", action: :show_date, as: :date, constraints: { date: /\d{4}-\d{2}-\d{2}/ }
+      get "machine_row/:machine_model_id", action: :machine_row, as: :machine_row,
+          constraints: { machine_model_id: /\d+/ }
       get :trend_data
       get :trend_section
       get :calendar

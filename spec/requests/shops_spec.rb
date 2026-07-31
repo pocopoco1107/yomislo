@@ -163,6 +163,68 @@ RSpec.describe "Shops", type: :request do
       get calendar_shop_path("nonexistent-slug-999", month: Date.current.strftime("%Y-%m"))
       expect(response).to have_http_status(:not_found)
     end
+
+    it "returns 404 for a month before the earliest record date" do
+      get calendar_shop_path(shop.slug, month: (Shop::EARLIEST_RECORD_DATE - 1.month).strftime("%Y-%m"))
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns 404 for a future month" do
+      get calendar_shop_path(shop.slug, month: (Date.current + 1.month).strftime("%Y-%m"))
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns 404 for an unparseable month" do
+      get calendar_shop_path(shop.slug, month: "abcd-99")
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  describe "GET /shops/:slug/machine_row/:machine_model_id" do
+    let(:machine) { create(:machine_model) }
+
+    before { ShopMachineModel.create!(shop: shop, machine_model: machine) }
+
+    it "renders the record UI inside the matching turbo-frame" do
+      get machine_row_shop_path(shop.slug, machine.id)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("machine_vote_body_#{machine.id}")
+      expect(response.body).to include("vote[reset_vote]")
+    end
+
+    it "returns 404 for a date before the earliest record date" do
+      get machine_row_shop_path(shop.slug, machine.id, date: (Shop::EARLIEST_RECORD_DATE - 1.day).to_s)
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns 404 for a future date" do
+      get machine_row_shop_path(shop.slug, machine.id, date: (Date.current + 1.day).to_s)
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns 404 for an unknown machine" do
+      get machine_row_shop_path(shop.slug, 999_999_999)
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "does not set a voter_token cookie for a first-time visitor" do
+      get machine_row_shop_path(shop.slug, machine.id)
+      expect(response.cookies["voter_token"]).to be_nil
+    end
+  end
+
+  describe "機種行の記録UIは初期応答に含めない" do
+    it "renders only the summary and defers the record UI to machine_row" do
+      machine = create(:machine_model)
+      ShopMachineModel.create!(shop: shop, machine_model: machine)
+
+      get shop_path(shop.slug)
+      expect(response.body).to include(machine.name)
+      expect(response.body).to include("machine_vote_body_#{machine.id}")
+      expect(response.body).to include("machine_row/#{machine.id}")
+      # 閉じた行の記録フォームを初期HTMLに載せない（大型店で HTML の9割超を占めていた）
+      expect(response.body).not_to include("vote[reset_vote]")
+    end
   end
 
   describe "GET /shops/favorites" do

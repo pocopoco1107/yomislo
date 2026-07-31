@@ -284,7 +284,10 @@ class PlayRecordsController < ApplicationController
         user_play_record: user_play_record,
         shop: shop,
         date: played_on,
-        unit_count: unit_count
+        unit_count: unit_count,
+        # 収支を削除して user_vote / user_play_record が消えても、開いて操作していた
+        # 機種行が閉じて遅延ロード前の状態に戻らないよう明示的に開いたまま描画する
+        expanded: true
       })
   end
 

@@ -7,5 +7,6 @@ Disallow: /feedbacks/
 Disallow: /shop_requests/
 Disallow: /shops/*/dates/
 Disallow: /shops/*/calendar
+Disallow: /shops/*/machine_row/
 
 Sitemap: https://yomislo.com/sitemap.xml.gz

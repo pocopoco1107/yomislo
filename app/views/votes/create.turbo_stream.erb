@@ -6,7 +6,8 @@
     user_play_record: PlayRecord.find_by(voter_token: voter_token, shop_id: @shop.id, machine_model_id: @machine_model.id, played_on: @vote.voted_on),
     shop: @shop,
     date: @vote.voted_on,
-    unit_count: ShopMachineModel.find_by(shop_id: @shop.id, machine_model_id: @machine_model.id)&.unit_count %>
+    unit_count: ShopMachineModel.find_by(shop_id: @shop.id, machine_model_id: @machine_model.id)&.unit_count,
+    expanded: true %>
 <% end %>
 
 <% if @gold_gain.to_i > 0 %>

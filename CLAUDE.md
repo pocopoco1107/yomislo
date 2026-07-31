@@ -108,6 +108,7 @@ bin/dev  # サーバー起動 (Tailwind watch + Rails)
 | record-modal | 収支カレンダーの記録モーダル開閉 (日付指定/今日) |
 | auto-submit | select変更で親formを自動submit (機種詳細の設置店舗 県フィルタ等) |
 | image-fallback | 機種画像の読み込み失敗時フォールバック |
+| lazy-details | `<details>` を開いた時に turbo-frame の data-src を src へ移して中身を遅延取得 (機種行の記録UI) |
 
 ## テスト
 ```bash
