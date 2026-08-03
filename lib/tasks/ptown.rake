@@ -27,6 +27,11 @@ module PtownScraper
   USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
   REQUEST_INTERVAL = 5.0
   MAX_RETRIES = 3
+  # 店舗ページ約350KB・機種詳細ページ約570KB のNokogiriドキュメントは Rubyヒープ外の
+  # libxml2 メモリを占めるため、GCの自動起動判断がほとんど働かない。数千ページを1プロセスで
+  # 走査するバッチでは解放されないままRSSの高水位が上がり続け、Render cron の 512MB 上限に達する。
+  # 一定ページごとにフルGCを挟んで高水位を戻す（機種詳細150ページの実測で最終RSS 492MB → 264MB）。
+  GC_PAGE_INTERVAL = 20
 
   @last_response_code = nil
 
@@ -36,6 +41,7 @@ module PtownScraper
 
   class << self
     def fetch_page(url)
+      collect_garbage_periodically
       uri = URI.parse(url)
       retries = 0
       redirects = 0
@@ -100,6 +106,16 @@ module PtownScraper
           return nil
         end
       end
+    end
+
+    # GC_PAGE_INTERVAL ページごとにフルGCを実行する。直前のイテレーションで作った
+    # Nokogiriドキュメントは次のfetch時点で到達不能になっているため、ここで確実に回収できる。
+    # sleep REQUEST_INTERVAL が1ページごとに5秒入るバッチなので、GCのCPUコストは無視できる。
+    def collect_garbage_periodically
+      @fetch_count = @fetch_count.to_i + 1
+      return unless (@fetch_count % GC_PAGE_INTERVAL).zero?
+
+      GC.start(full_mark: true, immediate_sweep: true)
     end
 
     def normalize_slug(name)

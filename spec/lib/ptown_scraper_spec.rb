@@ -88,6 +88,22 @@ RSpec.describe PtownScraper do
     end
   end
 
+  describe ".collect_garbage_periodically" do
+    before { described_class.instance_variable_set(:@fetch_count, 0) }
+
+    it "GC_PAGE_INTERVAL ページごとにフルGCを実行する" do
+      expect(GC).to receive(:start).with(full_mark: true, immediate_sweep: true).once
+
+      PtownScraper::GC_PAGE_INTERVAL.times { described_class.collect_garbage_periodically }
+    end
+
+    it "インターバル未満のページ数ではGCを実行しない" do
+      expect(GC).not_to receive(:start)
+
+      (PtownScraper::GC_PAGE_INTERVAL - 1).times { described_class.collect_garbage_periodically }
+    end
+  end
+
   describe ".keyword_present?" do
     it "returns true when a keyword is present without negation" do
       expect(described_class.keyword_present?("Wi-Fi利用可 携帯電話充電可能", [ "Wi-Fi" ])).to eq(true)
