@@ -36,6 +36,12 @@
 - **相棒ペットの初見説明ツールチップ追加** — 初回訪問時に「記録するたび育つ」ことが伝わらずリテンション機会を逃している（詳細は「機能追加・検討」参照）
 
 ### 🔵 ユーザー行動が必要
+- **🔴 検索流入の回復判定（2026-08-18 前後）** — 2026-07-19 に検索流入が急落し（15日比較で表示回数 -88%・クリック -94%・平均掲載順位 24.8→36.2）、原因として Cloudflare Bot Fight Mode を特定、2026-08-04 に OFF にした。効果が出るまで 2 週間ほどかかるため、8/18 前後に判定する
+  - 特定の根拠: Cloudflare Audit Log で急落前 3 日間のゾーン変更は `2026-07-17 17:57:51 Update Zone Bot Management Config` の 1 件のみ。以降 8/4 まで bot_management の変更なし。commit 4b17ba7 本文の「Cloudflare Bot Fight Mode も ON 済み（ダッシュボードで直接設定、コミット外）」に対応する
+  - 判定に見る指標: ①GSC 検索パフォーマンスの表示回数が 13〜39/日 の水準から戻るか ②GSC クロール統計のクロールリクエストが 100〜200/日 から戻るか ③Render Events に Instance failed が再発しないか ④Render の帯域が跳ねないか
+  - 戻らなかった場合: Render Web の OOM（7/17 に 12時間で Instance failed 23回）が主因の線が残る。7/31 の commit a90cc2f 以降 Instance failed はゼロなので、その回復待ちとして観測を延長する
+  - OOM や帯域超過が再発した場合: Bot Fight Mode を戻すのではなく、検索エンジンを除外した WAF ルールで絞る。Free plan の Bot Fight Mode は verified bot の除外トグルを持たない
+  - インデックス登録済み 4,580 ページは維持されており、インデックス削除ではなく順位下落。詳細は memory の project_search_console_seo.md
 - **ASP 本格登録→有効化** — A8/もしも/バリューコマース アカウント作成→提携申請→承認→`target_url` 更新 → Render env `PROMOTIONS_ENABLED=true` セット
 - **特商法ページの実名化** — 金融系案件開始時に必要 (時期次第)
 - **Cloudflare Proxy 化** — SSL/TLS を "Full (strict)" に切替後、Proxied モードに (CDN/WAF/Bot対策)
