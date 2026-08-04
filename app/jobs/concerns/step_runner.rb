@@ -14,6 +14,13 @@ module StepRunner
     Rails.logger.error(e.backtrace&.first(5)&.join("\n"))
   end
 
+  # rake タスクは1プロセス内で1度しか invoke できないため、同じタスクを都道府県ごとに
+  # 繰り返し呼ぶジョブのために毎回 reenable する。
+  def invoke_task(name, *args)
+    Rake::Task[name].invoke(*args)
+    Rake::Task[name].reenable
+  end
+
   def deactivate_orphan_machines
     deactivated = MachineModel.active
       .left_joins(:shop_machine_models)

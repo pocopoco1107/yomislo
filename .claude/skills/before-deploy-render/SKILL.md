@@ -40,15 +40,17 @@ cd /Users/kasedashouta/develop/yomislo && .claude/skills/before-deploy-render/ch
 | 7 | RSpec | 前回実行ログ（tmp/rspec_status.txt）の参照 |
 | 8 | Git | 未コミット変更の有無 |
 
-## Day1 衝突の背景
+## 同時起動の背景
 
 `render.yaml` に2つの 18:00 UTC ジョブがある:
 - `yomislo-daily-refresh`: `0 18 * * *`（毎日）
-- `yomislo-monthly`: `0 18 1 * *`（毎月1日）
+- `yomislo-monthly`: `0 18 1-5 * *`（UTC 1〜5日 = JST 2〜6日 03:00）
 
-毎月1日に**同時起動**してDBレース・レート制限超過のリスク。
-これを `app/jobs/daily_machine_refresh_job.rb` の `return if Date.current.day == 1` で回避している。
-スキルはこの skip ロジックの存在を毎回確認する。
+monthly は設置機種のフル同期に約10時間かかり Render の cron 上限12時間に収まらないため、
+都道府県チェックポイントで複数日に分けて完了させる。その期間に daily が**同時起動**すると
+DBレース・DMMぱちタウンへのレート制限超過を招く。
+`app/jobs/daily_machine_refresh_job.rb` が JST 2〜6日かつ月次サイクル未完了なら休止して回避する。
+スキルはこの skip ロジック（`MonthlySyncProgress.current_cycle.completed?` 参照）を毎回確認する。
 
 ## cron build conflict の背景
 

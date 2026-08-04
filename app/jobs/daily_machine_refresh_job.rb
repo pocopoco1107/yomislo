@@ -10,30 +10,21 @@ class DailyMachineRefreshJob < ApplicationJob
   queue_as :default
 
   def perform
-    # yomislo-monthly は1〜5日に再実行されうる（都道府県単位のチェックポイント再開のため）。
+    # yomislo-monthly は都道府県単位のチェックポイント再開のため UTC 1〜5日に再実行される。
+    # 両ジョブとも 18:00 UTC 起動 = JST 翌日 03:00 なので、monthly が動くのは JST 2〜6日。
     # その期間中に月次サイクルが未完了なら、DMMぱちタウンへの同時アクセスを避けるためdailyを休止する。
-    return if (1..5).cover?(Date.current.day) && !MonthlySyncProgress.current_cycle.completed?
+    return if (2..6).cover?(Date.current.day) && !MonthlySyncProgress.current_cycle.completed?
 
     $stdout.sync = true
     Rails.application.load_tasks if Rake::Task.tasks.empty?
 
-    run_step("import_machines") do
-      Rake::Task["ptown:import_machines"].invoke
-      Rake::Task["ptown:import_machines"].reenable
-    end
-
-    run_step("sync_shop_machines") do
-      Rake::Task["ptown:sync_shop_machines"].invoke
-      Rake::Task["ptown:sync_shop_machines"].reenable
-    end
+    run_step("import_machines") { invoke_task("ptown:import_machines") }
+    run_step("sync_shop_machines") { invoke_task("ptown:sync_shop_machines") }
 
     # lat/lng が NULL の店舗を GSI (primary) + Nominatim (fallback) でジオコード。
     # 「現在地から探す」検索ロジックは lat/lng NULL の店舗を完全除外するため、
     # 新規店舗が DMM ぱちタウンで追加された日のうちに必ず座標を埋める必要がある。
-    run_step("geocode_shops") do
-      Rake::Task["geocode:shops"].invoke
-      Rake::Task["geocode:shops"].reenable
-    end
+    run_step("geocode_shops") { invoke_task("geocode:shops") }
 
     run_step("cleanup") { deactivate_orphan_machines }
 

@@ -43,12 +43,13 @@ else
     ok "cron build は軽量 (bundle install のみ)"
   fi
 
-  # Day 1 衝突チェック: daily-refresh(0 18 * * *) と monthly(0 18 1 * *) が同時刻
-  if grep -qE 'schedule:\s*"0 18 \* \* \*"' render.yaml && grep -qE 'schedule:\s*"0 18 1 \* \*"' render.yaml; then
-    if grep -q "Date.current.day == 1" app/jobs/daily_machine_refresh_job.rb 2>/dev/null; then
-      ok "Day1 衝突回避: DailyMachineRefreshJob 内に skip ロジックあり"
+  # 同時起動チェック: daily-refresh(0 18 * * *) と monthly(0 18 1-5 * *) が同時刻。
+  # monthly が動く日に daily を休止する guard が DailyMachineRefreshJob にあるか確認する。
+  if grep -qE 'schedule:\s*"0 18 \* \* \*"' render.yaml && grep -qE 'schedule:\s*"0 18 1(-[0-9]+)? \* \*"' render.yaml; then
+    if grep -q "MonthlySyncProgress.current_cycle.completed?" app/jobs/daily_machine_refresh_job.rb 2>/dev/null; then
+      ok "同時起動回避: DailyMachineRefreshJob 内に月次サイクル未完了時の skip ロジックあり"
     else
-      fail "Day1 に daily-refresh と monthly が同時起動。Job 内に skip ロジックを追加"
+      fail "daily-refresh と monthly が同時刻起動。Job 内に skip ロジックを追加"
     fi
   fi
 fi
@@ -110,7 +111,7 @@ else
 fi
 
 # Solid Queue の参照が app/ にないか
-if grep -rE "SolidQueue::|Solid::Queue" app/ config/ 2>/dev/null | grep -v "^Binary" | grep -v 'queue_schema.rb' >/dev/null; then
+if grep -rE "SolidQueue::|Solid::Queue" app/ config/ 2>/dev/null | grep -v "^Binary" | grep -vE 'queue_schema\.rb|recurring\.yml' >/dev/null; then
   warn "コード内に SolidQueue 参照あり (recurring.yml は参照用OKだが他はNG)"
 fi
 

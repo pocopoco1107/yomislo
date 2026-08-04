@@ -91,7 +91,10 @@ services:
     envVars: *batch-env
 
   # ── 月次: DMMぱちタウン 店舗+機種+詳細+設置機種フル同期 ──
-  # 毎月1日 03:00 JST (前月末日 18:00 UTC) — 約5時間
+  # UTC 1〜5日 18:00 = JST 2〜6日 03:00 起動。
+  # 設置機種のフル同期だけで 6,053店舗 × 約6秒 ≒ 10時間かかり Render の cron 上限 12時間に
+  # 収まらないため、MonthlySyncProgress の都道府県チェックポイントで複数日に分けて完了させる。
+  # MonthlyShopDetailsJob::JOB_TIME_BUDGET が1回の実行を 10.5時間で自主終了させる。
   - type: cron
     name: yomislo-monthly
     region: singapore

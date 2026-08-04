@@ -118,7 +118,7 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 ## DMMぱちタウン スクレイピング設計
 - **モジュール**: `PtownScraper` (`lib/tasks/ptown.rake`)
 - **BASE_URL**: `https://p-town.dmm.com`
-- **レート制限**: `sleep 3.0` (1リクエストあたり)
+- **レート制限**: `REQUEST_INTERVAL = 5.0` (1リクエストあたり)
 - **正規化**: `normalize_slug()` で NFKC正規化 + 空白→ハイフン + 記号除去 + downcase
 - **core_name()**: 接頭辞(L/S/パチスロ/スマスロ等)・末尾型式コード除去で重複検出用
 - **parse_shop_detail()**: JSON-LDから店舗基本情報 + #anc-slot セクションから機種リスト + `table.default-table` から設備情報
@@ -151,9 +151,13 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
 |-----------|------------------|---------------|------|
 | `yomislo-daily-refresh` | 0 18 * * * | `rails runner "DailyMachineRefreshJob.perform_now"` | 機種マスタ + 全店設置機種同期 + lat/lng未取得店のgeocode + 孤立機種非アクティブ化 ~5h |
 | `yomislo-daily-aggregation` | 0 19 * * * | `rails runner "VoterRanking.refresh_* + PlayRecordSummary.refresh_all! + VoterProfile.refresh_for"` | ランキング+収支+Profile (数秒) |
-| `yomislo-monthly` | 0 18 1 * * | `rails runner "MonthlyShopDetailsJob.perform_now"` | 店舗マスタ + 機種詳細 + 設置機種フル同期 + 新規店geocode + cleanup ~5h |
+| `yomislo-monthly` | 0 18 1-5 * * | `rails runner "MonthlyShopDetailsJob.perform_now"` | 店舗マスタ + 機種詳細 + 設置機種フル同期 + 新規店geocode + cleanup。設置機種フル同期だけで6,053店舗×約6秒≒10hかかり1回では終わらないため、MonthlySyncProgress の都道府県チェックポイントで複数日に分割 |
 
-- 毎月1日: daily-refresh はスキップ、monthly が代わりに実行
+- Render は cron の1回の実行を12時間で打ち切る。`MonthlyShopDetailsJob::JOB_TIME_BUDGET`(10.5h) が
+  次の都道府県の推定所要時間と残り予算を比べて自主終了し、残りを翌日の実行に回す
+- monthly が動くのは JST 2〜6日 03:00 (UTC 1〜5日 18:00)。この期間に月次サイクルが未完了なら
+  daily-refresh は DMMぱちタウンへの同時アクセスを避けて休止する
+- recurring.yml は Solid Queue 無効のため参照用のみ
 - recurring.yml は Solid Queue 無効のため参照用のみ
 
 ## Rakeタスク（ptown:）
@@ -207,7 +211,7 @@ bundle exec rspec  # 533 examples, 0 failures, 72% coverage
   ```
 
 ### DMMぱちタウンスクレイピング規約
-- レート制限: `sleep 3.0` (1リクエストあたり)
+- レート制限: `REQUEST_INTERVAL = 5.0` (1リクエストあたり)
 - User-Agent: 標準ブラウザUA使用
 - Net::HTTP + Nokogiri
 - **機種名正規化**: NFKC正規化必須。`core_name()` で接頭辞/末尾型式コード除去
