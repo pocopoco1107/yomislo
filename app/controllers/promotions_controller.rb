@@ -8,6 +8,8 @@ class PromotionsController < ApplicationController
     linksynergy.com
     afl.rakuten.co.jp
     accesstrade.net
+    moppy.jp
+    hapitas.jp
   ].freeze
 
   # /p/:id → クリック数を加算し、Promotion.target_url へ 302 リダイレクト。
